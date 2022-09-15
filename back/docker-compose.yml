@@ -1,0 +1,28 @@
+version '3.9'
+
+services:
+
+  nginx:
+    image: nginx
+
+  psql:
+    image: postgres
+
+  nestjs:
+
+  php:
+    image: php
+
+  irc:
+    image: irssi
+
+volumes:
+  psql_vol:
+    driver: local
+    driver_opts:
+      type: none
+      device: /home/$USER/data/psql_vol
+      o: bind
+
+networks:
+  transcendence: {}
