@@ -1,20 +1,41 @@
-version '3.9'
+version: '3'
 
 services:
 
   nginx:
+    container_name: nginx
     image: nginx
+    restart: always
+    networks:
+        - transcendence
 
   psql:
+    container_name: psql
     image: postgres
+    restart: always
+    networks:
+        - transcendence
 
   nestjs:
+    container_name: nestjs
+    image: nestjs/cli
+    restart: always
+    networks:
+        - transcendence
 
   php:
+    container_name: php
     image: php
+    restart: always
+    networks:
+        - transcendence
 
   irc:
+    container_name: irc
     image: irssi
+    restart: always
+    networks:
+        - transcendence
 
 volumes:
   psql_vol:

@@ -1,0 +1,79 @@
+POSTSQL
+
+postgrsql est une base de donnees sql
+contient des tables avec differents types de clee associes
+(nom, prenom ...)
+TYPES CLEES (2)
+Clees primaires (id) clee unique propre a un elements (une clee par table)
+Clees etrangeres (ville ...) clee pouvant etre multiples a une table
+CONTRAINTES (3)
+Contrainte unique un seul element avec cette clee (exemle nom_user)
+Contrainte notNULL ne doit pas etre null (champs obligatoire)
+Contrainte check repond a des regles (ex : max 30 char ...)
+Si les contraintes ne sont pas respectees la valeur ne sera pas inserree
+
+CREATION D UNE TABLE
+
+CREATE TABLE user(
+
+	id SERIAL PRIMARY KEY,
+	name VARCHAR(30) NOT NULL,
+	date DATE,
+);
+
+
+SELECT * FROM user
+(va donner la table en output)
+
+
+CREATE TABLE user(
+
+	id PRIMARY KEY,
+	connect bool,
+);
+
+DROP TABLE user;#efface la tables
+
+
+TABLE DE JONCTION
+
+#PRIMARY KEY PEUT ETRE UNE JONCTION DE PLUSIEURS COLONES
+
+	PRIMARY KEY (key1, key2),
+
+CREATE TABLE channels
+(
+	channel_id	PRIMARY KEY,
+	owner_id	INT REFERENCES user (id),
+	admin_id	INT REFERENCES user (id),
+	
+);
+
+
+#Ajouter une colonne
+
+ALTER TABLE exemples
+ADD COLUMN email VARCHAR(50) unique
+
+ALTER TABLE exemples
+
+ADD COLUMN nationalite VARCHAR(30),
+ADD COLUMN age INT NOT NULL;# ne pas oublier le point virgules si plusiers lignes
+
+
+#Modifier le type de donnees
+
+ALTER TABLE exemples
+ALTER COLUMN nationalite TYPE CHAR(2)
+
+# suppresion table
+
+CREATE TABLE e(id SERIAL PRIMARY KEY, p VARCHAR(30));
+
+DROP TABLE e;
+
+
+LANGUAGE MANIPULATION DE donnees
+
+
+
