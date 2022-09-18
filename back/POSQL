@@ -75,5 +75,36 @@ DROP TABLE e;
 
 LANGUAGE MANIPULATION DE donnees
 
+CREATE DATABASE a
+	WITH
+	OWNWER = postgres
+	ENCODING = 'UTF8'
+	LC_COLLATE = 'C'
+	LC_CTYPE = 'C'
+	TABLESPACE = pg.default
+	CONNECTION LIMIT = -1;
+
+INSERT INTO table (colonne1, colonne2, colonne3)
+VALUES ('values1', 'value2', 'value3')
+
+INSERT INTO user (prenom, nom, email, nationalite, age)
+VALUES ('Pierre', 'Dupont', 'dupont@gmail.com', 'FR', 65);
+
+INSERT INTO user(prenom, nom, email, nat, age)
+VALUES (1,2,2,4,5)
+(6,7,8,9,10)
+(11,12,13,14,15);
+
+
+
+
+
+
+
+
+
+
+
+
 
 
