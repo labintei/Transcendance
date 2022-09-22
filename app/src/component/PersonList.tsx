@@ -11,6 +11,9 @@ type Person = {
 }
 
 export default class PersonList extends React.Component {
+  state = {
+    filterStr: "string"
+  }
   listp: Person[] = []
 
   componentDidMount() {
