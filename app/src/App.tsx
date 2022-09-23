@@ -2,38 +2,52 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import PersonList from './component/PersonList';
+import PlayerProfile from './component/PlayerProfile';
 import { profile } from 'console';
 import { isPropertyAccessOrQualifiedName } from 'typescript';
 //https://nextjs.org/docs/basic-features/layouts#with-typescript  App(PersonList)
 
 const components = {
   matching : PersonList,
-  playerprofile : PersonList,
-  default : PersonList
+  playerprofile : PlayerProfile,
+  default : PlayerProfile
 }
 
-function matching() {
-  App({type:"matching"});
-}
+class App extends React.Component {
+  state:{compo:keyof typeof components};
 
-function getprofile() {
-  App({type:"playerprofile"});
-}
+  constructor(props: any) {
+    super(props);
+    this.state = {compo:"default"};
 
-function App(props:{type:keyof typeof components}={type:"default"}) {
+    // This binding is necessary to make `this` work in the callback
+    this.matching = this.matching.bind(this);
+    this.getprofile = this.getprofile.bind(this);
+  }
 
-  const ComponentType = components[props.type];
+  matching() {
+    this.setState({compo:"matching"});
+  }
+  
+  getprofile() {
+    this.setState({compo:"playerprofile"});    
+  }
+
+  render() {
+
+  const ComponentType = components[this.state.compo];
   return (
     <div className="App">
       <menu>
-        <li><button onClick={matching}>Matching</button></li>
-        <li><button onClick={getprofile}>Profile</button></li>
+        <li><button onClick={this.matching}>Matching</button></li>
+        <li><button onClick={this.getprofile}>Profile</button></li>
       </menu>
       <div className="content">
         <ComponentType />
       </div>
     </div>
   );
+  }
 }
 
 export default App;

@@ -1,0 +1,25 @@
+#stats-list, #stats-list p, #stats-list h3 {
+    list-style: none;
+    margin:0; padding:0;
+    }
+    
+    #stats-list > li{
+      float:left;
+      margin-right: 20px;
+      margin-left: 8px;
+      width: 130px;
+    }
+    
+    #stats-list > li > .image{
+      display:block;
+      float:left;
+      margin-right:10px;
+    }
+    
+    /*
+    this instructions are to force the dimensions of image and its container <a>
+    */
+    #stats-list > li > .image,
+    #stats-list > li > .image > img{
+      width:48px; height:48px;
+    }
