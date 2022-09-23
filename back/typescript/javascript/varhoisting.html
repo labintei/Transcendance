@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script>
+		var a = "Bonjour"
+		// faire a ttention a var et a
+		// peut pas faire de debrdement
+		// mot clee let
+		var demo = fonction (){
+			for(var a = 0; a < 4; a++)
+			{
+				let c = 7
+			}
+			// ne peut pas faire console.log(c)
+			// let ne pourra pas declarer deux fois la meme variable dans mm bouclr
+			const c = 42
+			// c ne pourra pas etre modifier et aura les meme contriante que let
+		}
+
+			// notion de hoiistin
+
+			var a
+			console.log(a)
+			a = "bonjour"
+			// le let n est pas remonter dans les globale
+			// les fonction sont aussi hoister (remonter)
+			console.log(a())
+			function a(){
+				console.log('a')
+			}
+			// on peut aussi mettre en const les fonctions / la fonction ne sera
+			// pas remonter
+		
+	</script>
+</head>
+<body>
+</body>
+</html>

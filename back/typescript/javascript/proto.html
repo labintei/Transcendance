@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script>
+		var e = {
+			nom:"Jean"
+			present: function() {
+				console.log(this.nom + " present")
+			}
+		}
+		eleve.present()
+		//a._protot_
+		// un entier a plusieurs methid associer
+//		var i = e.Create()
+		jean.__proto__ = eleve // ne pas utiliser comme ca
+		Object.getPrototypeOf(jean)
+
+		// une facon de faire
+		var m = Object.create(eleve)
+		m.notes = [12,13,14]
+
+		// systemees de constructeurS
+
+		var T = function (nom) {
+		if(notes != undefined)
+			this.nom = nom
+		}
+
+		T.protype.moyenne = fonction (){
+			if(this.notes == undefined)
+			this.notes
+		}
+
+
+		var jean = new T("Jean")
+		jean.notes = [42,45,68]
+		
+
+		// Logique les prototypes sont la classe au dessus qui peut etre 
+		// communes a plusieurs objets
+	</script>
+</head>
+
+
+</html>

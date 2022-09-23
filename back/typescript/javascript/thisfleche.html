@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script>
+		const	eleve = {
+			nom: 'Lauranne',
+			call: fonction()
+			{
+				console.log(this)
+				// ne marchera pas avec this car this redefini
+				var s = this
+				const demo = {
+					demo: function(){
+						console.log(s.nom)
+					}
+
+				},
+				appeler: () => {console.log(this.nom)}
+				// ne peut pas etre modifer avec bind
+			}
+		}
+
+		// fonction fleche (ne redefinisse pas this)
+		const demo = () => {}
+		eleve.appeler()
+		eleve.appeler.bind({nom: 'Marc'})()
+
+		// fonction fleche peut se passer d accolade
+		const demo = (a, b) => a + b
+		// un seul paramettre peut se passer de parenthese
+		const d = a => a * 2
+	</script>
+</head>
+<body>
+	<button>Appeler</button>
+
+</body>
+</html>

@@ -1,0 +1,49 @@
+NESTJS 
+
+aplication web basee sur Node 
+
+nest cli (comment installer npm)
+
+-> installer nest js
+
+npm ->package manager de nest Js
+i
+NestJs est un framework qui permet de creer des applications cote server
+Utilise progressive Javascript et des elements de OOP (Oriented object programming)
+FP (Fonctionnal Programming) et FRP (Functional Reactive Programming)
+
+nest new project
+
+creer des fichier package.json et des dependances
+
+Une application generer
+Dans src (le tout en typescript)
+Un module, un Controlleur (ecoutes les requetes entrantes) 
+et un service (fourni des fonctionalites a ton controlleur)
+
+typescript(decorateurs)
+app.conroleurs
+@Get() (ecoute les les requetes entree)
+
+GENERER MODULE
+nest generate module (nom appli)
+nest g mod (nom appli) // version abrievation
+
+GENERER CONTROLLEUR
+nest generate controller (nom appli)
+nest g co (nom appli)
+
+GENERER SERVICE
+nest generate service (nom appli)
+nest g s (nomappli)
+
+TYPESCRIPT CREER DES INTERFACES
+(Bonne pratique)
+export interface titre{
+	title string;
+	id number;
+	...
+}
+
+
+

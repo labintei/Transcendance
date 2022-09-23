@@ -1,0 +1,33 @@
+<!DOCTYPE  html>
+<html>
+<head>
+	<meta charset="UTF-8">
+	<script>
+
+		var a = {}
+
+		var b = function (nombre) {
+			if(nombre == 5)
+				throw new Error("NOMBRE == 5")
+		}
+
+		try {
+			//a.maMethode()
+			b(5)
+		}
+		catch (e)
+		{
+			console.log('Erreur')
+		}
+		finally {
+			console.log('Dans tous les cas')
+		}
+		// On peut emboiter les finnaly et les catch et try entre eux 
+		// Pour gerer les erreurs -> types errors
+		// finally faire dans tous les cas cette action meme si erreur
+	</script>
+</head>
+<body>
+
+</body>
+</html>

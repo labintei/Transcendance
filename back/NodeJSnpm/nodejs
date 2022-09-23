@@ -1,0 +1,67 @@
+NodeJS 
+
+Utilisation de NodeJs (Javascript cote serveur)
+
+Pourquoi NodeJs 
+
+URL Basededonnees Traiteinfos Sauvegarde GenerelaPage 
+
+Traites les imformations de facon asynchrone
+(Meme intervalles de temps)
+
+Va declencher un event loop sinon  envoit au thread pool (filesystem,network,process)
+
+node standard library -> node binding(http,socket,filesystem) -> (v8|threadpool|eventloop|crypto(openSSL)|DNS)
+
+Notion Bloquant | non Bloquant
+
+Bloquant
+
+var content = fs.readFileSync('Monfichier.txt');
+console.log('Mon fichier : ', content);
+
+Non Bloquant
+
+fs.readFile("fichier.txt", (err, content) => {if (err){throw err;}
+	console.log('Mon fichier : ', content);
+});
+
+
+Creer un serveur web
+
+http.createServer(function (req, res) {
+	fs.readFile('var/www/demo.log.txt', function (err, data){
+		if(err)
+		{
+			res.writeHead(500, err.message)
+			res.end()
+		}else{
+			res.writeHead(200, {
+				'Content-Type' : 'text/plain'
+			});
+			res.end(data)
+		}
+	});
+}).listen(80)
+
+
+
+Inconvenient
+
+Ecrire plus d operation (checker les messages d erreur ...)
+Single threas () -> (Peut creer des child process)
+Le code sera bas niveau (creer le server web au niveau de notre code)
+
+Avantages
+
+Plus de traitement simultannees
+Multi plateforme
+Un seul language
+Facile a apprendre
+
+a un gestionnaire de packets npm 
+
+
+
+
+
