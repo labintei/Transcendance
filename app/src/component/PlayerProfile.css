@@ -1,25 +1,74 @@
 #stats-list, #stats-list p, #stats-list h3 {
-    list-style: none;
-    margin:0; padding:0;
-    }
-    
-    #stats-list > li{
-      float:left;
-      margin-right: 20px;
-      margin-left: 8px;
-      width: 130px;
-    }
-    
-    #stats-list > li > .image{
-      display:block;
-      float:left;
-      margin-right:10px;
-    }
-    
-    /*
-    this instructions are to force the dimensions of image and its container <a>
-    */
-    #stats-list > li > .image,
-    #stats-list > li > .image > img{
-      width:48px; height:48px;
-    }
+list-style: none;
+margin:0; padding:0;
+}
+#stats-list {
+  height: 480px;
+}
+
+#stats-list > li{
+  margin-right: 15px;
+  margin-top: 50px;
+  margin-bottom: 50px;
+  margin-left: 8%;
+  width: 250px;
+  max-width: 80%;
+  align-content: center;
+  height:64px;
+}
+
+#stats-list > li > .image{
+  display:block;
+  float:left;
+  margin-right:8px;
+}
+
+#stats-list > li > p {
+  font-size: 24px;
+  line-height: 64px;
+}
+
+.place_name {
+  margin-left: auto;
+  margin-right: auto;
+  width: 400px;
+  height: 70px;
+}
+
+.place_avatar {
+  margin-left: auto;
+  margin-right: auto;
+  width: 110px;
+  height: 96px;
+  position: relative;
+}
+.place_avatar > img {
+  top:0;
+  left:0;
+  position: absolute;
+}
+.place_avatar .edit-button {
+  position: absolute;
+  bottom:0;
+  right:0;
+}
+
+/*
+this instructions are to force the dimensions of image and its container <a>
+*/
+
+.edit-button {
+  width:28px; height:28px;
+  border: none;
+  background-color: transparent;
+  background-size: 28px 28px;
+  background-image: url("https://cdn3.iconfinder.com/data/icons/google-material-design-icons/48/ic_mode_edit_48px-256.png");
+}
+
+#stats-list > li > .image,
+#stats-list > li > .image > img{
+  width:64px; height:64px;
+}
+.avatar{
+  width: 96px; height: 96px;
+}

@@ -2,6 +2,7 @@ import React from 'react';
 import logo from './logo.svg';
 import './App.css';
 import PersonList from './component/PersonList';
+import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
 import { profile } from 'console';
 import { isPropertyAccessOrQualifiedName } from 'typescript';
@@ -10,7 +11,9 @@ import { isPropertyAccessOrQualifiedName } from 'typescript';
 const components = {
   matching : PersonList,
   playerprofile : PlayerProfile,
-  default : PlayerProfile
+  historymatch: MatchList,
+  levels: MatchList,
+  default : PersonList
 }
 
 class App extends React.Component {
@@ -32,6 +35,13 @@ class App extends React.Component {
   getprofile() {
     this.setState({compo:"playerprofile"});    
   }
+  matchhistory() {
+    this.setState({compo:"historymatch"});
+  }
+  
+  getlevels() {
+    this.setState({compo:"levels"});    
+  }
 
   render() {
 
@@ -40,6 +50,8 @@ class App extends React.Component {
     <div className="App">
       <menu>
         <li><button onClick={this.matching}>Matching</button></li>
+        <li><button onClick={this.getlevels}>Levels</button></li>
+        <li><button onClick={this.matchhistory}>History</button></li>
         <li><button onClick={this.getprofile}>Profile</button></li>
       </menu>
       <div className="content">

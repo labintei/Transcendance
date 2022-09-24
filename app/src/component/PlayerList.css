@@ -1,0 +1,66 @@
+#person-list, #person-list p, #person-list h3 {
+list-style: none;
+margin:0; padding:0;
+}
+#person-list {
+height: 480px;
+}
+
+#person-list > li{
+margin-right: 15px;
+margin-top: 50px;
+margin-bottom: 50px;
+margin-left: 8%;
+width: 80%;
+max-width: 80%;
+align-content: center;
+height: 48px;
+display:flex;
+}
+
+#person-list > li > .avatar{
+display:block;
+float:left;
+margin-right:8px;
+}
+
+#person-list > li > .friend{
+    display:block;
+    float:left;
+    margin-left:15px;
+    }
+
+#person-list > li > p {
+font-size: 24px;
+line-height: 48px;
+width: 30%;
+}
+
+#person-list > li > button{
+    border: none;
+    align-self: right;
+    width: 48px; height: 48px;
+    background-color: Transparent;
+    background-size: 48px 48px;
+}
+
+
+#challenge-button {
+    background-image: url("https://cdn4.iconfinder.com/data/icons/halloween-2476/64/swords-weapons-antique-fight-war-512.png");
+}
+
+#add-f-button {
+    background-image: url("https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678092-sign-add-512.png");
+}
+
+#remove-f-button {
+    background-image: url("https://cdn4.iconfinder.com/data/icons/essentials-72/24/039_-_Cross-256.png");
+}
+
+/*
+this instructions are to force the dimensions of image and its container <a>
+*/
+#person-list > li > .avatar,
+#person-list > li > .avatar > img{
+  width: 48px; height: 48px;
+}
