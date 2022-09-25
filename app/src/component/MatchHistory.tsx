@@ -23,7 +23,9 @@ export default class MatchList extends React.Component {
         const matchs = res.data;
         let listtmp: Array<Match> = Array<Match>(0);   
         for (var match of matchs) {
-            let one: Match = {id: 0, name: '', score1:Math.random() * 5, score2:Math.random() * 5};
+            let one: Match = {
+              id: 0, name: '', score1:Math.trunc(Math.random() * 5), score2:Math.trunc(Math.random() * 5)
+            };
             if (match.id !== undefined && match.name !== undefined) {
                 one.id = match.id;
                 one.name = match.name;
@@ -63,6 +65,7 @@ export default class MatchList extends React.Component {
                   <p>You</p>
                   <p>{match.score1}</p>
                 </div>
+                <img src="https://cdn4.iconfinder.com/data/icons/halloween-2476/64/swords-weapons-antique-fight-war-512.png"></img>
                 <div className={this.render_status(match.score2, match.score1)}>
                   <p>{match.score2}</p>
                   <p>{match.name}</p>
