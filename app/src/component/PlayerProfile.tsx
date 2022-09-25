@@ -18,11 +18,13 @@ const dflt:Person = {name: '', victories: 0, defeats: 0, avatar_location:default
 type State = {
   player:Person
   nameEdit:boolean
+  query:string
+  query2:File | null
   avatarEdit:boolean
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false};
+  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
 
   componentDidMount() {
     axios.get(`https://jsonplaceholder.typicode.com/users`)
@@ -44,7 +46,15 @@ export default class PlayerProfile extends React.Component {
   nameFormat(editing:boolean, name:string) {
     if (editing)
       return (
-        <input type="text"></input>
+        <input type="text"
+        placeholder={this.state.player.name}
+          onChange={event => {this.setState({query: event.target.value})}}
+          onKeyPress={event => {
+                    if (event.key === 'Enter') {
+                      this.changeName()
+                    }
+                  }}>
+        </input>
       )
     else
         return (
@@ -54,12 +64,35 @@ export default class PlayerProfile extends React.Component {
         )
   }
 
+  changeName() {
+    let temp:Person = this.state.player;
+    temp.name = this.state.query;
+    this.setState({player:temp, nameEdit:false});
+  }
+
+  changeAvatar() {
+    let temp:Person = this.state.player;
+    if (this.state.query2 != null)
+    {
+      temp.avatar_location = "/logo192.png";//this.state.query2.name;
+    }
+    console.log(temp.avatar_location);
+    this.setState({player:temp, avatarEdit:false});
+  }
 
   avatarFormat(editing:boolean, loc:string) {
     if (editing)
-      return (
-        <input type="text"></input>
-      )
+      return (<>
+        <input type="file"
+          id="avatar" name="avatar"
+          accept="image/png, image/jpeg"
+          onChange={event => {
+            if (event.target.files != null)
+              this.setState({query2: event.target.files[0]})
+            }}>
+        </input>
+        <button className='send-button' onClick={() => this.changeAvatar()}>Send image</button>
+        </>)
     else
         return (
           <>
@@ -67,10 +100,6 @@ export default class PlayerProfile extends React.Component {
             
           </img><button className='edit-button' onClick={() => this.setState({avatarEdit:true})}></button></>
         )
-  }
-
-  changeName(newname:string) {
-
   }
 
   render() {
