@@ -1,0 +1,13 @@
+version: '3'
+
+services:
+    react:
+        container_name: react
+        build:
+            context: ./
+            dockerfile: ./Doc/Dockerfile
+        restart: always
+        networks:
+            - transcendence
+networks:
+    transcendence: {}
