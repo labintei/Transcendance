@@ -14,6 +14,8 @@ type State = {
   listp:Array<Match>
 }
 
+const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
+
 export default class MatchList extends React.Component {
   state:State= {listp:Array()};
 
@@ -62,13 +64,15 @@ export default class MatchList extends React.Component {
         this.state.listp.map(match =>
             <li key={match.id}>
                 <div className={this.render_status(match.score1, match.score2)}>
+                  <img src={defaultavatar}></img>
                   <p>You</p>
-                  <p>{match.score1}</p>
+                  <p className='score1'>{match.score1}</p>
                 </div>
                 <img src="https://cdn4.iconfinder.com/data/icons/halloween-2476/64/swords-weapons-antique-fight-war-512.png"></img>
                 <div className={this.render_status(match.score2, match.score1)}>
-                  <p>{match.score2}</p>
+                  <p className='score2'>{match.score2}</p>
                   <p>{match.name}</p>
+                  <img src={defaultavatar}></img>
                 </div>
             </li>
             )
