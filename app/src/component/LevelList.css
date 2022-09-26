@@ -1,0 +1,82 @@
+#level-list, #level-list p, #level-list h3 {
+list-style: none;
+margin:0; padding:0;
+}
+#level-list {
+height: 480px;
+}
+
+#level-list > li{
+margin-right: auto;
+margin-top: 50px;
+margin-bottom: 50px;
+margin-left: auto;
+border-radius: 34px;
+border: none;
+width: 400px;
+max-width: 80%;
+align-content: center;
+height: 82px;
+display:flex;
+}
+
+#level-list > .no-score {
+    background-color: rgb(134, 134, 134);
+}
+#level-list .to-score {
+    background-color: rgb(0, 80, 155);
+}
+#level-list .low-score {
+    background-color: rgb(0, 255, 179);
+}
+#level-list .median-score {
+    background-color: rgb(0, 223, 138);
+}
+#level-list .high-score {
+    background-color: rgb(21, 255, 0);
+}
+
+#level-list > li > .avatar{
+display:block;
+float:left;
+margin-right:8px;
+}
+
+#level-list > li > p {
+margin-top: auto;
+margin-bottom: auto;
+font-size: 36px;
+line-height: 48px;
+width: 150px;
+}
+
+#level-list > li > button{
+    margin-top: auto;
+    margin-bottom: auto;
+    border: none;
+    align-self: right;
+    width: 48px; height: 48px;
+    background-color: Transparent;
+    background-size: 48px 48px;
+}
+
+
+#challenge-button {
+    background-image: url("https://cdn4.iconfinder.com/data/icons/halloween-2476/64/swords-weapons-antique-fight-war-512.png");
+}
+
+#add-f-button {
+    background-image: url("https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678092-sign-add-512.png");
+}
+
+#remove-f-button {
+    background-image: url("https://cdn4.iconfinder.com/data/icons/essentials-72/24/039_-_Cross-256.png");
+}
+
+/*
+this instructions are to force the dimensions of image and its container <a>
+*/
+#level-list > li > .avatar,
+#level-list > li > .avatar > img{
+  width: 48px; height: 48px;
+}
