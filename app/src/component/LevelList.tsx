@@ -50,20 +50,29 @@ export default class LevelList extends React.Component {
     if (score <= 0)
       return ("No Score")
     else
-      return (score)
+      return (score + "/3")
   }
 
   div_score(score:number) {
-    if (score == 3)
+    if (score > 0)
       return ("high-score")
-    else if (score == 2)
+/*    else if (score == 2)
       return ("median-score")
     else if (score == 1)
-      return ("low-score")
+      return ("low-score")*/
     else if (score == 0)
       return ("to-score")
     else
       return ("no-score")
+  }
+
+  challenge_available(score:number, id:number) {
+    if (score >= 0)
+      return (
+        <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
+      )
+    else
+        return (<></>)
   }
 
   render() {
@@ -74,7 +83,7 @@ export default class LevelList extends React.Component {
               <li key={level.id} className={this.div_score(level.score)}>
                 <p>Level {level.id}</p>
                 <p>{this.render_score(level.score)}</p>
-                <button onClick={() => this.challengeClicked(level.id)}  id="challenge-button"></button>
+                {this.challenge_available(level.score, level.id)}
               </li>
             )
         }
