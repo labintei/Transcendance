@@ -6,7 +6,7 @@ import './LevelList.css';
 type Level = {
     id: number
     name: string;
-    score: number;
+    rank: number;
     avatar_location: string;
 }
 
@@ -23,20 +23,18 @@ export default class LevelList extends React.Component {
     axios.get(`https://jsonplaceholder.typicode.com/users`)
       .then(res => {
         const levels = res.data;
-        let sco:number = 3;
+        let sco:number = 1;
         let listtmp: Array<Level> = Array<Level>(0);   
         for (var level of levels) {
-            let one: Level = {id: 0, name: '', score: sco, avatar_location:defaultavatar};
+            let one: Level = {id: 0, name: '', rank: sco, avatar_location:defaultavatar};
             console.log(level);
             if (level.id !== undefined && level.name !== undefined) {
                 one.id = level.id;
                 one.name = level.name;
                 listtmp.push(one);
             }
-            if (sco == 0)
-              sco = -1;
             if (sco > 0)
-              sco -= 1;
+              sco += 1;
         }
         this.setState({listl: listtmp});
       })
@@ -47,32 +45,32 @@ export default class LevelList extends React.Component {
   }
 
   render_score(score:number) {
-    if (score <= 0)
-      return ("No Score")
+    if (score == 1)
+      return ("Champion")
+    if (score == 2)
+      return ("2")
     else
-      return (score + "/3")
+      return (score)
   }
 
-  div_score(score:number) {
-    if (score > 0)
-      return ("high-score")
-/*    else if (score == 2)
-      return ("median-score")
-    else if (score == 1)
-      return ("low-score")*/
-    else if (score == 0)
-      return ("to-score")
+  div_score(rank:number) {
+    if (rank == 1)
+      return ("gold-rank")
+    else if (rank == 3)
+      return ("bronze-rank")
+    else if (rank == 2)
+      return ("silver-rank")
     else
-      return ("no-score")
+      return ("low-rank")
   }
 
-  challenge_available(score:number, id:number) {
-    if (score >= 0)
+  challenge_available(status:number, id:number) {
+    if (status == 1)
       return (
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<></>)
+        return (<img src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png"></img>)
   }
 
   render() {
@@ -80,10 +78,11 @@ export default class LevelList extends React.Component {
         <ul id="level-list">
         {
           this.state.listl.map(level =>
-              <li key={level.id} className={this.div_score(level.score)}>
-                <p>Level {level.id}</p>
-                <p>{this.render_score(level.score)}</p>
-                {this.challenge_available(level.score, level.id)}
+              <li key={level.id} className={this.div_score(level.rank)}>
+                <img className='avatar' src={level.avatar_location}></img>
+                <p>{level.name}</p>
+                <p>{this.render_score(level.rank)}</p>
+                {this.challenge_available(level.rank, level.id)}
               </li>
             )
         }

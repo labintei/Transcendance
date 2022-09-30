@@ -53,7 +53,7 @@ class App extends React.Component {
     <div className="App">
       <menu>
         <li><button onClick={this.matching}>Matching</button></li>
-        <li><button onClick={this.getlevels}>Levels</button></li>
+        <li><button onClick={this.getlevels}>LeaderBoard</button></li>
         <li><button onClick={this.matchhistory}>History</button></li>
         <li><button onClick={this.getprofile}>Profile</button></li>
       </menu>
