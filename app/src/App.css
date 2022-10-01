@@ -1,0 +1,43 @@
+.App {
+  text-align: center;
+}
+
+menu {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  height: 65px;
+  max-height: 15%;
+  width: 100%;
+  background-color: rgb(10, 139, 86);
+  justify-content: center;
+}
+
+menu > li > button {
+  background-color: #04AA6D;
+  border: none;
+  color: white;
+  padding: 15px;
+  border-radius: 8px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 20px;
+  margin: 4px 2px;
+}
+
+.App-content {
+  padding:0;
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}

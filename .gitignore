@@ -1,0 +1,15 @@
+
+# env
+.env
+.secrets.env
+.hostname.env
+
+# nvim
+*~
+
+# vscode
+.vscode
+
+# OS
+.DS_Store
+
