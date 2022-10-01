@@ -95,9 +95,7 @@ services:
     networks:
       - transcendence-network
     environment:
-      - ADMINER_DEFAULT_SYSTEM=PostgreSQL
       - ADMINER_DEFAULT_SERVER=db
-      - ADMINER_DEFAULT_USER=$POSTGRES_USER
 
 networks:
   transcendence-network:
