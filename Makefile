@@ -17,10 +17,6 @@ NAME			:=	ft_transcendence
 FRONT			:=	./app
 BACK			:=	./back
 
-ENV				:=	.env
-SECRETENV		:=	.secrets.env
-HOSTNAMEENV		:=	.hostname.env
-
 all				:	$(NAME)
 
 $(NAME)			:	stop
@@ -30,15 +26,15 @@ stop			:	hostname varcheck
 	docker-compose down
 
 varcheck		:
-	@[ -f $(ENV) ] || (echo "$(ENV) not found" && exit 1)
-	@source $(ENV) && [ ! -z $$WEBSITE_PORT ] || (echo "error : env variable WEBSITE_PORT is not set" && exit 1)
-	@source $(ENV) && [ ! -z $$ADMINER_PORT ] || (echo "error : env variable ADMINER_PORT is not set" && exit 1)
-	@source $(ENV) && [ ! -z $$POSTGRES_DB ] || (echo "error : env variable POSTGRES_DB is not set" && exit 1)
-	@source $(ENV) && [ ! -z $$POSTGRES_USER ] || (echo "error : env variable POSTGRES_USER is not set" && exit 1)
-	@source $(ENV) && [ ! -z $$POSTGRES_PASSWORD ] || (echo "error : env variable POSTGRES_PASSWORD is not set" && exit 1)
-	@[ -f $(SECRETENV) ] || (echo -e "$(SECRETENV) not found" && exit 1)
-	@source $(SECRETENV) && [ ! -z $$API42_UID ] || (echo "error : env variable API42_UID is not set" && exit 1)
-	@source $(SECRETENV) && [ ! -z $$API42_SECRET ] || (echo "error : env variable API42_SECRET is not set" && exit 1)
+	@[ -f .env ] || (echo ".env not found" && exit 1)
+	@source .env && [ ! -z $$WEBSITE_PORT ] || (echo "error : env variable WEBSITE_PORT is not set" && exit 1)
+	@source .env && [ ! -z $$ADMINER_PORT ] || (echo "error : env variable ADMINER_PORT is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_DB ] || (echo "error : env variable POSTGRES_DB is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_USER ] || (echo "error : env variable POSTGRES_USER is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_PASSWORD ] || (echo "error : env variable POSTGRES_PASSWORD is not set" && exit 1)
+	@[ -f .secrets.env ] || (echo -e ".secrets.env not found" && exit 1)
+	@source .secrets.env && [ ! -z $$API42_UID ] || (echo "error : env variable API42_UID is not set" && exit 1)
+	@source .secrets.env && [ ! -z $$API42_SECRET ] || (echo "error : env variable API42_SECRET is not set" && exit 1)
 
 ip				:
 	@hostname -I | cut -d' ' -f1
