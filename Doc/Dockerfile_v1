@@ -1,0 +1,17 @@
+FROM node:16
+
+WORKDIR /usr/src/app # sera dans node par default
+
+COPY ./app ./src_front
+
+COPY ./app/package.json package.json
+
+RUN cd src_front
+
+RUN	apt-get -y update && \
+	apt-get -y upgrade && \
+	npm install -g npm@8.19.2
+
+	# Si ne marche pas ecrit juste les commondes utiliser
+
+CMD ["npm start"]
