@@ -1,0 +1,101 @@
+# **************************************************************************** #
+#                                                                              #
+#                                                         :::      ::::::::    #
+#    Makefile                                           :+:      :+:    :+:    #
+#                                                     +:+ +:+         +:+      #
+#    By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+         #
+#                                                 +#+#+#+#+#+   +#+            #
+#    Created: 2022/10/01 16:27:27 by jraffin           #+#    #+#              #
+#    Updated: 2022/10/01 16:27:29 by jraffin          ###   ########.fr        #
+#                                                                              #
+# **************************************************************************** #
+
+services:
+
+  db:
+    image: postgres:14.5-alpine
+    container_name: db
+    restart: always
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+      start_period: 1s
+    networks:
+      - transcendence-network
+    environment:
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+
+  back:
+    build: back
+    container_name: back
+    restart: always
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "wget --spider -q localhost:3000 2> /dev/null"
+        ]
+      interval: 1s
+      timeout: 5s
+      retries: 20
+      start_period: 1s
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 3000:3000
+    networks:
+      - transcendence-network
+    environment:
+      - PORT=3000
+      - DATABASE_HOST=db
+      - DATABASE_PORT=5432
+      - POSTGRES_DB
+      - POSTGRES_USER
+      - POSTGRES_PASSWORD
+    env_file:
+      - .secrets.env
+      - .hostname.env
+
+  front:
+    build: app
+    container_name: front
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+      back:
+        condition: service_healthy
+    ports:
+      - 3001:3001
+    networks:
+      - transcendence-network
+    environment:
+      - PORT=3001
+    env_file:
+      - .hostname.env
+
+  adminer:
+    image: adminer:4.8.1-standalone
+    container_name: adminer
+    restart: always
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - $ADMINER_PORT:8080
+    networks:
+      - transcendence-network
+    environment:
+      - ADMINER_DEFAULT_SERVER=db
+
+networks:
+  transcendence-network:
