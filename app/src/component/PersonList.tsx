@@ -1,6 +1,5 @@
 import React from 'react';
 import axios from 'axios';
-import internal from 'stream';
 import './PlayerList.css';
 
 type Person = {
@@ -18,7 +17,7 @@ type State = {
 }
 
 export default class PersonList extends React.Component {
-  state:State= {listp:Array()};
+  state:State= {listp:[]};
 
   componentDidMount() {
     axios.get(`https://jsonplaceholder.typicode.com/users`)
@@ -48,9 +47,9 @@ export default class PersonList extends React.Component {
   }
 
   render_status(status:number) {
-    if (status == 0)
+    if (status === 0)
       return ("Offline")
-    else if (status == 1)
+    else if (status === 1)
       return ("Online")
     else
       return ("In Match")
@@ -69,11 +68,11 @@ export default class PersonList extends React.Component {
         {
           this.state.listp.map(person =>
               <li key={person.id}>
-                <img className="avatar" src={person.avatar_location}></img>
+                <img alt="avatar" className="avatar" src={person.avatar_location}></img>
                 <p>{person.name}</p>
                 <p>{this.render_status(person.status)}</p>
                 <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button"></button>
-                <img className="friend" src="https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/people-group-team-peoples-friend-512.png"/>
+                <img alt="friend" className="friend" src="https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/people-group-team-peoples-friend-512.png"/>
                 <button onClick={() => this.friendManage(person.id)} id={this.get_friend_status(person.id)}></button>
               </li>
             )
