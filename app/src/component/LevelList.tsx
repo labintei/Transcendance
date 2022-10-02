@@ -71,7 +71,7 @@ export default class LevelList extends React.Component {
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="challenge unavailable"></img>)
+        return (<img src="/challenge_unavailable.png"></img>)
   }
 
   renderStatus (s:number) {
@@ -99,7 +99,7 @@ export default class LevelList extends React.Component {
                 <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span className={this.renderStatus(prank.status)}></span></div>
                 <p>{prank.name}</p>
                 <p>{this.render_score(prank.rank)}</p>
-                {this.challenge_available(prank.rank, prank.id)}
+                {this.challenge_available(prank.status, prank.id)}
               </li>
             )
         }

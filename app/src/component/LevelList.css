@@ -7,20 +7,31 @@ height: 480px;
 }
 
 span {
-    width: 30px;
-    height: 30px;
+    width: 16px;
+    height: 16px;
     border-radius: 5em;
-    border: 2px solid rgb(162, 184, 164);
     display: block;
+    border: 1px solid rgb(3, 3, 3);
     position: absolute;
-    right: 5px;
-    bottom: 5px;
-    background-color: #1BDC25;
+    right: 0px;
+    bottom: 0px;
+    background-color: rgb(192, 192, 192);
     margin: 0;
     padding: 0;
     box-sizing: border-box;
 }
 
+span.Offline {
+    background-color: rgb(192, 192, 192);
+}
+
+span.Online {
+    background-color: rgb(21, 255, 0);
+}
+
+span.Playing {
+    background-color: rgb(255, 94, 0);
+}
 
 #level-list > li{
 margin-right: auto;
@@ -50,7 +61,7 @@ display:flex;
     margin-left:  auto;
     margin-right: 5%;
     margin-bottom: 90px;
-    background-color: rgb(148, 75, 75);
+    background-color: rgb(163, 75, 53);
 }
 #level-list .silver-rank {
     float: left;
@@ -70,6 +81,7 @@ display:flex;
 display:block;
 float:left;
 margin-right:8px;
+position: relative;
 }
 
 #level-list > li > p {
@@ -80,7 +92,7 @@ margin-right:8px;
     text-overflow: ellipsis;
     font-size: 24px;
     line-height: 48px;
-    width: 38%;
+    width: 35%;
 }
 
 #level-list > li > button, #level-list > li > img, #level-list > li > div{
