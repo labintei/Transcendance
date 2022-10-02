@@ -26,7 +26,6 @@ class App extends React.Component {
       menuDisplay: true
     };
 
-
     // This binding is necessary to make `this` work in the callback
     this.matchhistory = this.matchhistory.bind(this);
     this.getlevels = this.getlevels.bind(this);
@@ -56,8 +55,7 @@ class App extends React.Component {
 
   render() {
 
-    const ComponentType = components[this.state.compo];
-
+    const ComponentType:any = components[this.state.compo];
     const display = this.state.menuDisplay;
     return (
       <div className="App">
@@ -73,7 +71,7 @@ class App extends React.Component {
           )
         }
         <div className="content">
-          <ComponentType />
+          <ComponentType props={this.state}/>
         </div>
       </div>
     );

@@ -8,7 +8,7 @@ export const useStore = create((set,get) => {
   return {
   set,
   get,
-  gameReady:false,
+  gameReady:true,
   votes: 0,
   score: [0,0],
   controls: {

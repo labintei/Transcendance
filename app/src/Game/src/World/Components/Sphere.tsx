@@ -1,6 +1,7 @@
 import React, { useRef } from "react";
 import { Canvas, extend, useThree, useFrame } from "@react-three/fiber";
 import { useStore } from "../../State/state";
+import generateRandomFloatInRange from "./Skybox/Utils";
 
 
 // Geometry
@@ -13,7 +14,7 @@ export default function Sphere() {
 
   const ready = useStore((s:any) => s.gameReady)
   
-  var direction = 0.05;
+  var direction = 0.1;
   var angle = 0
   // delta = temps de chargement d'une frame par l'OS
   useFrame((state, delta) => { 
@@ -22,33 +23,36 @@ export default function Sphere() {
       return;
     const width = box1.current.geometry.parameters.width;
     var sphereZ = Math.floor( ref.current.position.z );
-    var sphereX = Math.round(ref.current.position.x * 10) / 100;;
+    var sphereX = Math.round(ref.current.position.x * 10) / 100;
     var box2Pos = box2.current.position
-    // console.log(box.current.position)
      
     ref.current.position.z += direction;
     ref.current.position.x += angle
-    // console.log(ref.current.position)
+    var sphereXInt = Math.round(ref.current.position.x)
     
+    console.log(sphereXInt)
     // if collision with a box
     if (sphereZ === box1.current.position.z && 
       ((sphereX >= box1.current.position.x - (width / 2)) && 
       sphereX <= box1.current.position.x + (width / 2)))
     {
-      direction = -0.05;
+      direction = -0.1;
       // TODO: randomize
-      // angle = 0.01;
+      angle = generateRandomFloatInRange(0, 0.05)
     }
     if (sphereZ === box2.current.position.z &&
       ((sphereX >= box2.current.position.x - (width / 2)) && 
       sphereX <= box2.current.position.x + (width / 2)))
     {
       direction = +0.05;
-      // TODO: randomize
-      // angle = 0.01;
+      angle = generateRandomFloatInRange(0, 0.05)
     }
-
-    
+    // Collision with border
+    if ( sphereXInt === -5 || sphereXInt === 5)
+    {
+      // angle = 1 -angle;
+      // direction = direction *-1;
+    } 
     })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow
