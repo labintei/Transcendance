@@ -75,11 +75,12 @@ services:
       back:
         condition: service_healthy
     ports:
-      - 3001:3001
+      - $WEBSITE_PORT:$WEBSITE_PORT
     networks:
       - transcendence-network
     environment:
-      - PORT=3001
+      - PORT=$WEBSITE_PORT
+      - REACT_APP_SERVER_PORT=$WEBSITE_PORT
     env_file:
       - .hostname.env
 
