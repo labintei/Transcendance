@@ -4,13 +4,15 @@ import PersonList from './component/PersonList';
 import LevelList from './component/LevelList';
 import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
+import PongGame from './Game/src/PongGame'
 
 const components = {
   matching : PersonList,
   playerprofile : PlayerProfile,
   historymatch: MatchList,
   levels: LevelList,
-  default : PersonList
+  default : PersonList,
+  game : PongGame,
 }
 
 class App extends React.Component {
@@ -25,6 +27,7 @@ class App extends React.Component {
     this.getlevels = this.getlevels.bind(this);
     this.matching = this.matching.bind(this);
     this.getprofile = this.getprofile.bind(this);
+    this.getgame = this.getgame.bind(this);
   }
 
   matching() {
@@ -43,6 +46,10 @@ class App extends React.Component {
     this.setState({compo:"levels"});    
   }
 
+  getgame() {
+    this.setState({compo:"game"});    
+  }
+
   render() {
 
   const ComponentType = components[this.state.compo];
@@ -53,6 +60,7 @@ class App extends React.Component {
         <li><button onClick={this.getlevels}>LeaderBoard</button></li>
         <li><button onClick={this.matchhistory}>History</button></li>
         <li><button onClick={this.getprofile}>Profile</button></li>
+        <li><button onClick={this.getgame}>game</button></li>
       </menu>
       <div className="content">
         <ComponentType />
