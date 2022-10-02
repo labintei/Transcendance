@@ -6,6 +6,21 @@ margin:0; padding:0;
 height: 480px;
 }
 
+span {
+    width: 30px;
+    height: 30px;
+    border-radius: 5em;
+    border: 2px solid rgb(162, 184, 164);
+    display: block;
+    position: absolute;
+    right: 5px;
+    bottom: 5px;
+    background-color: #1BDC25;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 #level-list > li{
 margin-right: auto;
 margin-top: 50px;
@@ -67,7 +82,7 @@ margin-right:8px;
     width: 38%;
 }
 
-#level-list > li > button, #level-list > li > img{
+#level-list > li > button, #level-list > li > img, #level-list > li > div{
     margin-top: auto;
     margin-bottom: auto;
     margin-left: auto;

@@ -1,36 +1,37 @@
 import React from 'react';
 import axios from 'axios';
-import internal from 'stream';
 import './LevelList.css';
 
-type Level = {
+type PRank = {
     id: number
     name: string;
     rank: number;
+    status: number;
     avatar_location: string;
 }
 
 const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 type State = {
-  listl:Array<Level>
+  listl:Array<PRank>
 }
 
 export default class LevelList extends React.Component {
-  state:State= {listl:Array()};
+  state:State= {listl:[]};
 
   componentDidMount() {
     axios.get(`https://jsonplaceholder.typicode.com/users`)
       .then(res => {
-        const levels = res.data;
+        const pranks = res.data;
         let sco:number = 1;
-        let listtmp: Array<Level> = Array<Level>(0);   
-        for (var level of levels) {
-            let one: Level = {id: 0, name: '', rank: sco, avatar_location:defaultavatar};
-            console.log(level);
-            if (level.id !== undefined && level.name !== undefined) {
-                one.id = level.id;
-                one.name = level.name;
+        let listtmp: Array<PRank> = [];   
+        for (var prank of pranks) {
+            let one: PRank = {id: 0, name: '', rank: sco, avatar_location:defaultavatar, status:0};
+            console.log(prank);
+            if (prank.id !== undefined && prank.name !== undefined) {
+                one.id = prank.id;
+                one.name = prank.name;
+                one.status = prank.id % 3;
                 listtmp.push(one);
             }
             if (sco > 0)
@@ -45,44 +46,60 @@ export default class LevelList extends React.Component {
   }
 
   render_score(score:number) {
-    if (score == 1)
+    if (score === 1)
       return ("Champion")
-    if (score == 2)
+    if (score === 2)
       return ("2")
     else
       return (score)
   }
 
   div_score(rank:number) {
-    if (rank == 1)
+    if (rank === 1)
       return ("gold-rank")
-    else if (rank == 3)
+    else if (rank === 3)
       return ("bronze-rank")
-    else if (rank == 2)
+    else if (rank === 2)
       return ("silver-rank")
     else
       return ("low-rank")
   }
 
   challenge_available(status:number, id:number) {
-    if (status == 1)
+    if (status === 1)
       return (
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png"></img>)
+        return (<img src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="challenge unavailable"></img>)
+  }
+
+  renderStatus (s:number) {
+    if (s == 0) {
+      return ("Offline")
+    } else if (s == 1)
+      return ("Online")
+    else
+      return ("Playing")
+  }
+
+  styleImgAsDiv(src:string) {
+    const divStyle = {
+      backgroundImage: 'url(' + src + ')',
+    };
+    return (divStyle)
   }
 
   render() {
     return (
         <ul id="level-list">
         {
-          this.state.listl.map(level =>
-              <li key={level.id} className={this.div_score(level.rank)}>
-                <img className='avatar' src={level.avatar_location}></img>
-                <p>{level.name}</p>
-                <p>{this.render_score(level.rank)}</p>
-                {this.challenge_available(level.rank, level.id)}
+          this.state.listl.map(prank =>
+              <li key={prank.id} className={this.div_score(prank.rank)}>
+                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span className={this.renderStatus(prank.status)}></span></div>
+                <p>{prank.name}</p>
+                <p>{this.render_score(prank.rank)}</p>
+                {this.challenge_available(prank.rank, prank.id)}
               </li>
             )
         }

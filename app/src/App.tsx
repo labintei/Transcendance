@@ -1,12 +1,9 @@
 import React from 'react';
-import logo from './logo.svg';
 import './App.css';
 import PersonList from './component/PersonList';
 import LevelList from './component/LevelList';
 import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
-import { profile } from 'console';
-import { isPropertyAccessOrQualifiedName } from 'typescript';
 
 const components = {
   matching : PersonList,
