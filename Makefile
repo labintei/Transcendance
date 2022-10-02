@@ -70,8 +70,8 @@ clean				:	stop
 	docker system prune --volumes -f
 
 fclean				:	clean
-	rm -rf $(FRONT)/node_module
-	rm -rf $(BACK)/node_module
+	rm -rf $(FRONT)/node_modules
+	rm -rf $(BACK)/node_modules
 	rm -rf $(BACK)/dist
 	docker system prune -af
 
