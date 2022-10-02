@@ -10,14 +10,6 @@ export default function PongGame() {
 
   const getScore:any = useStore((state:any) => state.score);
 
-  // TODO:fix it
-  // useEffect(() => {
-
-  //   const elm:any = document.getElementsByClassName("menu")
-  //   console.log(elm);
-  //   elm.style = "display: none !important;"
-  //     }, [])
-
   return (
     <div className="App" tabIndex={0} >
 
