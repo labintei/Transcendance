@@ -1,0 +1,33 @@
+.Menu
+{
+    position: absolute;
+    top: 50%;
+    left:50%;
+    width:30%;
+    height:auto;
+    border-radius: 25px;
+    background-color: rgba(0, 0, 0, 0.837);
+    color:white;
+    text-align: center;
+    font-family: 'Courier New', Courier, monospace;
+    font-size: 60px;
+    font-weight: 600;
+    padding: 2rem;
+    transform: translate(-50%, -50%);
+    
+}
+
+.Menu li {
+    border:2px solid red;
+    border-radius: 25px;
+    outline: none;
+    margin:2rem;
+    padding:2rem;
+
+}
+
+.Menu li:hover {
+    background-color: aliceblue;
+    color:white;
+    cursor:pointer;
+}
