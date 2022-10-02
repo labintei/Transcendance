@@ -1,6 +1,5 @@
 import React from 'react';
 import axios from 'axios';
-import internal from 'stream';
 import './PlayerProfile.css';
 
 type Person = {
@@ -96,8 +95,7 @@ export default class PlayerProfile extends React.Component {
     else
         return (
           <>
-          <img className='avatar' src={this.state.player.avatar_location}>
-            
+          <img alt="avatar" className='avatar' src={this.state.player.avatar_location}>
           </img><button className='edit-button' onClick={() => this.setState({avatarEdit:true})}></button></>
         )
   }

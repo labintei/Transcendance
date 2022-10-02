@@ -75,9 +75,9 @@ export default class LevelList extends React.Component {
   }
 
   renderStatus (s:number) {
-    if (s == 0) {
+    if (s === 0) {
       return ("Offline")
-    } else if (s == 1)
+    } else if (s === 1)
       return ("Online")
     else
       return ("Playing")
