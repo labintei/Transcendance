@@ -80,7 +80,6 @@ services:
       - transcendence-network
     environment:
       - PORT=$WEBSITE_PORT
-      - REACT_APP_SERVER_PORT=$WEBSITE_PORT
     env_file:
       - .hostname.env
 
