@@ -10,45 +10,49 @@
 #                                                                              #
 # **************************************************************************** #
 
-NAME =	ft_transcendence
+SHELL			:=	/bin/bash
 
-FRONT =	./app
-BACK =	./back
+NAME			:=	ft_transcendence
 
-ENV =			.env
-SECRETENV =		.secret.env
-HOSTNAMEENV =	.hostname.env
+FRONT			:=	./app
+BACK			:=	./back
 
-SHELL := bash
+all				:	$(NAME)
 
-all:	$(NAME)
+$(NAME)			:	stop
+	docker-compose up --build || exit 0
 
-$(NAME):	hostname stop
-	@[ -f $(SECRETENV) ] || echo -e "$(SECRETENV) not found"
-	@[ -f $(ENV) ] || echo -e "$(ENV) not found"
-	docker-compose up --force-recreate --build || exit 0
-
-ip:
-	@hostname -I | cut -d' ' -f1
-
-hostname:
-	@echo "REACT_APP_SERVER_HOSTNAME=$(shell hostname)" > .hostname.env
-	@echo "Website address : http://$$(hostname):3001/"
-
-stop:
+stop			:	hostname varcheck
 	docker-compose down
 
-clean:	stop
+varcheck		:
+	@[ -f .env ] || (echo ".env not found" && exit 1)
+	@source .env && [ ! -z $$WEBSITE_PORT ] || (echo "error : env variable WEBSITE_PORT is not set" && exit 1)
+	@source .env && [ ! -z $$ADMINER_PORT ] || (echo "error : env variable ADMINER_PORT is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_DB ] || (echo "error : env variable POSTGRES_DB is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_USER ] || (echo "error : env variable POSTGRES_USER is not set" && exit 1)
+	@source .env && [ ! -z $$POSTGRES_PASSWORD ] || (echo "error : env variable POSTGRES_PASSWORD is not set" && exit 1)
+	@[ -f .secrets.env ] || (echo -e ".secrets.env not found" && exit 1)
+	@source .secrets.env && [ ! -z $$API42_UID ] || (echo "error : env variable API42_UID is not set" && exit 1)
+	@source .secrets.env && [ ! -z $$API42_SECRET ] || (echo "error : env variable API42_SECRET is not set" && exit 1)
+
+ip				:
+	@hostname -I | cut -d' ' -f1
+
+hostname		:
+	@echo "REACT_APP_SERVER_HOSTNAME=$(shell hostname)" > .hostname.env
+
+clean			:	stop
 	docker system prune --volumes -f
 
-fclean: clean
+fclean			:	clean
 	docker system prune -af
 
-re:		clean all
+re				:	clean all
 
-fre:	fclean all
+fre				:	fclean all
 
-list:
+list			:
 	@printf "\n\tcontainers\n"
 	@docker ps -a
 	@printf "\n\timages\n"
@@ -59,4 +63,4 @@ list:
 	@docker volume ls
 	@echo ;
 
-.PHONY: all ip hostname stop clean fclean re fre list
+.PHONY			:	all $(NAME) stop varcheck ip hostname clean fclean re fre list
