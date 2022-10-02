@@ -26,14 +26,14 @@ dev-db				:	stop
 	docker-compose run -p 5432:5432 db
 
 dev-back			:	hostname varcheck
-	npm --prefix $(BACK) install
-	@source .env && export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432					\
-	$(shell sed -e 's/ *#.*$$//' ./.hosname.env) $(shell sed -e 's/ *#.*$$//' ./.secrets.env)	\
+	npm --prefix $(BACK) install $(BACK)
+	@source .env && export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432				\
+	$(shell sed -e 's/ *#.*$$//' .hostname.env) $(shell sed -e 's/ *#.*$$//' .secrets.env)	\
 	&& npm --prefix $(BACK) run start
 
 dev-front			:	hostname varcheck
-	npm --prefix $(FRONT) install
-	@source .env && export PORT=$$WEBSITE_PORT $(shell sed -e 's/ *#.*$$//' ./.hosname.env)								\
+	npm --prefix $(FRONT) install $(front)
+	@source .env && export PORT=$$WEBSITE_PORT $(shell sed -e 's/ *#.*$$//' .hostname.env)	\
 	&& npm --prefix $(FRONT) run start
 
 stop				:	hostname varcheck
