@@ -65,6 +65,7 @@ hostname			:
 	@echo "REACT_APP_WEBSITE_HOSTNAME=$(shell hostname)" > .hostname.env
 	@source .env && echo "REACT_APP_WEBSITE_PORT=$$WEBSITE_PORT" >> .hostname.env
 	@echo "REACT_APP_WEBSITE_BASE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
+	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_BASE_URL"
 
 clean				:	stop
 	docker system prune --volumes -f
