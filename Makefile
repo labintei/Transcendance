@@ -25,18 +25,18 @@ $(NAME)				:	stop
 dev-db				:	stop
 	docker-compose run -p 5432:5432 db
 
-dev-back			:	hostname varcheck
+dev-back			:	envcheck hostname
 	npm --prefix $(BACK) install $(BACK)
 	@source .env && export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432				\
 	$(shell sed -e 's/ *#.*$$//' .hostname.env) $(shell sed -e 's/ *#.*$$//' .secrets.env)	\
 	&& npm --prefix $(BACK) run start
 
-dev-front			:	hostname varcheck
+dev-front			:	envcheck hostname
 	npm --prefix $(FRONT) install $(front)
 	@source .env && export PORT=$$WEBSITE_PORT $(shell sed -e 's/ *#.*$$//' .hostname.env)	\
 	&& npm --prefix $(FRONT) run start
 
-stop				:	hostname varcheck
+stop				:	envcheck hostname
 	docker-compose down
 
 package-rebuild		:	stop
@@ -46,22 +46,25 @@ package-rebuild		:	stop
 	docker cp back:/app/package-lock.json $(BACK)/package-lock.json
 	docker cp front:/app/package-lock.json $(FRONT)/package-lock.json
 
-varcheck			:	hostname
-	@source .env && [ ! -z $$ADMINER_PORT ] || (echo "error : env variable ADMINER_PORT is not set" && exit 1)
-	@source .env && [ ! -z $$POSTGRES_DB ] || (echo "error : env variable POSTGRES_DB is not set" && exit 1)
-	@source .env && [ ! -z $$POSTGRES_USER ] || (echo "error : env variable POSTGRES_USER is not set" && exit 1)
-	@source .env && [ ! -z $$POSTGRES_PASSWORD ] || (echo "error : env variable POSTGRES_PASSWORD is not set" && exit 1)
-	@[ -f .secrets.env ] || (echo -e ".secrets.env not found" && exit 1)
-	@source .secrets.env && [ ! -z $$API42_UID ] || (echo "error : env variable API42_UID is not set" && exit 1)
-	@source .secrets.env && [ ! -z $$API42_SECRET ] || (echo "error : env variable API42_SECRET is not set" && exit 1)
+envcheck			:
+	@[ -f .env ] || (echo ".env not found" && exit 1)
+	@source .env && exit_status=0;				\
+	[ ! -z $$WEBSITE_PORT ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable WEBSITE_PORT is not set" && exit 1) || exit_status=1;			\
+	[ ! -z $$ADMINER_PORT ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable ADMINER_PORT is not set" && exit 1) || exit_status=1;			\
+	[ ! -z $$POSTGRES_DB ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable POSTGRES_DB is not set" && exit 1) || exit_status=1;					\
+	[ ! -z $$POSTGRES_USER ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable POSTGRES_USER is not set" && exit 1) || exit_status=1;			\
+	[ ! -z $$POSTGRES_PASSWORD ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable POSTGRES_PASSWORD is not set" && exit 1) || exit_status=1;	\
+	[ ! -z $$API42_UID ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable API42_UID is not set" && exit 1) || exit_status=1;					\
+	[ ! -z $$API42_SECRET ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable API42_SECRET is not set" && exit 1) || exit_status=1;			\
+	[ $$exit_status -eq 1 ] && exit 1;			\
+	[ $$WEBSITE_PORT -gt 1024 ] || echo "[$(shell tput setaf 3)WARN$(shell tput sgr0)]	: env variable WEBSITE_PORT ($$WEBSITE_PORT) is <= 1024 and this port cannot be open on cluster sessions"
 
 ip					:
 	@hostname -I | cut -d' ' -f1
 
 hostname			:
 	@[ -f .env ] || (echo ".env not found" && exit 1)
-	@source .env && ([ ! -z $$WEBSITE_PORT ] || (echo "error : env variable WEBSITE_PORT is not set" && exit 1)) 		\
-	&& ([ $$WEBSITE_PORT -gt 1024 ] || echo "[$(shell tput setaf 3)WARNING$(shell tput sgr0)] : env variable WEBSITE_PORT ($$WEBSITE_PORT) is <= 1024 and this port cannot be open on cluster sessions")
+	@source .env && [ ! -z $$WEBSITE_PORT ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable WEBSITE_PORT is not set" && exit 1)
 	@echo "REACT_APP_WEBSITE_HOSTNAME=$(shell hostname)" > .hostname.env
 	@source .env && echo "REACT_APP_WEBSITE_PORT=$$WEBSITE_PORT" >> .hostname.env
 	@echo "REACT_APP_WEBSITE_BASE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
@@ -81,13 +84,13 @@ re					:	clean all
 fre					:	fclean all
 
 list				:
-	@printf "\n\tcontainers\n"
+	@printf "\n	containers\n"
 	@docker ps -a
-	@printf "\n\timages\n"
+	@printf "\n	images\n"
 	@docker images -a
-	@printf "\n\tnetworks\n"
+	@printf "\n	networks\n"
 	@docker network ls
-	@printf "\n\tvolumes\n"
+	@printf "\n	volumes\n"
 	@docker volume ls
 	@echo ;
 

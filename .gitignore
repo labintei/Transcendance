@@ -1,7 +1,6 @@
 
 # env
 .env
-.secrets.env
 .hostname.env
 
 # nvim
