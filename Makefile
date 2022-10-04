@@ -22,21 +22,29 @@ all					:	$(NAME)
 $(NAME)				:	stop
 	docker-compose up --build || exit 0
 
-dev-db				:	stop
+dev					:	stop
+	xterm -e $(MAKE) dev-db &
+	xterm -e $(MAKE) dev-back &
+	xterm -e $(MAKE) dev-front &
+
+dev-db				:
 	docker-compose run -p 5432:5432 db
 
-dev-back			:	envcheck hostname
+dev-back			:
 	npm --prefix $(BACK) install $(BACK)
-	@source .env && export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432				\
-	$(shell sed -e 's/ *#.*$$//' .hostname.env) $(shell sed -e 's/ *#.*$$//' .secrets.env)	\
+	export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432		\
+	$(shell sed -e 's/ *#.*$$//' .env)				\
+	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
 	&& npm --prefix $(BACK) run start
 
-dev-front			:	envcheck hostname
-	npm --prefix $(FRONT) install $(front)
-	@source .env && export PORT=$$WEBSITE_PORT $(shell sed -e 's/ *#.*$$//' .hostname.env)	\
+dev-front			:
+	npm --prefix $(FRONT) install $(FRONT)
+	source .env && export PORT=$$WEBSITE_PORT REACT_APP_API42_UID=$$API42_UID	\
+	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
 	&& npm --prefix $(FRONT) run start
 
-stop				:	envcheck hostname
+stop				:
+	killall -eqv -SIGINT node || exit 0
 	docker-compose down
 
 package-rebuild		:	stop
@@ -62,9 +70,7 @@ envcheck			:
 ip					:
 	@hostname -I | cut -d' ' -f1
 
-hostname			:
-	@[ -f .env ] || (echo ".env not found" && exit 1)
-	@source .env && [ ! -z $$WEBSITE_PORT ] || (echo "[$(shell tput setaf 1)ERROR$(shell tput sgr0)]	: env variable WEBSITE_PORT is not set" && exit 1)
+hostname			:	envcheck
 	@echo "REACT_APP_WEBSITE_HOSTNAME=$(shell hostname)" > .hostname.env
 	@source .env && echo "REACT_APP_WEBSITE_PORT=$$WEBSITE_PORT" >> .hostname.env
 	@echo "REACT_APP_WEBSITE_BASE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
