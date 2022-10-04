@@ -19,10 +19,10 @@ BACK				:=	./back
 
 all					:	$(NAME)
 
-$(NAME)				:	stop
+$(NAME)				:	stop envcheck
 	docker-compose up --build || exit 0
 
-dev					:	stop
+dev					:	stop envcheck
 	xterm -e $(MAKE) dev-db &
 	xterm -e $(MAKE) dev-back &
 	xterm -e $(MAKE) dev-front &
@@ -30,14 +30,14 @@ dev					:	stop
 dev-db				:
 	docker-compose run -p 5432:5432 db
 
-dev-back			:
+dev-back			:	envcheck
 	npm --prefix $(BACK) install $(BACK)
 	export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432		\
 	$(shell sed -e 's/ *#.*$$//' .env)				\
 	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
-	&& npm --prefix $(BACK) run start
+	&& npm --prefix $(BACK) run start:dev
 
-dev-front			:
+dev-front			:	envcheck
 	npm --prefix $(FRONT) install $(FRONT)
 	source .env && export PORT=$$WEBSITE_PORT REACT_APP_API42_UID=$$API42_UID	\
 	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
