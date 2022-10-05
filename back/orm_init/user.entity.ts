@@ -1,52 +1,6 @@
+
 import internal from 'stream';
 import { Entity, Column, PrimaryGeneratedColumn, PrimaryColumn, OneToOne, JoinColumn, OneToMany, ManyToMany, ManyToOne, JoinTable } from 'typeorm';
-/** faire touts les imports */
-
-
-/**
- * Les Differentes Options
- * eager : (bool) : la relation sera load dans la main entity en utilisant la methode find* ou QueryBuilder de l entitee
- * cascade; (bool) (insert | update) si vrai l objet en relation sera inseree ou updated dans la database
- * onDELETE " RESTRICT | CASCADE | SET NULL" specifiies comment les foreign key sont delete oar rapport a l objet referenceees
- * nullable: (bool) NULL , NOT NULL
- * orphaneRowAction: "nullify"| "delete"|"softdelete" parent saved sans enfants "pas besoin"
- */
-
-/** Les Differentes options
- * @JoinCollumn , Quel cote de la colone est la colone de jointure vers une clee etrangere
- * Permet de personnaliser nom de colonne de jointure et nom de colonne referencee
- */
-
-/** 
-@ManyToMany(type => a)
-@JoinTable({
-  name: "table_jonction", // table name pour la jonction
-  joinColumn: {
-    name: "",
-    referencedColumnName: "id"
-  },
-  inverseJoinColumn: {
-    name: "a",
-    referencedColumnName: "user_ID"
-  } 
-})
-as: A[];
-*/
-
-
-/** pour simplifier les choses 
- * 
- * Les clees etrangeres ne seront jamais du cote de user
- * toutes les modif se feront au niveau de user
- * 
- * type de relation par rapport a user
- * 
- * OneToMany (user:id/chat:owner_id) ManyToOne
- * OneToMany (message_chat)
- * ManyToMany (user:id)(friend,block,messages)
- * 
- * 
-*/
 
 @Entity()
 export class user {
@@ -74,43 +28,52 @@ export class user {
   @Column("int")
   rank: number;
 
-  /** Je gere les clees etrangeres ici */
-  /** referenced ColumnName marche comme references */
-  @ManyToOne(type => match_hystory, { cascade: ["update", "insert", "remove", "soft-remove", "recover"],})
-  @JoinColumn([
-    { name: "id", referencedColumnName: "win_id"},
-    { name: "id", referencedColumnName: "user_id"}
-  ]) // decorateurs optioinel sauf pour @OneToOne
-  matchs: match_hystory;
-  
-  @ManyToMany(() => match_hystory, (match_hystory) => match_hystory.win_id)
-  matchs_win: match_hystory[];
-  @ManyToMany(() => match_hystory, (match_hystory) => match_hystory.los_id)
-  matchs_lose: match_hystory[];
-  /** Je me demande si je peut faire ca */
-  /** @ManytoMany(() => match_hystory, (match_hystory) => match_hystory.los_id , (match_hystory) => match_hystory.win_id)
-   *  matchs: match_hystory[];
-   */
-  // REFAIRE LA MEME CHOSE EN INVERSEE
 
-  @OneToMany(() => friend, (friend) => friend.user_id, (friend) =>)
+  /** match hystory */
+  @ManyToMany(
+    () => match_hystory, (match_hystory) => match_hystory.win_id, (match_hystory) => match_hystory.los_id
+  )
+  matchs: match_hystory[]
 
-  @OneToMany(() => chat, (chat) => chat.owner_id)
-  chats: chat[];
+  @ManyToMany(
+    () => friend, (friend) => friend.user_id, (friend) => friend.friend_id)
+  friends: friend[]
 
-  // ok la foreign key n est que d un seul cote
+  @ManyToMany(
+    () => block, (block) => block.user_id, (block) => block.block_id
+  )
+  blocks: block[]
+
+  /** CHAT OWNER */
+  @OneToMany(
+    () => chat,
+    chat => chat.owner_id
+  )
+  chats: chat[]
+
+  @OneToMany(
+    () => chat_connect,
+    chat_connect => chat.user_id
+  )
+  connections: chat_connect[]
+
+  @OneToMany(
+    () => message,
+    message => (message.sender_id),
+    message => (message.user_id)
+  )
+  message_direct: message[]
+
+  @OneToMany(
+    () => c_message,
+    c_message => (c_message.sender_id)
+  )
+    chats_message: c_message[]
 }
 
 @Entity()
 export class match_hystory {
-    
-    @OneToOne(() => user, (user) => user.id)
-    @JoinColumn()
-    win_id: user;
-
-    @OneToOne(() => user, (user) => user.id)
-    @JoinColumn()
-    los_id: user;
+    @PrimaryColumn
 
     @Column("char")
     win_score: number;
@@ -120,26 +83,62 @@ export class match_hystory {
     rank_up: boolean;
     @Column()
     time: Date;
+    @ManyToMany(()=> user)
+    @JoinTable({
+      name: "win_id",
+      referencedColumnName: "id"
+    },
+    inverseJoinColumn: {
+      name: "user",
+      referencedColumnName: "id"
+    })
+    @JoinTable({
+      name: "los_id",
+      referencedColumnName: "id"
+    })
+    match_users: user[]
 }
 
 @Entity()
 export class friend {
-  @Column()
-  user_id: number;
-  @Column()
-  friend_id:number;
-}
 
-@Entity()
-export class block {
-  @Column()
-  user_id: number;
-  @Column()
-  block_id:number;
-}
+    @PrimaryGeneratedColumn()
+    id: number;
+
+    @ManyToMany(() => user)
+    @JoinTable({
+      name : "user_id",
+      referencedColumnName: "id"
+    })
+    @JoinTable({
+      name: "friend_id",
+      referencedColumnName: "id"
+    },
+    inverseJoinColumn: {
+      name: "user",
+      referencedColumnName: "id"
+    })
+    friend_users: user[]
+  }
+
+  @Entity()
+  export class block {
+  
+      @PrimaryGeneratedColumn()
+      id: number;
+  
+      @ManyToMany(() => user)
+      @JoinTable()
+      user_id : user[];
+
+      @ManyToMany(() => user)
+      @JoinTable()
+      block_id : user[];
+    }
 
 @Entity()
 export class chat {
+
   @PrimaryGeneratedColumn()
   id: number;
   @Column("varchar", {length : 30,
@@ -154,38 +153,57 @@ export class chat {
     () => user,
     user => user.id
   )
-  @JoinColumn({
-    name: 'owner_id'
-  })
-  user: user
+  owner_id: user;
+
+  @OneToMany(() => chat_connect, (chat_connect) => (chat_connect.chat_id))
+  connections_chat : chat_connect[];
+
 }
 
 @Entity()
 export class chat_connect {
-  @Column()
-  chat_id : number;
-  @Column()
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => chat, (chat) => (chat.id))
+  chat_id: chat;
+
+  @ManyToOne(() => user, (user) => (user.id))
   user_id : number;
+
   @Column("char")
   status : number;
 }
 
 @Entity()
 export class message {
-  @Column()
-  sender_id : number;
-  @Column()
-  user_id : number;
+
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => user, (user) => (user.id))
+  user_id: user;
+
+  @ManyToOne(() => user, (user) => (user.id))
+  sender_id: user;
+
   @Column()
   msg : string;
 }
 
 @Entity()
 export class c_message {
-  @Column()
-  sender_id : number;
-  @Column()
-  chat_id : number;
+  
+  @PrimaryGeneratedColumn()
+  id: number;
+
+  @ManyToOne(() => user, (user) => (user.id))
+  sender_id: user;
+
+  @ManyToOne(() => chat, (chat) => (chat.id))
+  chat_id: user;
+
   @Column()
   msg : string;
 }
