@@ -9,26 +9,36 @@ export enum MatchStatus {
 
 @Entity()
 export class Match {
-	@PrimaryGeneratedColumn({
-		type: 'int'
-	})
+
+	@PrimaryGeneratedColumn()
 	id: number;
 
-	@CreateDateColumn({ type: 'timestamptz' })
+	@CreateDateColumn({
+		type: 'timestamptz'
+	})
 	date: Date;
 
-	@Column({ type: 'enum', enum: MatchStatus, default: MatchStatus.MATCHED })
+	@Column({
+		type: 'enum',
+		enum: MatchStatus,
+		default: MatchStatus.MATCHED
+	})
 	status: MatchStatus;
 
-	@Column({ type: 'smallint' })
+	@Column({
+		type: 'smallint'
+	})
 	score1: number;
 
-	@Column({ type: 'smallint' })
+	@Column({
+		type: 'smallint'
+	})
 	score2: number;
 
-	@ManyToOne(() => User, (user1) => (user1.username))
+	@ManyToOne(() => User, (user) => (user.username))
 	user1: User;
 
-	@ManyToOne(() => User, (user2) => (user2.username))
+	@ManyToOne(() => User, (user) => (user.username))
 	user2: User;
+	
 }

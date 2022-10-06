@@ -1,20 +1,19 @@
-import { Entity, Column, PrimaryColumn, OneToMany, ManyToMany, ManyToOne, JoinTable } from 'typeorm';
+import { Entity, Column, PrimaryColumn, OneToMany, ManyToOne } from 'typeorm';
 
 @Entity()
 export class User {
+
 	@PrimaryColumn({
 		type: 'varchar',
 		length: 24,
-		unique: true,
-		nullable: false
+		unique: true
 	})
 	username: string;
 
 	@Column({
 		type: 'varchar',
 		length: 8,
-		unique: true,
-		nullable: false
+		unique: true
 	})
 	ft_login: string;
 
@@ -24,15 +23,22 @@ export class User {
 	})
 	twoFA: string;
 
-	@Column({
-		type: 'float'
-	})
+	@Column({type: 'float' })
 	rank: number;
 
-	@OneToMany(() => User, (friends) => (friends.username))
+	@Column({	type: 'int' })
+	victories: number;
+
+	@Column({	type: 'int' })
+	defeats: number;
+
+	@Column({ type: 'int' })
+	draws: number;
+
+	@OneToMany(() => User, (friend) => (friend.username))
 	friends: Promise<User[]>
 
-	@OneToMany(() => User, (blockeds) => (blockeds.username))
+	@OneToMany(() => User, (blocked) => (blocked.username))
 	blockeds: Promise<User[]>
 }
 
