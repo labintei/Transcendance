@@ -26,9 +26,13 @@ dev					:	stop envcheck
 	xterm -e $(MAKE) dev-db &
 	xterm -e $(MAKE) dev-back &
 	xterm -e $(MAKE) dev-front &
+	xterm -e $(MAKE) dev-adminer &
 
 dev-db				:
 	docker-compose run -p 5432:5432 db
+
+dev-adminer			:	envcheck
+	@source .env && docker-compose run -p $$ADMINER_PORT:8080 adminer
 
 dev-back			:	envcheck
 	npm --prefix $(BACK) install $(BACK)
