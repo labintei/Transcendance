@@ -81,7 +81,7 @@ export default class MatchList extends React.Component {
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img src="/challenge_unavailable.png"></img>)
+        return (<img alt="challenge unvailable" src="/challenge_unavailable.png"></img>)
   }
   
   render() {

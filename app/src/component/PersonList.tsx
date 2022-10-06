@@ -127,6 +127,7 @@ export default class PersonList extends React.Component {
     return (
         <>
         <h2>People waiting for a opponent : {this.state.pwait}</h2>
+        <h2>{(this.state.waiting ? "Matching you with people..." : "Challenge them !")}</h2>
         <button className="matching-button" onClick={() => this.change_waiting()}>{(this.state.waiting ? "Stop" : "Start") + " Matching"}</button>
         <h3>Friends :</h3>
         {
