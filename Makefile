@@ -32,14 +32,14 @@ dev-db				:
 
 dev-back			:	envcheck
 	npm --prefix $(BACK) install $(BACK)
-	export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432		\
+	@export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432		\
 	$(shell sed -e 's/ *#.*$$//' .env)				\
 	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
 	&& npm --prefix $(BACK) run start:dev
 
 dev-front			:	envcheck
 	npm --prefix $(FRONT) install $(FRONT)
-	source .env && export PORT=$$WEBSITE_PORT REACT_APP_API42_UID=$$API42_UID	\
+	@source .env && export PORT=$$WEBSITE_PORT REACT_APP_API42_UID=$$API42_UID	\
 	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
 	&& npm --prefix $(FRONT) run start
 
