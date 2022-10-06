@@ -62,13 +62,13 @@ export class user {
     message => (message.sender_id),
     message => (message.user_id)
   )
-  message_direct: message[]
+  message_d: message[]
 
   @OneToMany(
     () => c_message,
     c_message => (c_message.sender_id)
   )
-    chats_message: c_message[]
+  message_c: c_message[]
 }
 
 @Entity()
@@ -83,20 +83,15 @@ export class match_hystory {
     rank_up: boolean;
     @Column()
     time: Date;
-    @ManyToMany(()=> user)
-    @JoinTable({
-      name: "win_id",
-      referencedColumnName: "id"
-    },
-    inverseJoinColumn: {
-      name: "user",
-      referencedColumnName: "id"
-    })
-    @JoinTable({
-      name: "los_id",
-      referencedColumnName: "id"
-    })
-    match_users: user[]
+
+    @ManyToMany(()=> user, (user) => user.matchs)
+    @JoinTable()
+    win_id: user[]
+
+    @ManyToMany(() => user, (user) => user.matchs)
+    @JoinTable()
+    los_id: user[]
+	
 }
 
 @Entity()
@@ -105,21 +100,14 @@ export class friend {
     @PrimaryGeneratedColumn()
     id: number;
 
-    @ManyToMany(() => user)
-    @JoinTable({
-      name : "user_id",
-      referencedColumnName: "id"
-    })
-    @JoinTable({
-      name: "friend_id",
-      referencedColumnName: "id"
-    },
-    inverseJoinColumn: {
-      name: "user",
-      referencedColumnName: "id"
-    })
-    friend_users: user[]
-  }
+    @ManyToMany(() => user, (user) => (user.friends))
+    @JoinTable()
+    user_id: user[]
+
+    @ManyToMany(() => user, (user) => (user.friends))
+    @JoinTable()
+    friend_id: user[],
+}
 
   @Entity()
   export class block {
@@ -127,36 +115,34 @@ export class friend {
       @PrimaryGeneratedColumn()
       id: number;
   
-      @ManyToMany(() => user)
+      @ManyToMany(() => user, (user) => (user.blocks))
       @JoinTable()
       user_id : user[];
 
-      @ManyToMany(() => user)
+      @ManyToMany(() => user, (user) => (user.blocks))
       @JoinTable()
       block_id : user[];
-    }
+   }
 
 @Entity()
 export class chat {
 
-  @PrimaryGeneratedColumn()
-  id: number;
-  @Column("varchar", {length : 30,
+  @PrimaryColumn("varchar", {length : 30,
     nullable : false,
     unique : true})
-  name: string;
+  id: string;
 
   @Column("char")
   status: number;
 
   @ManyToOne(
     () => user,
-    user => user.id
+    user => user.chats
   )
   owner_id: user;
 
   @OneToMany(() => chat_connect, (chat_connect) => (chat_connect.chat_id))
-  connections_chat : chat_connect[];
+  connections_chats : chat_connect[];
 
 }
 
@@ -166,11 +152,11 @@ export class chat_connect {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => chat, (chat) => (chat.id))
+  @ManyToOne(() => chat, (chat) => (chat.conections_chats))
   chat_id: chat;
 
-  @ManyToOne(() => user, (user) => (user.id))
-  user_id : number;
+  @ManyToOne(() => user, (user) => (user.connections))
+  user_id : user;
 
   @Column("char")
   status : number;
@@ -182,10 +168,11 @@ export class message {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => user, (user) => (user.id))
+
+  @ManyToOne(() => user, (user) => (user.message_d))
   user_id: user;
 
-  @ManyToOne(() => user, (user) => (user.id))
+  @ManyToOne(() => user, (user) => (user.message_d))
   sender_id: user;
 
   @Column()
@@ -198,10 +185,10 @@ export class c_message {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @ManyToOne(() => user, (user) => (user.id))
+  @ManyToOne(() => user, (user) => (user.message_c))
   sender_id: user;
 
-  @ManyToOne(() => chat, (chat) => (chat.id))
+  @ManyToOne(() => chat, (chat) => (chat.message_c))
   chat_id: user;
 
   @Column()
