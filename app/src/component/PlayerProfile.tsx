@@ -20,10 +20,11 @@ type State = {
   query:string
   query2:File | null
   avatarEdit:boolean
+  bgChoice:number
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
+  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, bgChoice:0};
 
   componentDidMount() {
     axios.get(`https://jsonplaceholder.typicode.com/users`)
@@ -100,6 +101,34 @@ export default class PlayerProfile extends React.Component {
         )
   }
 
+  styleImgAsDiv(src:string) {
+    const divStyle = {
+      backgroundImage: 'url(' + src + ')',
+    };
+    return (divStyle)
+  }
+
+  change_background(choice:number) {
+    this.setState({bgChoice:choice});
+  }
+
+  create_button (num:number) {
+    let img:string = "";
+    let status:string = this.state.bgChoice === num ? "selected":"not-select";
+    if (num === 0) {
+      img = '/space_choice.jpg';
+    } else if (num === 1) {
+      img = '/blue_sky_choice.jpg';
+    }
+
+    return (
+      <button className={status}
+        style={this.styleImgAsDiv(img)}
+        onClick={() => this.change_background(num)}>
+      </button>
+    )
+  }
+
   render() {
     return (
         <>
@@ -123,7 +152,13 @@ export default class PlayerProfile extends React.Component {
                 <img className="image" src="https://cdn1.iconfinder.com/data/icons/business-rounded-outline-fill-style/64/illustration_Personal_Development-256.png" alt="Solo Progress" />
                 <p>{this.state.player.max_level}</p>
             </li>
-        </ul></>
+        </ul>
+        <h3>Choose your in-game background :</h3>
+        <div className='bgd-buttons'>
+          {this.create_button(0)}
+          {this.create_button(1)}
+        </div>
+        </>
 
     )
   }

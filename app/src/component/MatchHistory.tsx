@@ -5,6 +5,8 @@ import './MatchList.css';
 
 type Match = {
     id: number;
+    idopp: number;
+    statusopp: number;
     name: string;
     score1: number;
     score2: number;
@@ -26,12 +28,12 @@ export default class MatchList extends React.Component {
         let listtmp: Array<Match> = [];   
         for (var match of matchs) {
             let one: Match = {
-              id: 0, name: '', score1:Math.trunc(Math.random() * 5), score2:Math.trunc(Math.random() * 5)
+              id: 0, idopp: 0, statusopp: Math.trunc(Math.random() * 3), name: '', score1:Math.trunc(Math.random() * 5), score2:Math.trunc(Math.random() * 5)
             };
             if (match.id !== undefined && match.name !== undefined) {
                 one.id = match.id;
                 one.name = match.name;
-
+                
                 listtmp.push(one);
             }
         }
@@ -57,6 +59,31 @@ export default class MatchList extends React.Component {
       return ("Draw-div")
   }
 
+  styleImgAsDiv(src:string) {
+    const divStyle = {
+      backgroundImage: 'url(' + src + ')',
+    };
+    return (divStyle)
+  }
+
+  renderStatus (s:number) {
+    if (s === 0) {
+      return ("Offline")
+    } else if (s === 1)
+      return ("Online")
+    else
+      return ("Playing")
+  }
+
+  challenge_available(status:number, id:number) {
+    if (status === 1)
+      return (
+        <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
+      )
+    else
+        return (<img alt="challenge unvailable" src="/challenge_unavailable.png"></img>)
+  }
+  
   render() {
     return (
         <ul id="match-list">
@@ -72,7 +99,8 @@ export default class MatchList extends React.Component {
                 <div className={this.render_status(match.score2, match.score1)}>
                   <p className='score2'>{match.score2}</p>
                   <p>{match.name}</p>
-                  <img src={defaultavatar} alt="avatar"></img>
+                  <div className='avatar' style={this.styleImgAsDiv(defaultavatar)}><span className={this.renderStatus(match.statusopp)}></span></div>
+                
                 </div>
             </li>
             )
