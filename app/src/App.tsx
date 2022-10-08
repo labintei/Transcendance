@@ -5,7 +5,7 @@ import LevelList from './component/LevelList';
 import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
 import PongGame from './Game/src/PongGame';
-import { Outlet, Link, useNavigate } from "react-router-dom";
+import { Outlet, Link, useNavigate, useParams, useLocation } from "react-router-dom";
 
 const components = {
   matching: PersonList,
@@ -18,16 +18,19 @@ const components = {
 
 function App () {
   const navigate = useNavigate();
+  const location = useLocation();
+
+  console.log(location.pathname)
 
   return (
     <div className="App">
-      <menu>
+     { location.pathname != "/game" &&  <menu>
         <li><button onClick={() => {navigate("matching")}}>Matching</button></li>
         <li><button onClick={() => {navigate("leaderboard")}}>LeaderBoard</button></li>
         <li><button onClick={() => {navigate("match-history")}}>History</button></li>
         <li><button onClick={() => {navigate("profile")}}>Profile</button></li>
         <li><button onClick={() => {navigate("game")}}>game</button></li>
-      </menu>
+      </menu> }
       <div className="content">
         <Outlet />
       </div>
