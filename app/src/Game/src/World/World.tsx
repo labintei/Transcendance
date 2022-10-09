@@ -3,7 +3,7 @@ import { CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import * as React from 'react'
 import { useRef, useState } from 'react'
-import { Canvas, useFrame, extend, useThree, } from '@react-three/fiber'
+import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
 import Box from './Components/Box1'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -19,9 +19,13 @@ import  KeyboardControls  from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
+import { Sky } from "@react-three/drei";
+import { Water } from "three/examples/jsm/objects/Water.js";
+import waterimg from "./waternormals.png"
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
+extend({ Water });
 
 declare global {
   namespace JSX {
@@ -30,6 +34,35 @@ declare global {
     }
   }
 }
+
+function Ocean() {
+  const ref:any = useRef()
+  const gl = useThree((state) => state.gl)
+  const waterNormals = useLoader(THREE.TextureLoader, waterimg)
+  waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping
+  const geom = React.useMemo(() => new THREE.PlaneGeometry(10000, 10000), [])
+  const config = React.useMemo(
+    () => ({
+      textureWidth: 512,
+      textureHeight: 512,
+      waterNormals,
+      sunDirection: new THREE.Vector3(),
+      sunColor: 0xffffff,
+      waterColor: 0x001e0f,
+      distortionScale: 3.7,
+      fog: false,
+      // @ts-ignore
+      format: gl.encoding
+    }),
+    [waterNormals]
+  )
+
+  console.log(ref)
+  useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
+  // @ts-ignore
+  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -50, 0]}  />
+}
+
 
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
@@ -99,7 +132,20 @@ export default function World(props: any) {
       <pointLight position={[-10, -10, -10]} />
       <Box1 position={[0, 0, 5]} />
       <Sphere />
-      <SkyBox />
+      <Ocean />
+      {/* <SkyBox /> */}
+      <Sky
+            //  distance={450000}
+             sunPosition={[5, 1, 8]}
+             inclination={0}
+             azimuth={0.25}
+             rayleigh={6}
+             turbidity={8}
+             mieCoefficient={0.005}
+             mieDirectionalG={0.8}
+             distance={3000}
+             {...props}
+         />
       <Box2 position={[0, 0, -5]}/>
       <Plane position={[0, -0.5, 0]} />
     </Canvas>
