@@ -19,7 +19,7 @@ export default function PongGame(props: any) {
   return (
     <div className="App" tabIndex={0} >
 
-      <div className='info'>THE 3D 42 PONG GAME</div>
+      {/* <div className='info'>THE 3D 42 PONG GAME</div> */}
      <World />
     <div className='score'>
       <div className='elem'>

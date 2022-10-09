@@ -33,3 +33,31 @@
     color:rgb(111, 42, 42);
     cursor:pointer;
 }
+
+.wrapper {
+    display: flex;
+    justify-content: space-evenly;
+    text-align: center;
+    /* padding:1rem; */
+}
+
+.wrapper .col {
+    /* border:1px solid red; */
+    width: 45%;
+    cursor:pointer;
+}
+
+.col h2 {
+    font-size: x-large;
+}
+
+.col:hover img{
+    border:2px solid red;
+}
+
+.col img {
+    border-radius: 15px;
+    width: 100%;
+    height: auto;
+    object-fit: cover;
+}

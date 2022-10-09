@@ -15,13 +15,13 @@ import i3 from "../World/Components/Skybox/corona_up.png"
 import i4 from "../World/Components/Skybox/corona_dn.png"
 import i5 from "../World/Components/Skybox/corona_rt.png"
 import i6 from "../World/Components/Skybox/corona_lf.png"
-import  KeyboardControls  from "../Keyboard/KeyboardControl"
+import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Sky } from "@react-three/drei";
+import { Cloud, Sky, Sparkles } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
-import waterimg from "./waternormals.png"
+import waterimg from "./Textures/waternormals.png"
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -36,7 +36,7 @@ declare global {
 }
 
 function Ocean() {
-  const ref:any = useRef()
+  const ref: any = useRef()
   const gl = useThree((state) => state.gl)
   const waterNormals = useLoader(THREE.TextureLoader, waterimg)
   waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping
@@ -60,10 +60,10 @@ function Ocean() {
   console.log(ref)
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
   // @ts-ignore
-  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]}  />
+  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]} />
 }
 
-
+// TODO: lock zoom and unzoom
 const CameraControls = () => {
   // Get a reference to the Three.js Camera, and the canvas html element.
   // We need these to setup the OrbitControls component.
@@ -119,33 +119,42 @@ function SkyBox() {
 export default function World(props: any) {
 
   // const getDirection:any = useStore((state:any) => state.controls);
-
+  const map = useStore((s: any) => s.map)
   // console.log(getDirection)
   return (
     <Canvas
       camera={{ position: [0, 3, 7] }}>
       <CameraControls />
-      <KeyboardControls/>
+      <KeyboardControls />
       <ambientLight intensity={0.5} />
       <directionalLight position={[0, 0, 5]} color="red" />
       <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
       <pointLight position={[-10, -10, -10]} />
       <Box1 position={[0, 0, 5]} />
       <Sphere />
+
+      { map === "space" && 
+      <SkyBox /> 
+      }
+      { map === "sky" &&
+      <>
       <Ocean />
-      {/* <SkyBox /> */}
-      <Sky
-             sunPosition={[0, 1, 8]}
-             inclination={10}
-             azimuth={125}
-             rayleigh={60}
-             turbidity={100}
-             mieCoefficient={0.1}
-             mieDirectionalG={0.8}
-             distance={3000}
-             {...props}
-         />
-      <Box2 position={[0, 0, -5]}/>
+       <Sky
+        sunPosition={[0, 1, 8]}
+        inclination={10}
+        azimuth={125}
+        rayleigh={60}
+        turbidity={100}
+        mieCoefficient={0.1}
+        mieDirectionalG={0.8}
+        distance={3000}
+        {...props}
+      />
+      </>
+
+      }
+
+      <Box2 position={[0, 0, -5]} />
       <Plane position={[0, -0.5, 0]} />
     </Canvas>
   )
