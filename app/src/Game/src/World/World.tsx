@@ -60,7 +60,7 @@ function Ocean() {
   console.log(ref)
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
   // @ts-ignore
-  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -50, 0]}  />
+  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]}  />
 }
 
 
@@ -135,13 +135,12 @@ export default function World(props: any) {
       <Ocean />
       {/* <SkyBox /> */}
       <Sky
-            //  distance={450000}
-             sunPosition={[5, 1, 8]}
-             inclination={0}
-             azimuth={0.25}
-             rayleigh={6}
-             turbidity={8}
-             mieCoefficient={0.005}
+             sunPosition={[0, 1, 8]}
+             inclination={10}
+             azimuth={125}
+             rayleigh={60}
+             turbidity={100}
+             mieCoefficient={0.1}
              mieDirectionalG={0.8}
              distance={3000}
              {...props}
