@@ -39,22 +39,29 @@ export default function Sphere() {
     ref.current.position.x += xangle
     var sphereXInt = Math.round(ref.current.position.x)
     
+    // ? DESCELERATION
+    if (zdirection > 0.1)
+      zdirection -= 0.005
+    if (zdirection < (-0.1))
+      zdirection += 0.005;
+
     //! Collision with a box
     // console.log(sphereZ)
     // console.log(sphereX)
     // console.log(box1.current.position.z)
     // console.log(box1X)
+      
     if (sphereZ === box1.current.position.z &&
       ((sphereX >= (box1X - good_width)) && 
       (sphereX <= (box1X + good_width))))
     {
-      zdirection = -0.1;
+      zdirection = -0.3;
     }
     if (sphereZ == box2.current.position.z &&
       ((sphereX >= (box2X - good_width)) && 
       (sphereX <= (box2X + good_width))))
     {
-      zdirection = +0.1;
+      zdirection = +0.3;
       // xangle = generateRandomFloatInRange(0, 0.05)
     }
     //! Collision with border

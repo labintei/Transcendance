@@ -10,7 +10,6 @@ import {
 import { PivotControls } from "@react-three/drei";
 
 
-
 export default function Plane(props: JSX.IntrinsicElements['mesh']) {
   // This reference will give us direct access to the THREE.Mesh object
   const ref = useRef<THREE.Mesh>(null!)
@@ -47,10 +46,10 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
       onPointerOut={(event) => hover(false)}>
       <boxGeometry args={[10, 0.5, 10]} />
       <meshBasicMaterial 
-      color={'black'} 
-      // attach="material"
+      // color={'black'} 
+      attach="material"
       // mirror effect
-      // envMap={cubeCamera.renderTarget.texture}
+      envMap={cubeCamera.renderTarget.texture}
       />
     </mesh>
 </PivotControls>
