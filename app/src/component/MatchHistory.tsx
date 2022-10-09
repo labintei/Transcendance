@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-
+import {defaultavatar, challengeimg} from "./const";
 
 type Match = {
     id: number;
@@ -15,8 +15,6 @@ type Match = {
 type State = {
   listp:Array<Match>
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 export default class MatchList extends React.Component {
   state:State= {listp:[]};

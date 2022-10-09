@@ -1,6 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerProfile.css';
+import {defaultavatar} from "./const";
+import { useStore } from 'Game/src/State/state';
 
 type Person = {
     name: string;
@@ -10,8 +12,6 @@ type Person = {
     defeats:number;
     max_level:number;
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 const dflt:Person = {name: '', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
 
 type State = {
@@ -24,23 +24,17 @@ type State = {
 }
 
 export default class PlayerProfile extends React.Component {
+  username:any = useStore((state:any) => state.profile.username);
   state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, bgChoice:0};
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
-      .then(res => {
-        const persons = res.data;
-        let person = persons.at(0);
-        let one: Person = dflt;
-        if (person.id !== undefined && person.name !== undefined) {
-            one.rank = person.id;
-            one.name = person.name;
-        }
-        if (person.avatar_location !== undefined)
-          one.avatar_location = person.avatar_location;
-        this.setState({player: one});
-        console.log(this.state);
-      })
+    let player:Person = dflt;
+    const username:string = useStore((state:any) => state.profile.username);
+    const avatar_location:string = useStore((state:any) => state.profile.avatar_location);
+
+    player.name = username;
+    player.avatar_location = avatar_location;
+    this.setState({player:player});
   }
 
   nameFormat(editing:boolean, name:string) {
@@ -68,6 +62,7 @@ export default class PlayerProfile extends React.Component {
     let temp:Person = this.state.player;
     temp.name = this.state.query;
     this.setState({player:temp, nameEdit:false});
+    useStore((store:any) => store.changeUsername(temp));
   }
 
   changeAvatar() {

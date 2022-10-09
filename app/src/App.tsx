@@ -21,7 +21,8 @@ function App () {
   const location = useLocation();
 
   console.log(location.pathname)
-
+  if (location.pathname == '/')
+    navigate("matching");
   return (
     <div className="App">
      { location.pathname != "/game" &&  <menu>
