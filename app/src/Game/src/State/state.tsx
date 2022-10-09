@@ -8,6 +8,7 @@ export const useStore = create((set,get) => {
   return {
   set,
   get,
+  map: "space",
   gameReady:false,
   votes: 0,
   score: [0,0],
@@ -25,7 +26,8 @@ export const useStore = create((set,get) => {
   addBox: (box:any) => set((state:any) => ({ box1: [state.box[0] + box, state.box[1], state.box[2]] })),
   setReady: () => set((state:any) => ({ gameReady: true })),
   setNotReady: () => set((state:any) => ({ gameReady: false })),
-  setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]}))
+  setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]})),
+  setMap: (name:any) => set((state:any) => ({map: name}))
  }
 }
 

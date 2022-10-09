@@ -17,10 +17,8 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
   const myMesh = React.useRef() as RefObject<any>;
 
-  console.log(myMesh)
   const getDirection: any = useStore((state: any) => state.controls);
-
-
+  
   useFrame((state, delta) => {
     if (getDirection.left === true) {
       box.current.position.x -= 0.2

@@ -51,13 +51,13 @@ export default function Sphere() {
     // console.log(box1.current.position.z)
     // console.log(box1X)
       
-    if (sphereZ === box1.current.position.z &&
+    if ((sphereZ === (box1.current.position.z - 1)) &&
       ((sphereX >= (box1X - good_width)) && 
       (sphereX <= (box1X + good_width))))
     {
       zdirection = -0.3;
     }
-    if (sphereZ == box2.current.position.z &&
+    if (sphereZ === box2.current.position.z &&
       ((sphereX >= (box2X - good_width)) && 
       (sphereX <= (box2X + good_width))))
     {
@@ -78,9 +78,9 @@ export default function Sphere() {
       ref.current.position.z = 0;
       ref.current.position.x = 0;
       if (sphereZ > 7)
-      addPoint1()
+        addPoint1()
       else
-      addPoint2()
+        addPoint2()
       gameNotReady();  
     }
     })

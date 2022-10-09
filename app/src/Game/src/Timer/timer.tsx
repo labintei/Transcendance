@@ -1,3 +1,4 @@
+import { useFrame } from "@react-three/fiber";
 import React, { useEffect, useState } from "react";
 import { useStore } from "../State/state";
 import "./timer.css"
@@ -6,7 +7,6 @@ export default function Timer({nb}: any) {
 
     const gameReady:any = useStore((state:any) => state.setReady);
     
-
     const [tm, setTm] = useState<number>(nb)
 
     useEffect(() => {
