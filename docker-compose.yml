@@ -1,12 +1,12 @@
 # **************************************************************************** #
 #                                                                              #
 #                                                         :::      ::::::::    #
-#    Makefile                                           :+:      :+:    :+:    #
+#    docker-compose.yml                                 :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
 #    By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/01 16:27:27 by jraffin           #+#    #+#              #
-#    Updated: 2022/10/01 16:27:29 by jraffin          ###   ########.fr        #
+#    Updated: 2022/10/09 20:34:33 by labintei         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -32,6 +32,9 @@ services:
       - POSTGRES_DB
       - POSTGRES_USER
       - POSTGRES_PASSWORD
+    env_file:
+      - .env
+
 
   back:
     build: back
