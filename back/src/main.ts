@@ -1,10 +1,11 @@
 import { NestFactory } from '@nestjs/core';
+import { DataSource } from 'typeorm';
 import { AppDataSource } from './app.datasource';
 import { AppModule } from './app.module';
 import { User } from './entities/user.entity';
 
 async function bootstrap() {
-  await AppDataSource.initialize()
+/*  await AppDataSource.initialize()
     .then(() => {
         console.log("Data Source has been initialized!")
     })
@@ -16,7 +17,7 @@ async function bootstrap() {
     username: 'newuser1',
     ft_login: 'jraffin'
   })
-  await AppDataSource.synchronize();
+  await AppDataSource.synchronize();*/
   const app = await NestFactory.create(AppModule);
   const port = process.env.PORT;
   await app.listen(port, () => {

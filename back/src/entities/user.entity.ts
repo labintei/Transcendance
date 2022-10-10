@@ -1,4 +1,4 @@
-import { Entity, Column, PrimaryColumn, OneToMany, ManyToOne, ManyToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
 import { Message } from './message.entity';
 
 export enum UserStatus {
@@ -56,5 +56,5 @@ export class User {
   blockeds: Promise<User[]>
 
   @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Promise<User[]>
+  messages: Promise<Message[]>
 }

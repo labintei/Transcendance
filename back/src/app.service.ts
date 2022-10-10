@@ -1,15 +1,38 @@
 import { Injectable } from '@nestjs/common';
-import { AppDataSource } from './app.datasource';
+import { InjectDataSource, InjectEntityManager } from '@nestjs/typeorm';
+import { DataSource, EntityManager } from 'typeorm';
 import { User } from './entities/user.entity';
 
 @Injectable()
 export class AppService {
 
+  constructor(
+    @InjectDataSource()
+    private datasource: DataSource
+  ) {}
+
   getHello(): string {
-    return 'Hello World!';
+    return this.datasource.isInitialized?'true':'false';
   }
 
-/*  async getUsers(): Promise<User[]> {
-    return AppDataSource.manager.
-  }*/
+  getDetails()
+  {
+    return this.datasource.getRepository(User);
+  }
+
+  newUser(): string {
+    this.datasource.synchronize();
+    this.datasource.manager.create(User, {
+      username: 'jraffin',
+      ft_login: 'jraffin',
+
+    })
+    this.datasource.synchronize();
+    return 'created';
+  }
+
+  async getUsers(): Promise<User[]> {
+    this.datasource.synchronize();
+    return this.datasource.manager.find(User);
+  }
 }

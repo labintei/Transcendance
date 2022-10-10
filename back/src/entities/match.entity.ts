@@ -1,4 +1,4 @@
-import { Column, CreateDateColumn, Double, Entity, ManyToOne, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne } from 'typeorm';
 import { User } from './user.entity';
 
 export enum MatchStatus {
@@ -13,8 +13,8 @@ export class Match {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @CreateDateColumn('timestamptz')
-  time: Date;
+  //@CreateDateColumn('timestamptz')
+  //time: Date;
 
   @Column({
     type: 'enum',

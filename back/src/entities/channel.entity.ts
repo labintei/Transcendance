@@ -1,4 +1,4 @@
-import { Column, Entity, JoinTable, ManyToMany, ManyToOne, OneToMany, PrimaryColumn, PrimaryGeneratedColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
 import { Message } from './message.entity';
 import { User } from './user.entity';
 
@@ -22,5 +22,5 @@ export class Channel {
 
   @ManyToMany(() => User)
   @JoinTable()
-  users: User[];
+  users: Promise<User[]>;
 }
