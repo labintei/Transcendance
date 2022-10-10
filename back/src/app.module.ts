@@ -3,7 +3,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 
-
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -13,7 +12,8 @@ import { AppService } from './app.service';
       database: process.env.POSTGRES_DB,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
-      entities: ['dist/**/**.entity{.ts,.js}']
+      entities: ['dist/**/**.entity{.ts,.js}'],
+      synchronize: true
     })
   ],
   controllers: [AppController],
