@@ -1,10 +1,9 @@
 import { NestFactory } from '@nestjs/core';
 import { AppDataSource } from './app.datasource';
 import { AppModule } from './app.module';
-import { User } from './model/user.entity';
+import { User } from './entities/user.entity';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
   await AppDataSource.initialize()
     .then(() => {
         console.log("Data Source has been initialized!")
@@ -13,7 +12,12 @@ async function bootstrap() {
         console.error("Error during Data Source initialization", err)
     })
   await AppDataSource.synchronize();
-//  await AppDataSource.manager.create(new User())
+  const user = AppDataSource.manager.create(User, {
+    username: 'newuser1',
+    ft_login: 'jraffin'
+  })
+  await AppDataSource.synchronize();
+  const app = await NestFactory.create(AppModule);
   const port = process.env.PORT;
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

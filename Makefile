@@ -28,10 +28,10 @@ dev					:	stop envcheck
 	xterm -e $(MAKE) dev-front &
 	xterm -e $(MAKE) dev-adminer &
 
-dev-db				:
+dev-db				: hostname
 	docker-compose run -p 5432:5432 db
 
-dev-adminer			:	envcheck
+dev-adminer			:	hostname
 	@source .env && docker-compose run -p $$ADMINER_PORT:8080 adminer
 
 dev-back			:	envcheck
@@ -48,7 +48,7 @@ dev-front			:	envcheck
 	&& npm --prefix $(FRONT) run start
 
 stop				:
-	killall -eqv -SIGINT node || exit 0
+#	killall -eqvu jraffin -SIGINT node || exit 0
 	docker-compose down
 
 package-rebuild		:	stop
