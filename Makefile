@@ -48,7 +48,7 @@ dev-front			:	envcheck
 	&& npm --prefix $(FRONT) run start
 
 stop				:
-#	killall -eqvu jraffin -SIGINT node || exit 0
+	killall -eqvu jraffin -SIGINT node || exit 0
 	docker-compose down
 
 package-rebuild		:	stop
