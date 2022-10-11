@@ -28,6 +28,8 @@ services:
       start_period: 1s
     volumes:
       - db_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432  #only for dev rules
     networks:
       - transcendence-network
     environment:
@@ -36,22 +38,18 @@ services:
       - POSTGRES_PASSWORD
 
   back:
-    build: back
+    build:
+      context: ./back
+      dockerfile: Dockerfile.dev
     container_name: back
     restart: always
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --spider -q localhost:3000 2> /dev/null"
-        ]
-      interval: 1s
-      timeout: 5s
-      retries: 20
-      start_period: 1s
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - ./back:/app
+    stdin_open: true
+    tty: true
     ports:
       - 3000:3000
     networks:
@@ -69,14 +67,15 @@ services:
       - .hostname.env
 
   front:
-    build: app
+    build:
+      context: ./app
+      dockerfile: Dockerfile.dev
     container_name: front
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
-      back:
-        condition: service_healthy
+      - back
+    volumes:
+      - ./app:/app
     ports:
       - $WEBSITE_PORT:$WEBSITE_PORT
     networks:

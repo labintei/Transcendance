@@ -22,35 +22,16 @@ all					:	$(NAME)
 $(NAME)				:	stop envcheck
 	docker-compose up --build || exit 0
 
-dev					:	stop envcheck
-	xterm -e $(MAKE) dev-db &
-	xterm -e $(MAKE) dev-back &
-	xterm -e $(MAKE) dev-front &
-
-dev-db				:
-	docker-compose run -p 5432:5432 db
-
-dev-back			:	envcheck
-	npm --prefix $(BACK) install $(BACK)
-	export PORT=3000 DATABASE_HOST=localhost DATABASE_PORT=5432		\
-	$(shell sed -e 's/ *#.*$$//' .env)				\
-	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
-	&& npm --prefix $(BACK) run start:dev
-
-dev-front			:	envcheck
-	npm --prefix $(FRONT) install $(FRONT)
-	source .env && export PORT=$$WEBSITE_PORT REACT_APP_API42_UID=$$API42_UID	\
-	$(shell sed -e 's/ *#.*$$//' .hostname.env)		\
-	&& npm --prefix $(FRONT) run start
+dev						: stop envcheck
+	docker-compose -f docker-compose.dev.yml up || exit 0
 
 stop				:
-	killall -eqv -SIGINT node || exit 0
 	docker-compose down
 
 package-rebuild		:	stop
 	@-rm $(BACK)/package-lock.json
 	@-rm $(FRONT)/package-lock.json
-	docker-compose create --build back front
+	docker-compose up --build --no-start back front
 	docker cp back:/app/package-lock.json $(BACK)/package-lock.json
 	docker cp front:/app/package-lock.json $(FRONT)/package-lock.json
 
@@ -77,13 +58,14 @@ hostname			:	envcheck
 	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_BASE_URL"
 
 clean				:	stop
-	docker system prune --volumes -f
-
-fclean				:	clean
 	rm -rf $(FRONT)/node_modules
 	rm -rf $(BACK)/node_modules
 	rm -rf $(BACK)/dist
 	docker system prune -af
+
+fclean				:	clean
+	docker volume prune -f
+#	docker volume rm $(shell docker volume ls -q) 2>> /dev/null || exit 0
 
 re					:	clean all
 
@@ -100,4 +82,4 @@ list				:
 	@docker volume ls
 	@echo ;
 
-.PHONY				:	all $(NAME) dev-db dev-back dev-front stop package-rebuild varcheck ip hostname clean fclean re fre list
+.PHONY				:	all $(NAME) dev dev-db dev-back dev-front stop package-rebuild varcheck ip hostname clean fclean re fre list
