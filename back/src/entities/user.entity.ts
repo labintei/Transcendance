@@ -52,23 +52,23 @@ export class User {
   draws: number;
 
   @OneToMany(() => User, (friend) => (friend.username))
-  friends: User[];
+  friends: Promise<User[]>;
 
   @OneToMany(() => User, (blocked) => (blocked.username))
-  blockeds: User[];
+  blockeds: Promise<User[]>;
 
   @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Message[];
+  messages: Promise<Message[]>;
 
   @ManyToMany(() => Channel, (chan) => (chan.id))
   @JoinTable()
-  channels: Channel[];
+  channels: Promise<Channel[]>;
 
   @ManyToMany(() => Channel, (chan) => (chan.id))
   @JoinTable()
-  bans: Channel[];
+  bans: Promise<Channel[]>;
 
   @ManyToMany(() => Channel, (chan) => (chan.id))
   @JoinTable()
-  mutes: Channel[];
+  mutes: Promise<Channel[]>;
 }

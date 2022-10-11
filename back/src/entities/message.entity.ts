@@ -7,8 +7,8 @@ export class Message {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  //@CreateDateColumn('timestamptz')
-  //time: Date;
+  @CreateDateColumn()
+  time: Date;
 
   @Column('varchar')
   content: string;

@@ -29,12 +29,12 @@ export class Channel {
   @Column('varchar')
   name: string;
 
-  @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Message[];
-
   @ManyToOne(() => User, (user) => (user.username))
   owner: User;
 
   @ManyToMany(() => User, (user) => (user.channels))
-  users: User[];
+  users: Promise<User[]>;
+
+  @OneToMany(() => Message, (msg) => (msg.id))
+  messages: Promise<Message[]>;
 }

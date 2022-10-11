@@ -43,16 +43,6 @@ services:
       dockerfile: Dockerfile.dev
     container_name: back
     restart: always
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --spider -q localhost:3000 2> /dev/null"
-        ]
-      interval: 1s
-      timeout: 5s
-      retries: 20
-      start_period: 1s
     depends_on:
       db:
         condition: service_healthy
@@ -83,10 +73,7 @@ services:
     container_name: front
     restart: always
     depends_on:
-      db:
-        condition: service_healthy
-      back:
-        condition: service_healthy
+      - back
     volumes:
       - ./app:/app
     ports:

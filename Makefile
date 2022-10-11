@@ -23,8 +23,6 @@ $(NAME)				:	stop envcheck
 	docker-compose up --build || exit 0
 
 dev						: stop envcheck
-	npm --prefix $(BACK) install
-	npm --prefix $(FRONT) install
 	docker-compose -f docker-compose.dev.yml up || exit 0
 
 stop				:

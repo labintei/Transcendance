@@ -13,8 +13,8 @@ export class Match {
   @PrimaryGeneratedColumn('uuid')
   id: number;
 
-  //@CreateDateColumn('timestamptz')
-  //time: Date;
+  @CreateDateColumn()
+  time: Date;
 
   @Column({
     type: 'enum',
