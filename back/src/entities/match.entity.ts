@@ -10,7 +10,7 @@ export enum MatchStatus {
 @Entity()
 export class Match {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   //@CreateDateColumn('timestamptz')

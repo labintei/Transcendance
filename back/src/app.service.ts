@@ -7,32 +7,36 @@ import { User } from './entities/user.entity';
 export class AppService {
 
   constructor(
-    @InjectDataSource()
-    private datasource: DataSource
+    @InjectEntityManager()
+    private manager: EntityManager
   ) {}
 
-  getHello(): string {
-    return this.datasource.isInitialized?'true':'false';
+  getHello() {
+    return 'Hello world';
   }
 
   getDetails()
   {
-    return this.datasource.getRepository(User);
+    return this.manager.connection.options;
   }
 
-  newUser(): string {
-    this.datasource.synchronize();
-    this.datasource.manager.create(User, {
-      username: 'jraffin',
-      ft_login: 'jraffin',
-
-    })
-    this.datasource.synchronize();
-    return 'created';
+  async newUser() {
+    const user = this.manager.create(User,
+      {
+        username: 'jraffin',
+        ft_login: 'jraffin'
+      }
+    );
+    console.log(user.username + ' created.');
+    await this.manager.save(user);
+    return this.manager.findOne(User, {
+      where: {
+        username: user.username
+      }
+    });
   }
 
-  async getUsers(): Promise<User[]> {
-    this.datasource.synchronize();
-    return this.datasource.manager.find(User);
+  async getUsers() {
+    return this.manager.find(User);
   }
 }

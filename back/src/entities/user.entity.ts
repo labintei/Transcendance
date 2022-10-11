@@ -1,10 +1,12 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
+import { Channel } from './channel.entity';
 import { Message } from './message.entity';
 
 export enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
-  MATCHING = "Matching"
+  MATCHING = "Matching",
+  PLAYING = "Playing"
 }
 
 @Entity()
@@ -37,24 +39,36 @@ export class User {
   })
   twoFA: string;
 
-  @Column('float')
+  @Column({ type: 'float', default: 0.0 })
   rank: number;
 
-  @Column('int')
+  @Column({ type: 'int', default: 0 })
   victories: number;
 
-  @Column('int')
+  @Column({ type: 'int', default: 0 })
   defeats: number;
 
-  @Column('int')
+  @Column({ type: 'int', default: 0 })
   draws: number;
 
   @OneToMany(() => User, (friend) => (friend.username))
-  friends: Promise<User[]>
+  friends: User[];
 
   @OneToMany(() => User, (blocked) => (blocked.username))
-  blockeds: Promise<User[]>
+  blockeds: User[];
 
   @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Promise<Message[]>
+  messages: Message[];
+
+  @ManyToMany(() => Channel, (chan) => (chan.id))
+  @JoinTable()
+  channels: Channel[];
+
+  @ManyToMany(() => Channel, (chan) => (chan.id))
+  @JoinTable()
+  bans: Channel[];
+
+  @ManyToMany(() => Channel, (chan) => (chan.id))
+  @JoinTable()
+  mutes: Channel[];
 }

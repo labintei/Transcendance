@@ -2,6 +2,10 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
+import { User } from './entities/user.entity';
+import { Match } from './entities/match.entity';
+import { Channel } from 'diagnostics_channel';
+import { Message } from './entities/message.entity';
 
 @Module({
   imports: [
@@ -12,7 +16,9 @@ import { AppService } from './app.service';
       database: process.env.POSTGRES_DB,
       username: process.env.POSTGRES_USER,
       password: process.env.POSTGRES_PASSWORD,
-      entities: ['dist/**/**.entity{.ts,.js}'],
+      entities: ['dist/**/*.entity{.ts,.js}'],
+      retryDelay: 5000,
+      retryAttempts: 5,
       synchronize: true
     })
   ],

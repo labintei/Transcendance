@@ -4,7 +4,7 @@ import { User } from './user.entity';
 @Entity()
 export class Message {
 
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   //@CreateDateColumn('timestamptz')
