@@ -23,9 +23,7 @@ services:
           "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"
         ]
       interval: 1s
-      timeout: 5s
-      retries: 20
-      start_period: 1s
+      start_period: 30s
     volumes:
       - db_data:/var/lib/postgresql/data
     ports:
@@ -73,7 +71,8 @@ services:
     container_name: front
     restart: always
     depends_on:
-      - back
+      db:
+        condition: service_healthy
     volumes:
       - ./app:/app
     ports:

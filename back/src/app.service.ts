@@ -34,13 +34,9 @@ export class AppService {
     console.log('message created.');
     await this.manager.save(msg);
     console.log('message saved.');
-/*    const ret = await this.manager.findOne(User, {
-      where: {
-        username: user.username
-      }
-    });
-    const [msgs] = await ret.messages;*/
-    return user;
+    const retuser = await this.manager.find(User, { where: { username: user.username }});
+    const retmsg = await this.manager.find(Message, { where: { id: msg.id }});
+    return { retuser, retmsg };
   }
 
   async getUsers() {

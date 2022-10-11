@@ -1,18 +1,22 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne } from 'typeorm';
+import { Channel } from './channel.entity';
 import { User } from './user.entity';
 
 @Entity()
 export class Message {
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @CreateDateColumn()
   time: Date;
 
-  @Column('varchar')
+  @Column()
   content: string;
 
-  @ManyToOne(() => User, user => user.username)
+  @ManyToOne(() => User)
   sender: User;
+
+  @ManyToOne(() => Channel)
+  channel: Channel
 }

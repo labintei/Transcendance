@@ -1,4 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, ManyToMany, JoinTable, ManyToOne, Unique } from 'typeorm';
+import { ChannelUser } from './channeluserchan.entity';
 import { Message } from './message.entity';
 import { User } from './user.entity';
 
@@ -10,31 +11,21 @@ export enum ChannelStatus {
 @Entity()
 export class Channel {
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({
-    type: 'enum',
-    enum: ChannelStatus,
-    default: ChannelStatus.PUBLIC
-  })
+  @Column({ default: ChannelStatus.PUBLIC })
   status: ChannelStatus;
 
-  @Column({
-    type: 'varchar',
-    nullable: true
-  })
+  @Column({ nullable: true })
   password: string;
 
-  @Column('varchar')
+  @Column({ nullable: true })
   name: string;
 
-  @ManyToOne(() => User, (user) => (user.username))
-  owner: User;
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.channel))
+  users: User[];
 
-  @ManyToMany(() => User, (user) => (user.channels))
-  users: Promise<User[]>;
-
-  @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Promise<Message[]>;
+  @OneToMany(() => Message, (msg) => (msg.channel))
+  messages: Message[];
 }

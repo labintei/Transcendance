@@ -1,6 +1,6 @@
-import { Entity, PrimaryColumn, Column, OneToMany, ManyToMany, JoinTable } from 'typeorm';
-import { Channel } from './channel.entity';
-import { Message } from './message.entity';
+import { Entity, PrimaryColumn, Column, OneToMany, ManyToMany, JoinTable, ManyToOne } from 'typeorm';
+import { ChannelUser } from './channeluserchan.entity';
+import { UserRelation } from './userrelation.entity';
 
 export enum UserStatus {
   ONLINE = "Online",
@@ -12,34 +12,19 @@ export enum UserStatus {
 @Entity()
 export class User {
 
-  @PrimaryColumn({
-    type: 'varchar',
-    length: 24,
-    unique: true
-  })
+  @PrimaryColumn({ length: 24, unique: true })
   username: string;
 
-  @Column({
-    type: 'varchar',
-    length: 8,
-    unique: true
-  })
+  @Column({ length: 8, unique: true })
   ft_login: string;
 
-  @Column({
-    type: 'enum',
-    enum: UserStatus,
-    default: UserStatus.ONLINE
-  })
+  @Column({ default: UserStatus.ONLINE })
   status: UserStatus;
 
-  @Column({
-    type: 'varchar',
-    nullable: true
-  })
+  @Column({ nullable: true })
   twoFA: string;
 
-  @Column({ type: 'float', default: 0.0 })
+  @Column({ type: 'float', default: 1 })
   rank: number;
 
   @Column({ type: 'int', default: 0 })
@@ -51,24 +36,9 @@ export class User {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @OneToMany(() => User, (friend) => (friend.username))
-  friends: Promise<User[]>;
+  @OneToMany(() => UserRelation, (relation) => (relation.user))
+  relations: UserRelation[];
 
-  @OneToMany(() => User, (blocked) => (blocked.username))
-  blockeds: Promise<User[]>;
-
-  @OneToMany(() => Message, (msg) => (msg.id))
-  messages: Promise<Message[]>;
-
-  @ManyToMany(() => Channel, (chan) => (chan.id))
-  @JoinTable()
-  channels: Promise<Channel[]>;
-
-  @ManyToMany(() => Channel, (chan) => (chan.id))
-  @JoinTable()
-  bans: Promise<Channel[]>;
-
-  @ManyToMany(() => Channel, (chan) => (chan.id))
-  @JoinTable()
-  mutes: Promise<Channel[]>;
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
+  channels: ChannelUser[];
 }
