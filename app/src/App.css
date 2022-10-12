@@ -28,8 +28,8 @@ menu > li > button {
   margin: 4px 2px;
 }
 
-button:hover {
-  background-color: white;
+menu > li > button:hover {
+  background-color: #1ac586;
   color:black;
 }
 

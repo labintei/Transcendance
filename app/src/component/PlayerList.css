@@ -64,3 +64,24 @@ this instructions are to force the dimensions of image and its container <a>
 #person-list > li > .avatar > img{
   width: 48px; height: 48px;
 }
+
+
+
+.matching-button {
+    background-color: #196900;
+    border: none;
+    color: white;
+    padding: 15px;
+    border-radius: 18px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 24px;
+    cursor: pointer;
+    margin: 4px 2px;
+  }
+  
+  .matching-button:hover {
+    background-color: #008d59;
+    color:rgb(0, 0, 0);
+  }
