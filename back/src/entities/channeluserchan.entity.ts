@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
@@ -20,11 +20,11 @@ export class ChannelUser {
 
   @ManyToOne(() => Channel, (chan) => (chan.users))
   @JoinColumn({ name: 'channel' })
-  _channel: Channel;
+  channel_setfk: Channel;
 
   @ManyToOne(() => User, (user) => (user.channels))
   @JoinColumn({ name: 'user' })
-  _user: User;
+  user_setfk: User;
 
   @Column({ default: ChannelUserStatus.JOINED })
   status: ChannelUserStatus;

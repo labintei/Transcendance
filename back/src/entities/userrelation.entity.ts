@@ -17,11 +17,11 @@ export class UserRelation {
 
   @ManyToOne(() => User, (user) => (user.relations))
   @JoinColumn({ name: 'user' })
-  _user: User;
+  user_setfk: User;
 
   @ManyToOne(() => User)
   @JoinColumn({ name: 'relation' })
-  _relation: User;
+  relation_setfk: User;
 
   @Column({ default: ChannelUserStatus.FRIEND })
   status: ChannelUserStatus;
