@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
-import { ChannelUser } from './channeluserchan.entity';
+import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 
 export enum ChannelStatus {
