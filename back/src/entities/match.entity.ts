@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
 export enum MatchStatus {
@@ -29,9 +29,11 @@ export class Match {
   @Column('smallint')
   score2: number;
 
-  @ManyToOne(() => User, (user) => (user.username))
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user1' })
   user1: User;
 
-  @ManyToOne(() => User, (user) => (user.username))
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'user2' })
   user2: User;
 }

@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
 export enum ChannelUserStatus {
@@ -9,13 +9,19 @@ export enum ChannelUserStatus {
 @Entity()
 export class UserRelation {
 
-  @ManyToOne(() => User)
   @PrimaryColumn('varchar')
   user: User;
 
-  @ManyToOne(() => User)
   @PrimaryColumn('varchar')
   relation: User;
+
+  @ManyToOne(() => User, (user) => (user.relations))
+  @JoinColumn({ name: 'user' })
+  _user: User;
+
+  @ManyToOne(() => User)
+  @JoinColumn({ name: 'relation' })
+  _relation: User;
 
   @Column({ default: ChannelUserStatus.FRIEND })
   status: ChannelUserStatus;

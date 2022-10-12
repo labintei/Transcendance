@@ -24,7 +24,7 @@ export class Channel {
   name: string;
 
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.channel))
-  users: User[];
+  users: ChannelUser[];
 
   @OneToMany(() => Message, (msg) => (msg.channel))
   messages: Message[];

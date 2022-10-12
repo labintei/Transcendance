@@ -1,4 +1,4 @@
-import { Column, Entity, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
+import { Column, Entity, JoinColumn, ManyToOne, OneToMany, PrimaryColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
@@ -13,12 +13,18 @@ export enum ChannelUserStatus {
 export class ChannelUser {
 
   @PrimaryColumn('int')
-  @ManyToOne(() => Channel, (chan) => (chan.users))
   channel: Channel;
 
   @PrimaryColumn('varchar')
-  @ManyToOne(() => User, (user) => (user.channels))
   user: User;
+
+  @ManyToOne(() => Channel, (chan) => (chan.users))
+  @JoinColumn({ name: 'channel' })
+  _channel: Channel;
+
+  @ManyToOne(() => User, (user) => (user.channels))
+  @JoinColumn({ name: 'user' })
+  _user: User;
 
   @Column({ default: ChannelUserStatus.JOINED })
   status: ChannelUserStatus;
