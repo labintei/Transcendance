@@ -10,18 +10,18 @@ export enum ChannelUserStatus {
 export class UserRelation {
 
   @PrimaryColumn('varchar')
-  user: User;
+  owner: User;
 
   @PrimaryColumn('varchar')
-  relation: User;
+  related: User;
 
   @ManyToOne(() => User, (user) => (user.relations))
-  @JoinColumn({ name: 'user' })
-  user_setfk: User;
+  @JoinColumn({ name: 'owner' })
+  owner_setfk: User;
 
   @ManyToOne(() => User)
-  @JoinColumn({ name: 'relation' })
-  relation_setfk: User;
+  @JoinColumn({ name: 'related' })
+  related_setfk: User;
 
   @Column({ default: ChannelUserStatus.FRIEND })
   status: ChannelUserStatus;

@@ -26,6 +26,6 @@ export class ChannelUser {
   @JoinColumn({ name: 'user' })
   user_setfk: User;
 
-  @Column({ default: ChannelUserStatus.JOINED })
+  @Column({ default: ChannelUserStatus.OWNER })
   status: ChannelUserStatus;
 }
