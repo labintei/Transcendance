@@ -29,8 +29,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(socket);
   }
 
-  @SubscribeMessage('messageToUser')
-  sendMessageUser(@MessageBody() data) {
+  @SubscribeMessage('message')
+  sendMessage(@MessageBody() data) {
     // data.time
     // data.content
     // data.sender
@@ -41,17 +41,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // register in database
     // emit.to.room(msg)
   }
-
-  @SubscribeMessage('messageToChannel')
-  sendMessageChannel(@MessageBody() data) {
-    // data.time
-    // data.content
-    // data.sender
-    // data.channel
-
-    console.log(data);
-  }
-
 
   @SubscribeMessage('join')
   joinChannel(@MessageBody() data) {
