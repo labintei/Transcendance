@@ -23,9 +23,7 @@ services:
           "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"
         ]
       interval: 1s
-      timeout: 5s
-      retries: 20
-      start_period: 1s
+      start_period: 10s
     volumes:
       - db_data:/var/lib/postgresql/data
     networks:
@@ -46,9 +44,7 @@ services:
           "wget --spider -q localhost:3000 2> /dev/null"
         ]
       interval: 1s
-      timeout: 5s
-      retries: 20
-      start_period: 1s
+      start_period: 10s
     depends_on:
       db:
         condition: service_healthy

@@ -1,7 +1,6 @@
 .dockerignore
 Dockerfile
-
-#add all .gitignore content ---
+Dockerfile.dev
 
 # compiled output
 dist

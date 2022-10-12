@@ -19,11 +19,21 @@ BACK				:=	./back
 
 all					:	$(NAME)
 
+#	loads production environment
 $(NAME)				:	stop envcheck
 	docker-compose up --build || exit 0
 
+#	loads development environment
 dev						: stop envcheck
 	docker-compose -f docker-compose.dev.yml up || exit 0
+
+#	loads development backend environment only
+dev-back			: stop envcheck
+	docker-compose -f docker-compose.dev.yml up back || exit 0
+
+#	loads development frontend environment only
+dev-front			: stop envcheck
+	docker-compose -f docker-compose.dev.yml up front || exit 0
 
 stop				:
 	docker-compose down
@@ -57,19 +67,24 @@ hostname			:	envcheck
 	@echo "REACT_APP_WEBSITE_BASE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
 	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_BASE_URL"
 
+#	cleans compilated dev data
 clean				:	stop
 	rm -rf $(FRONT)/node_modules
 	rm -rf $(BACK)/node_modules
 	rm -rf $(BACK)/dist
+
+#	cleans container builds
+cclean			: stop
 	docker system prune -af
 
-fclean				:	clean
+#	cleans persistence volumes
+pclean			: stop
 	docker volume prune -f
-#	docker volume rm $(shell docker volume ls -q) 2>> /dev/null || exit 0
 
-re					:	clean all
+#	cleans everything
+fclean			:	clean cclean pclean
 
-fre					:	fclean all
+re					:	fclean all
 
 list				:
 	@printf "\n	containers\n"
@@ -82,4 +97,4 @@ list				:
 	@docker volume ls
 	@echo ;
 
-.PHONY				:	all $(NAME) dev dev-db dev-back dev-front stop package-rebuild varcheck ip hostname clean fclean re fre list
+.PHONY				:	all $(NAME) dev stop package-rebuild envcheck ip hostname clean cclean pclean fclean re list
