@@ -21,7 +21,7 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(@MessageBody() data) {
     console.log("New User");
-    console.log(data.handshake.query); // cookie / authentification token or sth
+    // console.log(data.handshake.query); // cookie / authentification token or sth
   }
 
   async handleDisconnect(@ConnectedSocket() socket) {
@@ -29,15 +29,29 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     console.log(socket);
   }
 
-  @SubscribeMessage('message')
-  sendMessage(@MessageBody() data) {
-    // data.sender // probably cookie/token or sth
-    // data.target (chan or name ?)
-    // see with entity file to know what data is needed
+  @SubscribeMessage('messageToUser')
+  sendMessageUser(@MessageBody() data) {
+    // data.time
+    // data.content
+    // data.sender
+    // data.channel ?
+
+    console.log(data);
 
     // register in database
     // emit.to.room(msg)
   }
+
+  @SubscribeMessage('messageToChannel')
+  sendMessageChannel(@MessageBody() data) {
+    // data.time
+    // data.content
+    // data.sender
+    // data.channel
+
+    console.log(data);
+  }
+
 
   @SubscribeMessage('join')
   joinChannel(@MessageBody() data) {
