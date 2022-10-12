@@ -1,5 +1,5 @@
 import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
-import { ChannelUser } from './channeluserchan.entity';
+import { ChannelUser } from './channeluser.entity';
 import { UserRelation } from './userrelation.entity';
 
 export enum UserStatus {
