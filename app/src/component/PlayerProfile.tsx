@@ -3,6 +3,7 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
+import { preProcessFile } from 'typescript';
 
 type Person = {
     name: string;
@@ -12,7 +13,7 @@ type Person = {
     defeats:number;
     max_level:number;
 }
-const dflt:Person = {name: '', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
+const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
 
 type State = {
   player:Person
@@ -22,18 +23,38 @@ type State = {
   avatarEdit:boolean
   bgChoice:number
 }
+function get_status (num:number, bgd:number) {
+  return (bgd === num ? "selected":"not-select")
+}
+
+function Customize(props: {pprof:PlayerProfile}) {
+  const bgd:number = useStore((s:any) => s.bgdChoice);
+  const changeBg:any = useStore((s:any) => s.changeBgd);
+  console.log(bgd);
+
+  return (
+    <>
+      <h3>Choose your in-game background :</h3>
+        <div className='bgd-buttons'>
+        <button className={get_status(0, bgd)}
+          style={props.pprof.styleImgAsDiv('/space_choice.jpg')}
+          onClick={() => {changeBg(0);props.pprof.setState({bgChoice:0})}}>
+        </button>
+        <button className={get_status(1, bgd)}
+          style={props.pprof.styleImgAsDiv('/sea_choice.jpg')}
+          onClick={() => {changeBg(1);props.pprof.setState({bgChoice:1})}}>
+        </button>
+        </div>
+    </>
+  )
+}
 
 export default class PlayerProfile extends React.Component {
-  username:any = useStore((state:any) => state.profile.username);
   state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, bgChoice:0};
 
   componentDidMount() {
     let player:Person = dflt;
-    const username:string = useStore((state:any) => state.profile.username);
-    const avatar_location:string = useStore((state:any) => state.profile.avatar_location);
 
-    player.name = username;
-    player.avatar_location = avatar_location;
     this.setState({player:player});
   }
 
@@ -62,7 +83,6 @@ export default class PlayerProfile extends React.Component {
     let temp:Person = this.state.player;
     temp.name = this.state.query;
     this.setState({player:temp, nameEdit:false});
-    useStore((store:any) => store.changeUsername(temp));
   }
 
   changeAvatar() {
@@ -103,26 +123,6 @@ export default class PlayerProfile extends React.Component {
     return (divStyle)
   }
 
-  change_background(choice:number) {
-    this.setState({bgChoice:choice});
-  }
-
-  create_button (num:number) {
-    let img:string = "";
-    let status:string = this.state.bgChoice === num ? "selected":"not-select";
-    if (num === 0) {
-      img = '/space_choice.jpg';
-    } else if (num === 1) {
-      img = '/blue_sky_choice.jpg';
-    }
-
-    return (
-      <button className={status}
-        style={this.styleImgAsDiv(img)}
-        onClick={() => this.change_background(num)}>
-      </button>
-    )
-  }
 
   render() {
     return (
@@ -148,11 +148,7 @@ export default class PlayerProfile extends React.Component {
                 <p>{this.state.player.max_level}</p>
             </li>
         </ul>
-        <h3>Choose your in-game background :</h3>
-        <div className='bgd-buttons'>
-          {this.create_button(0)}
-          {this.create_button(1)}
-        </div>
+        <Customize pprof={this}></Customize>
         </>
 
     )
