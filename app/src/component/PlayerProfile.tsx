@@ -21,7 +21,6 @@ type State = {
   query:string
   query2:File | null
   avatarEdit:boolean
-  bgChoice:number
 }
 function get_status (num:number, bgd:number) {
   return (bgd === num ? "selected":"not-select")
@@ -38,11 +37,11 @@ function Customize(props: {pprof:PlayerProfile}) {
         <div className='bgd-buttons'>
         <button className={get_status(0, bgd)}
           style={props.pprof.styleImgAsDiv('/space_choice.jpg')}
-          onClick={() => {changeBg(0);props.pprof.setState({bgChoice:0})}}>
+          onClick={() => changeBg(0)}>
         </button>
         <button className={get_status(1, bgd)}
           style={props.pprof.styleImgAsDiv('/sea_choice.jpg')}
-          onClick={() => {changeBg(1);props.pprof.setState({bgChoice:1})}}>
+          onClick={() => changeBg(1)}>
         </button>
         </div>
     </>
@@ -50,7 +49,7 @@ function Customize(props: {pprof:PlayerProfile}) {
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, bgChoice:0};
+  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
 
   componentDidMount() {
     let player:Person = dflt;

@@ -79,7 +79,7 @@ export default class MatchList extends React.Component {
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img alt="challenge unvailable" src="/challenge_unavailable.png"></img>)
+        return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
   }
   
   render() {
@@ -93,7 +93,7 @@ export default class MatchList extends React.Component {
                   <p>You</p>
                   <p className='score1'>{match.score1}</p>
                 </div>
-                <button onClick={() => this.challengeClicked(match.id)}  id="challenge-button"></button>
+                {this.challenge_available(match.statusopp, match.idopp)}
                 <div className={this.render_status(match.score2, match.score1)}>
                   <p className='score2'>{match.score2}</p>
                   <p>{match.name}</p>
