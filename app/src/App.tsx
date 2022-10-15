@@ -5,7 +5,9 @@ import LevelList from './component/LevelList';
 import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
 import PongGame from './Game/src/PongGame';
-import { Outlet, Link, useNavigate, useParams, useLocation } from "react-router-dom";
+import { Outlet, Link, useNavigate, useParams, useLocation, Navigate } from "react-router-dom";
+import { useStore } from 'Game/src/State/state';
+import axios from 'axios';
 
 const components = {
   matching: PersonList,
@@ -19,11 +21,14 @@ const components = {
 function App () {
   const navigate = useNavigate();
   const location = useLocation();
-
-  console.log(location.pathname)
-
+  let root = false;
+  if (location.pathname === "/") {
+    console.log(location.pathname);
+    root = true;
+  }
   return (
     <div className="App">
+      {(root ? <Navigate to="matching"></Navigate> : <></>)}
      { location.pathname != "/game" &&  <menu>
         <li><button onClick={() => {navigate("matching")}}>Matching</button></li>
         <li><button onClick={() => {navigate("leaderboard")}}>LeaderBoard</button></li>
@@ -34,6 +39,7 @@ function App () {
       <div className="content">
         <Outlet />
       </div>
+
     </div>
   );
 }

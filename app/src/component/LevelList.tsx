@@ -71,7 +71,7 @@ export default class LevelList extends React.Component {
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img src="/challenge_unavailable.png"></img>)
+        return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
   }
 
   renderStatus (s:number) {
