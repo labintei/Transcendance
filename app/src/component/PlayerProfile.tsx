@@ -66,7 +66,7 @@ export default class PlayerProfile extends React.Component {
 
   componentDidMount() {
     let player:Person = dflt;
-
+    axios.get("http://localhost:3000/").then(res => console.log(res));
     this.setState({player:player});
   }
 
