@@ -119,7 +119,7 @@ function SkyBox() {
 export default function World(props: any) {
 
   // const getDirection:any = useStore((state:any) => state.controls);
-  const map = useStore((s: any) => s.map)
+  const map = useStore((s: any) => s.bgdChoice)
   // console.log(getDirection)
   return (
     <Canvas
@@ -133,10 +133,10 @@ export default function World(props: any) {
       <Box1 position={[0, 0, 5]} />
       <Sphere />
 
-      { map === "space" && 
+      { map === 0 && 
       <SkyBox /> 
       }
-      { map === "sky" &&
+      { map === 1 &&
       <>
       <Ocean />
        <Sky

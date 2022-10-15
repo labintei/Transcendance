@@ -11,14 +11,7 @@ export default function Menu() {
     const getEscape: any = useStore((state: any) => state.controls.escape);
     const setEscape:any = useStore((state:any) => state.setEscape);
     const navigate = useNavigate();
-    const setTheMap:any = useStore((state:any) => state.setMap);
-
-    function setMap(map:string) {
-        if (map === "sky")
-            setTheMap("sky")
-        if (map === "space")
-            setTheMap("space")
-    }
+    const setTheMap:any = useStore((state:any) => state.changeBgd);
 
     console.log(getEscape)
 
@@ -45,11 +38,11 @@ export default function Menu() {
 
 { step === 2 && <>
     <div className="wrapper">
-    <div className="col" onClick={() => (setMap("space"))}>
+    <div className="col" onClick={() => (setTheMap(0))}>
         <h2>Space</h2>
     <img src={space} />
     </div>
-    <div className="col" onClick={() => (setMap("sky"))}>
+    <div className="col" onClick={() => (setTheMap(1))}>
         <h2>Sky</h2>
     <img src={sky} />
     </div>
