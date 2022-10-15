@@ -3,6 +3,9 @@
   "version": "0.1.0",
   "private": true,
   "dependencies": {
+    "@nestjs/config": "^2.2.0",
+    "@nestjs/platform-socket.io": "^9.1.4",
+    "@nestjs/websockets": "^9.1.4",
     "@react-spring/three": "^9.5.5",
     "@react-three/drei": "^9.32.7",
     "@react-three/fiber": "^8.8.7",
