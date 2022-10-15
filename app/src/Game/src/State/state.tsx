@@ -24,14 +24,16 @@ export const useStore = create((set,get) => {
     escape: false
   },
   bgdChoice: 0,
+  padColor: "#ffffff",
+  ballColor: "#ffffff",
   box1: createRef(),
   box2: createRef(),
   setProfile: (newp:Profile) => set((state:any) => ({
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
-  changeUsername: (newname:string) => set((state:any) => ({profile:{username:newname}})),
-  changeALoc: (newloc:string) => set((state:any) => ({profile:{avatar_location:newloc}})),
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
+  changePadColor: (col:string) => set((state:any)=>({padColor:col})),
+  changeBallColor: (col:string) => set((state:any)=>({ballColor:col})),
   addVotes: () => set((state:any) => ({ votes: state.votes + 1 })),
   addPoint1: () => set((state:any) => ({ score: [state.score[0] + 1, state.score[1]]})),
   addPoint2: () => set((state:any) => ({ score: [state.score[0], state.score[1] + 1]})),

@@ -10,6 +10,7 @@ export default function Sphere() {
   const box1:any = useStore((s:any) => s.box1)
   const box2:any = useStore((s:any) => s.box2)
   const gameNotReady:any = useStore((state:any) => state.setNotReady);
+  const ballcolor:any = useStore((state:any) => state.ballColor);
 
   const ready = useStore((s:any) => s.gameReady)
   const addPoint1:any = useStore((state:any) => state.addPoint1);
@@ -83,7 +84,7 @@ export default function Sphere() {
       <sphereGeometry attach="geometry" args={[0.5, 24, 24]} />
       <meshBasicMaterial
         attach="material"
-        color="white"
+        color={ballcolor}
       />
     </mesh>
   );

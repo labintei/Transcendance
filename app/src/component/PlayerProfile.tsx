@@ -28,7 +28,11 @@ function get_status (num:number, bgd:number) {
 
 function Customize(props: {pprof:PlayerProfile}) {
   const bgd:number = useStore((s:any) => s.bgdChoice);
+  const padc:string = useStore((s:any) => s.padColor);
+  const ballc:string = useStore((s:any) => s.ballColor);
   const changeBg:any = useStore((s:any) => s.changeBgd);
+  const changePad:any = useStore((s:any) => s.changePadColor);
+  const changeBall:any = useStore((s:any) => s.changeBallColor);
   console.log(bgd);
 
   return (
@@ -44,6 +48,15 @@ function Customize(props: {pprof:PlayerProfile}) {
           onClick={() => changeBg(1)}>
         </button>
         </div>
+      <h3>Choose your colors :</h3>
+      <input type="color" value={padc} id="pad" className="colorPick"
+        onChange={event => {changePad(event.target.value)}
+      }></input>
+      <label htmlFor="pad">Paddle</label>
+      <input type="color" value={ballc} id="ball" className="colorPick"
+        onChange={event => {changeBall(event.target.value)}
+      }></input>
+      <label htmlFor="ball">Ball</label>
     </>
   )
 }
