@@ -20,22 +20,22 @@ BACK				:=	./back
 all					:	$(NAME)
 
 #	loads production environment
-$(NAME)				:	stop envcheck
+$(NAME)				:	stop
 	docker-compose up --build || exit 0
 
 #	loads development environment
-dev						: stop envcheck
+dev						: stop
 	docker-compose -f docker-compose.dev.yml up || exit 0
 
 #	loads development backend environment only
-dev-back			: stop envcheck
+dev-back			: stop
 	docker-compose -f docker-compose.dev.yml up back || exit 0
 
 #	loads development frontend environment only
-dev-front			: stop envcheck
+dev-front			: stop
 	docker-compose -f docker-compose.dev.yml up front || exit 0
 
-stop				:
+stop					: hostname
 	docker-compose down
 
 package-rebuild		:	stop
