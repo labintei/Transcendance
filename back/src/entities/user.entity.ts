@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelation } from './userrelation.entity';
 
@@ -15,7 +15,8 @@ export class User {
   @PrimaryColumn({ length: 24, unique: true })
   username: string;
 
-  @Column({ length: 8, unique: true })
+  @Index({ unique: true })
+  @Column({ length: 8 })
   ft_login: string;
 
   @Column({ default: UserStatus.ONLINE })

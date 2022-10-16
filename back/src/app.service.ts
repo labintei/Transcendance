@@ -23,8 +23,8 @@ export class AppService {
 
   async newUser() {
     const user = this.manager.create(User);
-    user.username = 'jraffin8';
-    user.ft_login = 'jraffin8';
+    user.username = 'jraffin';
+    user.ft_login = 'jraffin';
     console.log(user.username + ' created.');
     await this.manager.save(user);
     console.log(user.username + ' saved.');

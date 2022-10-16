@@ -17,8 +17,8 @@ export class Channel {
   @Column({ default: ChannelStatus.DIRECT })
   status: ChannelStatus;
 
-  @Column({ nullable: true })
-  password: string;
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  bcrypthash: string;
 
   @Column({ nullable: true })
   name: string;
