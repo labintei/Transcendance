@@ -3,7 +3,6 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
-import { preProcessFile } from 'typescript';
 
 type Person = {
     name: string;
@@ -68,7 +67,7 @@ export default class PlayerProfile extends React.Component {
     let player:Person = dflt;
     axios.get("http://localhost:3000/user/").then(res => {
       const data = res.data;
-      console.log (data);
+      console.log (res);
       if (data.username !== undefined && data.rank !== undefined) {
         player.name = data.username;
         player.rank = data.rank;

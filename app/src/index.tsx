@@ -7,7 +7,6 @@ import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
   RouterProvider,
-  Route,
 } from "react-router-dom";
 import PlayerProfile from './component/PlayerProfile';
 import MatchList from './component/MatchHistory';

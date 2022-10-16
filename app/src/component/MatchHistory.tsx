@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-import {defaultavatar, challengeimg} from "./const";
+import {defaultavatar} from "./const";
 
 type Match = {
     id: number;

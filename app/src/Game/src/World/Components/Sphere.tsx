@@ -1,7 +1,6 @@
 import React, { useRef } from "react";
-import { Canvas, extend, useThree, useFrame } from "@react-three/fiber";
+import { useFrame } from "@react-three/fiber";
 import { useStore } from "../../State/state";
-import generateRandomFloatInRange from "./Skybox/Utils";
 
 
 // Geometry
