@@ -66,7 +66,19 @@ export default class PlayerProfile extends React.Component {
 
   componentDidMount() {
     let player:Person = dflt;
-    axios.get("http://localhost:3000/").then(res => console.log(res));
+    axios.get("http://localhost:3000/user/").then(res => {
+      const data = res.data;
+      console.log (data);
+      if (data.username !== undefined && data.rank !== undefined) {
+        player.name = data.username;
+        player.rank = data.rank;
+        if (data.victories !== undefined && data.defeats !== undefined && data.draws !== undefined) {
+          player.defeats = data.defeats;
+          player.victories = data.victories;
+          player.max_level = data.draws;
+        }
+      }
+    });
     this.setState({player:player});
   }
 
