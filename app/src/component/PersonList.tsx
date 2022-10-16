@@ -120,6 +120,13 @@ export default class PersonList extends React.Component {
       this.setState({waiting:true})
       console.log("Stop Matching")
     }
+  }
+
+
+
+  create_user() {
+    console.log("creating");
+    axios.get('http://localhost:3000/user');
 
   }
 
@@ -128,7 +135,7 @@ export default class PersonList extends React.Component {
         <>
         <h2>People waiting for a opponent : {this.state.pwait}</h2>
         <h2>{(this.state.waiting ? "Matching you with people..." : "Challenge them !")}</h2>
-        <button className="matching-button" onClick={() => this.change_waiting()}>{(this.state.waiting ? "Stop" : "Start") + " Matching"}</button>
+        <button className="matching-button" onClick={() => this.create_user()}>{(this.state.waiting ? "Stop" : "Start") + " Matching"}</button>
         <h3>Friends :</h3>
         {
           this.render_friend(this.state.listf)

@@ -17,19 +17,27 @@ export class AppService {
     private manager: EntityManager
   ){}
 
-  // va creer deux messages qui vont se renvoyer des choses
-  async newUser() {
-    // va inserer directement
-    // peut egalement faire 
-    // const t = await.this.manager.create(User, {}) , peut etre mieux pour gerer les exceptions
 
-      await this.manager.insert(User, {username: "labintei",ft_login: "labintei"});
-      await this.manager.insert(User, {username: "popo", ft_login: 'popopopo'});
+
+
+  async newUser() {
+      //const user = this.manager.create(User, {username: "lolo", ft_login: "yoyo"});
+      const bis = this.manager.create(User);
+      bis.username = 'jock';
+      bis.ft_login = 'jock';
+
+      //await this.manager.save(user);
+      await this.manager.save(bis);
+      
+      const U = await this.manager.findOne(User, {where: {username: 'jock'}});
+      return U;
+      //await this.manager.insert(User, {username: "labintei",ft_login: "labintei"});
+      //await this.manager.insert(User, {username: "popo", ft_login: 'popopopo'});
   }
+
 
   async NewMessage() {
 
-    // Utiliser des fond one sinon User[], fondOne fondOneOrFail
     const usersrc = await this.manager.findOne(User, {where : { username: "labintei" }});
     const userdest = await this.manager.find(User, {where: { username: 'popo'}});
 
@@ -40,11 +48,8 @@ export class AppService {
     })
   }
 
-
   getHello(): string {
     return 'Hello World!';
   }
-
-
 
 }
