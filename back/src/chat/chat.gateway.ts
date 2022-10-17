@@ -1,3 +1,4 @@
+import { InjectRepository } from '@nestjs/typeorm';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,6 +8,8 @@ import {
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
+import { User } from 'src/entities/user.entity';
+import { ChatService } from './chat.service';
 
 const options = {
   cors: {
@@ -16,17 +19,36 @@ const options = {
 
 @WebSocketGateway(options)
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
-  @WebSocketServer() server;
-  users: number = 0;
+  constructor(private chatService: ChatService) {}
 
-  async handleConnection(@MessageBody() data) {
-    console.log("New User");
-    // console.log(data.handshake.query); // cookie / authentification token or sth
+  @WebSocketServer() server;
+  @InjectRepository(User) userRep;
+
+  nbUser: number = 0;
+
+  async handleConnection(@ConnectedSocket() socket) {
+    const query = socket.handshake.query;
+
+    this.nbUser++;
+
+    // await this.chatService.addUser(query.username, this.nbUser);
   }
 
   async handleDisconnect(@ConnectedSocket() socket) {
-    console.log(socket.id);
-    console.log(socket);
+    const query = socket.handshake.query;
+    this.nbUser--;
+    // console.log(socket);
+  }
+
+  private test()
+  {
+    console.log("this is a test");
+  }
+
+  @SubscribeMessage('disconnect')
+  async handleDisconnect_(@MessageBody() data)
+  {
+    console.log("Test function:", data);
   }
 
   @SubscribeMessage('message')
