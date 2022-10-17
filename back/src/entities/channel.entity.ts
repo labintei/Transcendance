@@ -3,6 +3,7 @@ import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 
 export enum ChannelStatus {
+  DIRECT = "Direct",
   PUBLIC = "Public",
   PRIVATE = "Private"
 }
@@ -13,7 +14,7 @@ export class Channel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: ChannelStatus.PUBLIC })
+  @Column({ default: ChannelStatus.DIRECT })
   status: ChannelStatus;
 
   @Column({ nullable: true })

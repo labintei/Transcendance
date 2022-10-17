@@ -20,5 +20,5 @@ export class Message {
 
   @ManyToOne(() => Channel)
   @JoinColumn({ name: 'channel' })
-  channel: Channel
+  channel: Channel;
 }

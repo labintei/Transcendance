@@ -1,6 +1,13 @@
 import { createRef } from 'react';
 import create from 'zustand';
+import {defaultavatar} from "component/const";
 
+type Profile = {
+  uname:string,
+  a_loc:string,
+  rank:number,
+  inMatch:boolean
+}
 
 // define the store
 export const useStore = create((set,get) => {
@@ -17,8 +24,17 @@ export const useStore = create((set,get) => {
     right: false,
     escape: false
   },
+  bgdChoice: 0,
+  padColor: "#ffffff",
+  ballColor: "#ffffff",
   box1: createRef(),
   box2: createRef(),
+  setProfile: (newp:Profile) => set((state:any) => ({
+    profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
+  })),
+  changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
+  changePadColor: (col:string) => set((state:any)=>({padColor:col})),
+  changeBallColor: (col:string) => set((state:any)=>({ballColor:col})),
   addVotes: () => set((state:any) => ({ votes: state.votes + 1 })),
   addPoint1: () => set((state:any) => ({ score: [state.score[0] + 1, state.score[1]]})),
   addPoint2: () => set((state:any) => ({ score: [state.score[0], state.score[1] + 1]})),

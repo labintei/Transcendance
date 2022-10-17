@@ -19,7 +19,7 @@ import pv_rough from "../Textures/Marble/Marble006_1K_Roughness.png"
 
 export default function Plane(props: JSX.IntrinsicElements['mesh']) {
 
-  const map = useStore((s: any) => s.map)
+  const map = useStore((s: any) => s.bgdChoice)
 
   const [colorMap, displacementMap, normalMap, roughnessMap] =
     useLoader(TextureLoader, [
@@ -55,7 +55,7 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
   return (
     // <PivotControls>
     <>
-      { map === "space" &&
+      { map === 0 &&
         <mesh
           {...props}
           ref={ref}
@@ -72,7 +72,7 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
           />
         </mesh>
       }
-      {map === "sky" &&
+      {map === 1 &&
         <mesh
           {...props}
         >

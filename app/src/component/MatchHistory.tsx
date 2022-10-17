@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-
+import {defaultavatar, challengeimg} from "./const";
 
 type Match = {
     id: number;
@@ -15,8 +15,6 @@ type Match = {
 type State = {
   listp:Array<Match>
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 export default class MatchList extends React.Component {
   state:State= {listp:[]};
@@ -81,7 +79,7 @@ export default class MatchList extends React.Component {
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
-        return (<img alt="challenge unvailable" src="/challenge_unavailable.png"></img>)
+        return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
   }
   
   render() {
@@ -95,7 +93,7 @@ export default class MatchList extends React.Component {
                   <p>You</p>
                   <p className='score1'>{match.score1}</p>
                 </div>
-                <button onClick={() => this.challengeClicked(match.id)}  id="challenge-button"></button>
+                {this.challenge_available(match.statusopp, match.idopp)}
                 <div className={this.render_status(match.score2, match.score1)}>
                   <p className='score2'>{match.score2}</p>
                   <p>{match.name}</p>

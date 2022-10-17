@@ -36,7 +36,7 @@ export class User {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @OneToMany(() => UserRelation, (relation) => (relation.user))
+  @OneToMany(() => UserRelation, (relation) => (relation.owner))
   relations: UserRelation[];
 
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
