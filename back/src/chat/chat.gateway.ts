@@ -8,6 +8,7 @@ import {
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
+import { emit } from 'process';
 import { User } from 'src/entities/user.entity';
 import { ChatService } from './chat.service';
 
@@ -31,28 +32,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     this.nbUser++;
 
-    // await this.chatService.addUser(query.username, this.nbUser);
+    await this.chatService.createUser(query.username);
   }
 
   async handleDisconnect(@ConnectedSocket() socket) {
     const query = socket.handshake.query;
+
     this.nbUser--;
-    // console.log(socket);
-  }
 
-  private test()
-  {
-    console.log("this is a test");
-  }
-
-  @SubscribeMessage('disconnect')
-  async handleDisconnect_(@MessageBody() data)
-  {
-    console.log("Test function:", data);
+    await this.chatService.deleteUser(query.username);
   }
 
   @SubscribeMessage('message')
-  sendMessage(@MessageBody() data) {
+  async sendMessage(@ConnectedSocket() socket, @MessageBody() data) {
     // data.time
     // data.content
     // data.sender
@@ -60,8 +52,25 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     console.log(data);
 
+    // const users = await this.chatService.getUser();
+
+    // socket.emit('message', users);
+
     // register in database
     // emit.to.room(msg)
+  }
+
+  @SubscribeMessage('create')
+  createChannel(@MessageBody() data) {
+    // data.sender
+    // data.channel
+    // data.type // public or private
+    // data.password
+
+    // check chan doesnt already exist // is check necessary
+    // create it
+    // else
+    // return error
   }
 
   @SubscribeMessage('join')
@@ -72,17 +81,6 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // check if chan exist
     //    join it (check perms)
     // emit.to.room(new user just dropped)
-  }
-
-  @SubscribeMessage('create')
-  createChannel(@MessageBody() data) {
-    // data.sender
-    // data.target // chan name (user input)
-
-    // check chan doesnt already exist // is check necessary
-    // create it
-    // else
-    // return error
   }
 
   @SubscribeMessage('leave')
