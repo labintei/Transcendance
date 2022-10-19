@@ -18,13 +18,27 @@ export class AppService {
   ){}
 
 
+  async newUserbis(){
+    const user = this.manager.create(User, {username: "lolo", ft_login: "yoyo"});
+    const bis = this.manager.create(User);
+    bis.username = 'jock';
+    bis.ft_login = 'jock';
+
+    await this.manager.save(user);
+    await this.manager.save(bis);
+    
+    const U = await this.manager.findOne(User, {where: {username: 'jock'}});
+    return U;
+    //await this.manager.insert(User, {username: "labintei",ft_login: "labintei"});
+    //await this.manager.insert(User, {username: "popo", ft_login: 'popopopo'});
+}
 
 
-  async newUser() {
+  async newUser(){
       //const user = this.manager.create(User, {username: "lolo", ft_login: "yoyo"});
       const bis = this.manager.create(User);
-      bis.username = 'jock';
-      bis.ft_login = 'jock';
+      bis.username = 'jockk';
+      bis.ft_login = 'jockk';
 
       //await this.manager.save(user);
       await this.manager.save(bis);

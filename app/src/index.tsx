@@ -13,6 +13,8 @@ import PlayerProfile from './component/PlayerProfile';
 import MatchList from './component/MatchHistory';
 import LevelList from './component/LevelList';
 import PongGame from './Game/src/PongGame';
+// pour des tests front back les components sont toujours en Majuscules
+import Labintei from './component/labintei';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -43,6 +45,10 @@ const router = createBrowserRouter([
         path: "game",
         element: <PongGame />,
       },
+      {
+        path: "labintei",
+        element: <Labintei />
+      }
     ],
   },
 ]);

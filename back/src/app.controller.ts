@@ -11,16 +11,39 @@ export class AppController {
     return this.appService.getHello();
   }
 
+
   @Get('user')
-  newUser() : User {
-    console.log("Ajout de User");
+  newUser() :User {
+    // cette facon marche
+    console.log("Insertion");
     let res;
+    this.appService.newUser().then( function (result) {res = result}).catch(function (error) {console.log("error")});
+    return res;
+  }
+ /* 
+  @Get('user')
+  newUser() {
+    console.log("Ajout de User");
+    async () => {   
+     try {
+        let res = await this.appService.newUser();
+       return res;
+      }
+      catch (error)
+      {
+       console.log("error");
+       return null;
+      }
+    }
+  //  async () => {
+  //    res = await this.appService.newUser();
+   //   return res;
+   // }
     async () => {
       await this.appService.newUser().then(function (result) {res = result}).catch( function (error) {
         console.log("error")})
     }
-    return res;
-  }
+  }*/
  
   @Get('message')
   newMessage(): void {
