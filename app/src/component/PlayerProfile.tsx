@@ -21,6 +21,7 @@ type State = {
   query2:File | null
   avatarEdit:boolean
 }
+
 function get_status (num:number, bgd:number) {
   return (bgd === num ? "selected":"not-select")
 }
@@ -61,13 +62,15 @@ function Customize(props: {pprof:PlayerProfile}) {
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
+  state:State;
 
-  componentDidMount() {
+  requestUser() {
     let player:Person = dflt;
-    axios.get("http://localhost:3000/user/").then(res => {
+    if (this.state !== undefined)
+      player = this.state.player;
+    axios.get("http://localhost:3000/users/one", {params: {name:"Enzo"}}).then(res => {
+      console.log(this.state.player);
       const data = res.data;
-      console.log (res);
       if (data.username !== undefined && data.rank !== undefined) {
         player.name = data.username;
         player.rank = data.rank;
@@ -77,15 +80,23 @@ export default class PlayerProfile extends React.Component {
           player.max_level = data.draws;
         }
       }
+      this.setState({player:player});
     });
-    this.setState({player:player});
+    return player;
+  }
+
+  constructor (props:any) {
+    super(props);
+    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
+    this.requestUser();
   }
 
   nameFormat(editing:boolean, name:string) {
+    console.log(name);
     if (editing)
       return (
         <input type="text"
-        placeholder={this.state.player.name}
+        placeholder={name}
           onChange={event => {this.setState({query: event.target.value})}}
           onKeyPress={event => {
                     if (event.key === 'Enter') {

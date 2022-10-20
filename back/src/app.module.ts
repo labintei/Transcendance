@@ -1,6 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { AppController } from './app.controller';
+import { AppController, UserController } from './app.controller';
 import { AppService } from './app.service';
 
 @Module({
@@ -18,7 +18,7 @@ import { AppService } from './app.service';
       synchronize: true
     })
   ],
-  controllers: [AppController],
+  controllers: [AppController, UserController],
   providers: [AppService],
 })
 

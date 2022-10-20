@@ -1,5 +1,26 @@
-import { Controller, Get } from '@nestjs/common';
-import { AppService, User } from './app.service';
+import { Controller, Get, Query } from '@nestjs/common';
+import { AppService } from './app.service';
+import { User } from 'entities/user.entity';
+
+@Controller("users")
+export class UserController {
+  constructor(private readonly appService: AppService) {}
+
+  @Get()
+  allUser() : User[] {
+    let test:User[] = Array(1);
+    test[0] = this.appService.getUser();
+    return test;
+  }
+
+  @Get('one')
+  getUser(@Query('name') name:string ): User {
+    let test:User = this.appService.getUser();
+    test.username = name;
+    console.log(name);
+    return test;
+  }
+}
 
 @Controller()
 export class AppController {
@@ -8,9 +29,5 @@ export class AppController {
   @Get()
   getHello(): string {
     return this.appService.getHello();
-  }
-  @Get("user/")
-  getUser(): User {
-    return this.appService.getUser();
   }
 }

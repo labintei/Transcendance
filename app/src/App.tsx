@@ -1,6 +1,7 @@
 import React from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
+import PersonList from 'component/PersonList';
 
 function App () {
   const navigate = useNavigate();
@@ -23,7 +24,6 @@ function App () {
       <div className="content">
         <Outlet />
       </div>
-
     </div>
   );
 }

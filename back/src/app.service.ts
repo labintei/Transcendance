@@ -1,12 +1,5 @@
 import { Injectable } from '@nestjs/common';
-
-export type User = {
-  username:string;
-  rank:number;
-  victories:number;
-  defeats:number;
-  draws:number;
-}
+import { User , UserStatus} from 'entities/user.entity';
 
 @Injectable()
 export class AppService {
@@ -14,7 +7,13 @@ export class AppService {
     return 'Hello World!';
   }
   getUser(): User {
-    let connectedClient:User = {username:"Kevin", rank:1, victories:10, defeats:5, draws:3};
+    let connectedClient:User = {
+      username: "Kevin", rank: 1, victories: 10, defeats: 5, draws: 3, relations: null,
+      ft_login: '',
+      status: UserStatus.ONLINE,
+      twoFA: '',
+      channels: []
+    };
     return connectedClient;
   }
 }
