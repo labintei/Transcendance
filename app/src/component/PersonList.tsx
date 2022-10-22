@@ -23,28 +23,28 @@ export default class PersonList extends React.Component {
   state:State= {pwait:0, listp:[], waiting:false, listf:[]};
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
+    axios.get(`http://localhost:3000/users/friends`, {params: {name:"Enzo"}})
       .then(res => {
-        const persons = res.data;
+        console.log(res);
+        const friends = res.data.friends;
+        const others = res.data.others;
         let listftmp: Array<Person> = [];
         let listtmp: Array<Person> = [];
-        for (var person of persons) {
-            let one: Person = {id: 0, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+        let id = 0;
+        for (var person of friends) {
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
             console.log(person);
-            if (person.id !== undefined && person.name !== undefined) {
-                one.id = person.id;
-                one.name = person.name;
-                if (person.id < 4)
-                  one.friend = true;
-                if (one.friend)
-                  listftmp.push(one);
-                else
-                  listtmp.push(one);
+            if (person.rank !== undefined && person.username !== undefined) {
+                one.rank = person.rank;
+                one.name = person.username;
+                one.friend = true;
+                listftmp.push(one);
             }
+            id++;
         }
         this.setState({listp: listtmp, listf: listftmp, pwait: Math.trunc(Math.random() * 4)});
         console.log(this.state);
-      })
+      }).catch(error => console.log(error))
   }
 
   challengeClicked(id:number) {

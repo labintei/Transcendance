@@ -33,7 +33,6 @@ function Customize(props: {pprof:PlayerProfile}) {
   const changeBg:any = useStore((s:any) => s.changeBgd);
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
-  console.log(bgd);
 
   return (
     <>
@@ -67,10 +66,10 @@ export default class PlayerProfile extends React.Component {
   requestUser() {
     let player:Person = dflt;
     if (this.state !== undefined)
-      player = this.state.player;
+      player = { ...this.state.player};
     axios.get("http://localhost:3000/users/one", {params: {name:"Enzo"}}).then(res => {
-      console.log(this.state.player);
       const data = res.data;
+      console.log(res);
       if (data.username !== undefined && data.rank !== undefined) {
         player.name = data.username;
         player.rank = data.rank;
@@ -80,9 +79,9 @@ export default class PlayerProfile extends React.Component {
           player.max_level = data.draws;
         }
       }
-      this.setState({player:player});
+      if (player != this.state.player)
+        this.setState({player:player});
     });
-    return player;
   }
 
   constructor (props:any) {
@@ -92,11 +91,11 @@ export default class PlayerProfile extends React.Component {
   }
 
   nameFormat(editing:boolean, name:string) {
-    console.log(name);
     if (editing)
       return (
         <input type="text"
-        placeholder={name}
+          placeholder={name}
+          minLength={2}
           onChange={event => {this.setState({query: event.target.value})}}
           onKeyPress={event => {
                     if (event.key === 'Enter') {

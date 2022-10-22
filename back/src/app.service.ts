@@ -16,4 +16,17 @@ export class AppService {
     };
     return connectedClient;
   }
+
+  getFriends(name:string): User[] {
+    let users:User[] = Array(3);
+    
+    users.fill(this.getUser(),0,3);
+    return users;
+  }
+  getAllNotFriends(name:string): User[] {
+    let users:User[] = Array(4);
+
+    users.fill(this.getUser(),0,5);
+    return users;
+  }
 }

@@ -13,6 +13,13 @@ export class UserController {
     return test;
   }
 
+  @Get('friends')
+  getFriends(@Query('name') name:string): {friends:User[], others:User[]} {
+    let fris:User[] = this.appService.getFriends(name);
+    let oth:User[] = this.appService.getAllNotFriends(name);
+    return {friends:fris, others:oth};
+  }
+
   @Get('one')
   getUser(@Query('name') name:string ): User {
     let test:User = this.appService.getUser();
