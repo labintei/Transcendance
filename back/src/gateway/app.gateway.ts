@@ -8,7 +8,9 @@ import {ConnectedSocket,
     WebSocketServer
 } from '@nestjs/websockets';
 
-@WebSocketGateway(3001)
+
+// process.env.POSTGRES_PASSWORD
+@WebSocketGateway((parseInt(process.env.WEBSITE_PORT, 10) || 3001))
 export class FrontGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     @WebSocketServer() server;
