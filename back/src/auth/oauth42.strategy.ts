@@ -5,11 +5,12 @@ import { AuthService } from './auth.service';
 import { Strategy } from 'passport-oauth2';
 import { pseudoRandomBytes } from 'crypto';
 import { firstValueFrom } from 'rxjs';
+import { createSecureServer } from 'http2';
 
 const clientID = process.env.API42_UID;
 const clientSecret = process.env.API42_SECRET;
 //const callbackURL = process.env.REACT_APP_WEBSITE_BASE_URL + "auth/";
-const callbackURL = "http://" + process.env.REACT_APP_HOSTNAME + ":3000/auth/";
+const callbackURL = "http://" + process.env.REACT_APP_WEBSITE_HOSTNAME + ":3000/auth/";
 const scope = "public";
 
 @Injectable()
@@ -19,7 +20,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
     private authService: AuthService,
 		private http: HttpService
   ) {
-		const state = pseudoRandomBytes(128).toString('base64url');
+		const state = pseudoRandomBytes(1024).toString('base64url');
     const authparams = new URLSearchParams({
       client_id     : clientID,
       redirect_uri  : callbackURL,
@@ -40,12 +41,17 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 
   async validate(accessToken: string): Promise<any> {
     const { data } = await firstValueFrom(
-			this.http.get('https://api.intra.42.fr/v2/me', {
-				headers: {
-					Authorization: "Bearer " + accessToken
-				},
-    	})
+			this.http.get(
+        'https://api.intra.42.fr/v2/me',
+        {
+          headers: {
+            Authorization: "Bearer " + accessToken
+          },
+    	  })
 		);
+    const user = await this.authService.findUserFrom42Login(data.login);
+    if (!user)
+      await this.authService.createUser(data.login);
 		return this.authService.findUserFrom42Login(data.login);
   }
 
