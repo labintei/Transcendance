@@ -11,8 +11,15 @@ export class AuthService {
     private manager: EntityManager
   ) {}
 
-  async createUser(login: string) {
+  async createUserFrom42Login(login: string): Promise<User> {
+    const user = this.manager.create(User);
+    user.username = login;
+    user.ft_login = login;
+    const similarnames = await this.manager.createQueryBuilder()
 
+    while similarnames.indexOf
+
+    return user;
   }
 
   async findUserFrom42Login(login: string): Promise<User> {

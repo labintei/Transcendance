@@ -1,11 +1,10 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { Strategy } from 'passport-oauth2';
 import { pseudoRandomBytes } from 'crypto';
-import { firstValueFrom } from 'rxjs';
-import { createSecureServer } from 'http2';
+import { lastValueFrom } from 'rxjs';
 
 const clientID = process.env.API42_UID;
 const clientSecret = process.env.API42_SECRET;
@@ -40,7 +39,8 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
   }
 
   async validate(accessToken: string): Promise<any> {
-    const { data } = await firstValueFrom(
+    console.log("validate Call");
+    const { data } = (await lastValueFrom(
 			this.http.get(
         'https://api.intra.42.fr/v2/me',
         {
@@ -48,11 +48,13 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
             Authorization: "Bearer " + accessToken
           },
     	  })
-		);
-    const user = await this.authService.findUserFrom42Login(data.login);
+		));
+    if (!data)
+      throw new UnauthorizedException();
+    let user = await this.authService.findUserFrom42Login(data.login);
     if (!user)
-      await this.authService.createUser(data.login);
-		return this.authService.findUserFrom42Login(data.login);
+      user = await this.authService.createUserFrom42Login(data.login);
+		return {...user, data42: data};
   }
 
 }

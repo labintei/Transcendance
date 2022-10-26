@@ -1,6 +1,5 @@
-import { Controller, Get, Req, Session, UseGuards } from '@nestjs/common';
+import { Controller, Get, Req, Request, Session, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
-import { Request } from 'express';
 import { AuthService } from './auth.service';
 
 @Controller('auth')
@@ -13,8 +12,8 @@ export class AuthController
 
 	@Get()
 	@UseGuards(AuthGuard('oauth42'))
-	async getUserFrom42Login(@Req() request : Request, @Session() session: Record<string, any>): Promise<any> {
-		return request.session.login;
-		//this.authService.findUserFrom42Login(request.session.visits);
+	async getUserFrom42Login(@Request() req): Promise<any> {
+    console.log("profile route CALL");
+		return req.user;
 	}
 }
