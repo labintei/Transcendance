@@ -9,7 +9,7 @@ export enum ChannelUserStatus {
   BANNED = "Banned"
 }
 
-@Entity()
+@Entity('channel_user')
 export class ChannelUser {
 
   @PrimaryColumn('int')

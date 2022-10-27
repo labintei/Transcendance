@@ -6,7 +6,7 @@ export enum ChannelUserStatus {
   BLOCKED = "Blocked"
 }
 
-@Entity()
+@Entity('user_relation')
 export class UserRelation {
 
   @PrimaryColumn('varchar')

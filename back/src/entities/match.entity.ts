@@ -7,7 +7,7 @@ export enum MatchStatus {
   ENDED = "Ended"
 }
 
-@Entity()
+@Entity('match')
 export class Match {
 
   @PrimaryGeneratedColumn('uuid')

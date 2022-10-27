@@ -8,7 +8,7 @@ export enum ChannelStatus {
   PRIVATE = "Private"
 }
 
-@Entity()
+@Entity('channel')
 export class Channel {
 
   @PrimaryGeneratedColumn()

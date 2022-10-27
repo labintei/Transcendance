@@ -9,7 +9,7 @@ export enum UserStatus {
   PLAYING = "Playing"
 }
 
-@Entity()
+@Entity('user')
 export class User {
 
   @PrimaryColumn({ length: 24, unique: true })

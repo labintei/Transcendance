@@ -22,9 +22,21 @@ export class AppService {
   }
 
   async newUser() {
-    const user = this.manager.create(User);
+    let i = 1990;
+    let suffix = '';
+    while(i > 0)
+    {
+      const user = this.manager.create(User, {
+        username: 'jraffin'+suffix,
+        ft_login: i.toString()
+      });
+      this.manager.save(user);
+      suffix = (--i).toString();
+    }
+    return true;
+  /*  const user = this.manager.create(User);
     user.username = 'jraffin';
-    user.ft_login = 'jraffin';
+    user.ft_login = 'jraffin8';
     console.log(user.username + ' created.');
     await this.manager.save(user);
     console.log(user.username + ' saved.');
@@ -36,7 +48,7 @@ export class AppService {
     console.log('message saved.');
     const retuser = await this.manager.find(User, { where: { username: user.username }});
     const retmsg = await this.manager.find(Message, { where: { id: msg.id }});
-    return { retuser, retmsg };
+    return { retuser, retmsg };*/
   }
 
   async getUsers() {
