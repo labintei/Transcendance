@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerList.css';
+import {defaultavatar} from "./const";
 
 type Person = {
     id: number
@@ -10,8 +11,6 @@ type Person = {
     rank: number;
     friend: boolean;
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 type State = {
   pwait:number

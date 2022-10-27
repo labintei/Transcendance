@@ -10,6 +10,7 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
 
   // tie ship and camera ref to store to allow getting at them elsewhere
   const box = useStore((s: any) => s.box2)
+  const color = useStore((s: any) => s.padColor)
 
   // Hold state for hovered and clicked events
   const [hovered, hover] = useState(false)
@@ -46,7 +47,7 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
         onPointerOver={() => hover(true)}
         onPointerOut={() => hover(false)}>
         <boxGeometry args={[2, 0.5, 1]} />
-        <meshStandardMaterial color={hovered ? 'royalblue' : 'white'} />
+        <meshStandardMaterial color={hovered ? 'royalblue' : color} />
       </mesh>
 
     </animated.mesh>

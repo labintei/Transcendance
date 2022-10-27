@@ -1,6 +1,9 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerProfile.css';
+import {defaultavatar} from "./const";
+import { useStore } from 'Game/src/State/state';
+import { preProcessFile } from 'typescript';
 
 type Person = {
     name: string;
@@ -10,9 +13,7 @@ type Person = {
     defeats:number;
     max_level:number;
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
-const dflt:Person = {name: '', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
+const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
 
 type State = {
   player:Person
@@ -20,27 +21,53 @@ type State = {
   query:string
   query2:File | null
   avatarEdit:boolean
-  bgChoice:number
+}
+function get_status (num:number, bgd:number) {
+  return (bgd === num ? "selected":"not-select")
+}
+
+function Customize(props: {pprof:PlayerProfile}) {
+  const bgd:number = useStore((s:any) => s.bgdChoice);
+  const padc:string = useStore((s:any) => s.padColor);
+  const ballc:string = useStore((s:any) => s.ballColor);
+  const changeBg:any = useStore((s:any) => s.changeBgd);
+  const changePad:any = useStore((s:any) => s.changePadColor);
+  const changeBall:any = useStore((s:any) => s.changeBallColor);
+  console.log(bgd);
+
+  return (
+    <>
+      <h3>Choose your in-game background :</h3>
+        <div className='bgd-buttons'>
+        <button className={get_status(0, bgd)}
+          style={props.pprof.styleImgAsDiv('/space_choice.jpg')}
+          onClick={() => changeBg(0)}>
+        </button>
+        <button className={get_status(1, bgd)}
+          style={props.pprof.styleImgAsDiv('/sea_choice.jpg')}
+          onClick={() => changeBg(1)}>
+        </button>
+        </div>
+      <h3>Choose your colors :</h3>
+      <input type="color" value={padc} id="pad" className="colorPick"
+        onChange={event => {changePad(event.target.value)}
+      }></input>
+      <label htmlFor="pad">Paddle</label>
+      <input type="color" value={ballc} id="ball" className="colorPick"
+        onChange={event => {changeBall(event.target.value)}
+      }></input>
+      <label htmlFor="ball">Ball</label>
+    </>
+  )
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, bgChoice:0};
+  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
-      .then(res => {
-        const persons = res.data;
-        let person = persons.at(0);
-        let one: Person = dflt;
-        if (person.id !== undefined && person.name !== undefined) {
-            one.rank = person.id;
-            one.name = person.name;
-        }
-        if (person.avatar_location !== undefined)
-          one.avatar_location = person.avatar_location;
-        this.setState({player: one});
-        console.log(this.state);
-      })
+    let player:Person = dflt;
+
+    this.setState({player:player});
   }
 
   nameFormat(editing:boolean, name:string) {
@@ -108,26 +135,6 @@ export default class PlayerProfile extends React.Component {
     return (divStyle)
   }
 
-  change_background(choice:number) {
-    this.setState({bgChoice:choice});
-  }
-
-  create_button (num:number) {
-    let img:string = "";
-    let status:string = this.state.bgChoice === num ? "selected":"not-select";
-    if (num === 0) {
-      img = '/space_choice.jpg';
-    } else if (num === 1) {
-      img = '/blue_sky_choice.jpg';
-    }
-
-    return (
-      <button className={status}
-        style={this.styleImgAsDiv(img)}
-        onClick={() => this.change_background(num)}>
-      </button>
-    )
-  }
 
   render() {
     return (
@@ -153,11 +160,7 @@ export default class PlayerProfile extends React.Component {
                 <p>{this.state.player.max_level}</p>
             </li>
         </ul>
-        <h3>Choose your in-game background :</h3>
-        <div className='bgd-buttons'>
-          {this.create_button(0)}
-          {this.create_button(1)}
-        </div>
+        <Customize pprof={this}></Customize>
         </>
 
     )
