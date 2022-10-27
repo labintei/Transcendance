@@ -65,6 +65,13 @@ export default class PlayerProfile extends React.Component {
   state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
 
   componentDidMount() {
+
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user/")
+      .then(res => {
+        console.log(res);
+        console.log(res.data);
+      })
+
     let player:Person = dflt;
 
     this.setState({player:player});
@@ -86,7 +93,7 @@ export default class PlayerProfile extends React.Component {
     else
         return (
           <><h1>{name}<button className='edit-button' onClick={() => this.setState({nameEdit:true})}></button></h1>
-          
+
           </>
         )
   }

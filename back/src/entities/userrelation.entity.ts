@@ -1,7 +1,7 @@
 import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
-export enum ChannelUserStatus {
+export enum RelationStatus {
   FRIEND = "Friend",
   BLOCKED = "Blocked"
 }
@@ -23,6 +23,6 @@ export class UserRelation {
   @JoinColumn({ name: 'related' })
   related_setfk: User;
 
-  @Column({ default: ChannelUserStatus.FRIEND })
-  status: ChannelUserStatus;
+  @Column({ default: RelationStatus.FRIEND })
+  status: RelationStatus;
 }
