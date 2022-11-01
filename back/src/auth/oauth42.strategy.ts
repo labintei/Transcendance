@@ -1,30 +1,30 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
-import { AuthService } from './auth.service';
 import { Strategy } from 'passport-oauth2';
 import { lastValueFrom } from 'rxjs';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 {
   constructor(
 		private http: HttpService,
-    private authService: AuthService
+    private userService: UserService
   ) {
     super({
-      authorizationURL: "https://api.intra.42.fr/oauth/authorize",
-      tokenURL        : "https://api.intra.42.fr/oauth/token",
-      clientID        : process.env.API42_UID,
-      clientSecret    : process.env.API42_SECRET,
-      //callbackURL     : process.env.REACT_APP_WEBSITE_URL + "auth/",
-      callbackURL     : process.env.REACT_APP_BACKEND_URL + "auth/",
-      scope           : "public",
-      state           : true // Value doesn't matter, just defining it enables the state to be generated at each request.
+      authorizationURL  : "https://api.intra.42.fr/oauth/authorize",
+      tokenURL          : "https://api.intra.42.fr/oauth/token",
+      clientID          : process.env.API42_UID,
+      clientSecret      : process.env.API42_SECRET,
+      callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth",
+      scope             : "public",
+      state             : true // Value doesn't matter, just defining it enables the state to be generated at each request.
     });
   }
 
   async validate(accessToken: string): Promise<any> {
+    console.log('validate()');
     const { data } = (await lastValueFrom(
 			this.http.get(
         'https://api.intra.42.fr/v2/me',
@@ -34,8 +34,8 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
           },
     	  })
 		));
-    const user = await this.authService.findUserFrom42Login(data.login);
-		return { ...user, data42: data };
+    const user = await this.userService.findUserFrom42Login(data.login);
+		return data;
   }
 
 }

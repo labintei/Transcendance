@@ -12,12 +12,12 @@ export enum UserStatus {
 @Entity('user')
 export class User {
 
-  @PrimaryColumn({ length: 24, unique: true })
-  username: string;
+  @PrimaryColumn({ length: 8, unique: true })
+  ft_login: string;
 
   @Index({ unique: true })
-  @Column({ length: 8 })
-  ft_login: string;
+  @Column({ length: 24 })
+  username: string;
 
   @Column({ default: UserStatus.ONLINE })
   status: UserStatus;

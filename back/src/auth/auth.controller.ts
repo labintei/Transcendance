@@ -1,18 +1,20 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
-import { AuthGuard } from '@nestjs/passport';
-import { User } from 'src/entities/user.entity';
-import { AuthService } from './auth.service';
+import { Controller, Get, Redirect, Request, UseGuards } from '@nestjs/common';
+import { AuthenticatedGuard } from './authenticated.guard';
+import { oauth42Guard } from './oauth42.guard';
 
-@Controller('auth')
+@Controller()
 export class AuthController
 {
-	constructor(
-		private readonly authService: AuthService
-	) {}
+	@Get('auth')
+	@UseGuards(oauth42Guard)
+	@Redirect(process.env.REACT_APP_BACKEND_URL + 'user')
+	//@Redirect(process.env.REACT_APP_WEBSITE_URL + 'profile')
+	async loginWith42() {}
 
-	@Get()
-	@UseGuards(AuthGuard('oauth42'))
-	async getUserFrom42Login(@Request() req): Promise<User> {
-		return req.user;
+	@Get('logout')
+	async logout(@Request() req): Promise<any> {
+		req.session.destroy();
+		return "You are now logged out.";
 	}
+
 }
