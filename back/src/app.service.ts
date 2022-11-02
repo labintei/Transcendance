@@ -8,7 +8,7 @@ export class AppService {
   }
   getUser(): User {
     let connectedClient:User = {
-      username: "Kevin", rank: 1, victories: 10, defeats: 5, draws: 3, relations: null,
+      username: "Kevin", rank: 10, victories: 10, defeats: 5, draws: 3, relations: null,
       ft_login: '',
       status: UserStatus.ONLINE,
       twoFA: '',
@@ -19,14 +19,21 @@ export class AppService {
 
   getFriends(name:string): User[] {
     let users:User[] = Array(3);
-    
-    users.fill(this.getUser(),0,3);
+    for (let i:number = 0; i < 3; i++) {
+      users[i] = this.getUser();
+      users[i].rank = i;
+      users[i].username += i;
+    }
     return users;
   }
-  getAllNotFriends(name:string): User[] {
-    let users:User[] = Array(4);
+  getAll(name:string): User[] {
+    let users:User[] = Array(16);
 
-    users.fill(this.getUser(),0,5);
+    for (let i:number = 0; i < 16; i++) {
+      users[i] = this.getUser();
+      users[i].rank = i;
+      users[i].username += i;
+    }
     return users;
   }
 }

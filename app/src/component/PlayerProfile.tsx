@@ -10,9 +10,9 @@ type Person = {
     rank: number;
     victories: number;
     defeats:number;
-    max_level:number;
+    draws:number;
 }
-const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
+const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, draws:0};
 
 type State = {
   player:Person
@@ -76,10 +76,10 @@ export default class PlayerProfile extends React.Component {
         if (data.victories !== undefined && data.defeats !== undefined && data.draws !== undefined) {
           player.defeats = data.defeats;
           player.victories = data.victories;
-          player.max_level = data.draws;
+          player.draws = data.draws;
         }
       }
-      if (player != this.state.player)
+      if (player !== this.state.player)
         this.setState({player:player});
     });
   }
@@ -120,7 +120,7 @@ export default class PlayerProfile extends React.Component {
 
   changeAvatar() {
     let temp:Person = this.state.player;
-    if (this.state.query2 != null)
+    if (this.state.query2 !== null)
     {
       temp.avatar_location = "/logo192.png";//this.state.query2.name;
     }
@@ -169,16 +169,16 @@ export default class PlayerProfile extends React.Component {
         <h3>Rank {this.state.player.rank}</h3>
         <ul id="stats-list">
             <li>
+                <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" />
+                <p>{this.state.player.victories + this.state.player.defeats + this.state.player.draws}</p>
+            </li>
+            <li>
                 <img className="image" src="https://cdn0.iconfinder.com/data/icons/education-340/100/Tilda_Icons_1ed_cup-512.png" alt="Trophy Icon" />
                 <p>{this.state.player.victories}</p>
             </li>
             <li>
                 <img className="image" src="https://cdn0.iconfinder.com/data/icons/font-awesome-solid-vol-2/512/heart-broken-512.png" alt="Broken heart Icon" />
                 <p>{this.state.player.defeats}</p>
-            </li>
-            <li>
-                <img className="image" src="https://cdn1.iconfinder.com/data/icons/business-rounded-outline-fill-style/64/illustration_Personal_Development-256.png" alt="Solo Progress" />
-                <p>{this.state.player.max_level}</p>
             </li>
         </ul>
         <Customize pprof={this}></Customize>

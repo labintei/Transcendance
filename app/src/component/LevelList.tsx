@@ -20,23 +20,22 @@ export default class LevelList extends React.Component {
   state:State= {listl:[]};
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
+    axios.get(`http://localhost:3000/users/rank`, {params: {name:"Enzo"}})
       .then(res => {
         const pranks = res.data;
-        let sco:number = 1;
+        console.log(pranks);
         let listtmp: Array<PRank> = [];   
         for (var prank of pranks) {
-            let one: PRank = {id: 0, name: '', rank: sco, avatar_location:defaultavatar, status:0};
-            console.log(prank);
-            if (prank.id !== undefined && prank.name !== undefined) {
-                one.id = prank.id;
-                one.name = prank.name;
+            let one: PRank = {id: 0, name: '', rank: 50, avatar_location:defaultavatar, status:0};
+            if (prank.username !== undefined && prank.rank !== undefined) {
+                one.id = prank.rank;
+                one.name = prank.username;
+                one.rank = prank.rank;
                 one.status = prank.id % 3;
                 listtmp.push(one);
             }
-            if (sco > 0)
-              sco += 1;
         }
+        console.log(listtmp);
         this.setState({listl: listtmp});
       })
   }

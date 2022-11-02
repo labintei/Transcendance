@@ -42,6 +42,16 @@ export default class PersonList extends React.Component {
             }
             id++;
         }
+        for (var persono of others) {
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            if (persono.rank !== undefined && persono.username !== undefined) {
+                one.rank = persono.rank;
+                one.name = persono.username;
+                one.friend = false;
+                listtmp.push(one);
+            }
+            id++;
+        }
         this.setState({listp: listtmp, listf: listftmp, pwait: Math.trunc(Math.random() * 4)});
         console.log(this.state);
       }).catch(error => console.log(error))
