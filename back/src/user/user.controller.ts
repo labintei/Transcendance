@@ -1,5 +1,5 @@
 import { Controller, Get, Request, UseGuards } from '@nestjs/common';
-import { AuthenticatedGuard } from 'src/auth/authenticated.guard';
+import { SessionGuard } from 'src/auth/session.guard';
 import { User } from 'src/entities/user.entity';
 import { UserService } from './user.service';
 
@@ -12,27 +12,27 @@ export class UserController
   ) {}
 
   @Get()
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(SessionGuard)
   async getUser(@Request() req): Promise<User> {
-    return this.userService.findUserFrom42Login(req.user.login);
+    return this.userService.getUser(req.user.login);
   }
 
   @Get('friends')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(SessionGuard)
   async getFriends(@Request() req): Promise<any> {
-    const user = await this.userService.findUserFrom42Login(req.user.login);
+    const user = await this.userService.getUser(req.user.login);
     return this.userService.getFriends(user);
   }
 
   @Get('blockeds')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(SessionGuard)
   async getBlockeds(@Request() req): Promise<any> {
-    const user = await this.userService.findUserFrom42Login(req.user.login);
+    const user = await this.userService.getUser(req.user.login);
     return this.userService.getBlockeds(user);
   }
 
   @Get('42')
-  @UseGuards(AuthenticatedGuard)
+  @UseGuards(SessionGuard)
   async get42UserInfos(@Request() req): Promise<any> {
     return req.user;
   }

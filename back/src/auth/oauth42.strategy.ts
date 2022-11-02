@@ -34,8 +34,15 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
           },
     	  })
 		));
-    const user = await this.userService.findUserFrom42Login(data.login);
-		return data;
+    let user = await this.userService.getUser(data.login);
+    if (!user) {
+      console.log('42 login "' + data.login + '" has not been found! Creating...');
+      user = await this.userService.createNewUserFrom42Login(data.login);
+      console.log('User "' + user.username + '" Created.');
+    }
+    else
+      console.log('User "' + user.username + '" with 42 login "' + data.login + '" has been found.');
+    return data;
   }
 
 }

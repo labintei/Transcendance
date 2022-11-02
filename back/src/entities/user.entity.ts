@@ -12,7 +12,7 @@ export enum UserStatus {
 @Entity('user')
 export class User {
 
-  @PrimaryColumn({ length: 8, unique: true })
+  @PrimaryColumn({ length: 10, unique: true })
   ft_login: string;
 
   @Index({ unique: true })

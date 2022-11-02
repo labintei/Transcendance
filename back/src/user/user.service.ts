@@ -20,7 +20,7 @@ export class UserService {
   **  This sorted array obtained in result permits to check rapidly for the
   **  first available login(+number) available.
   */
-  async createDefaultUserFrom42Login(login: string): Promise<User> {
+  async createNewUserFrom42Login(login: string): Promise<User> {
     const similarusers = await this.manager.query(`
       SELECT username
       FROM "user"
@@ -41,20 +41,16 @@ export class UserService {
     return this.manager.save(user);
   }
 
-  async findUserFrom42Login(login: string): Promise<User> {
-    let user = await this.manager.findOneBy(User, { ft_login: login });
-    if (!user) {
-      console.log('42 login "' + login + '" has not been found! Creating...');
-      user = await this.createDefaultUserFrom42Login(login);
-      console.log('User "' + user.username + '" Created.');
-    }
-    else
-      console.log('User "' + user.username + '" with 42 login "' + login + '" has been found.');
-    return user;
-  }
-
   async getUser(login: string): Promise<User> {
     return this.manager.findOneBy(User, { ft_login: login })
+  }
+
+  async addRelation(user: User, friend: User, relation: RelationStatus) {
+
+  }
+
+  async delRelation(user: User, friend: User, relation: RelationStatus) {
+
   }
 
   async getFriends(user: User): Promise<UserRelation[]> {
