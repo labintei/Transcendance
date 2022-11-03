@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 
-export enum ChannelStatus {
+enum ChannelStatus {
   DIRECT = "Direct",
   PUBLIC = "Public",
   PRIVATE = "Private"
@@ -28,4 +28,8 @@ export class Channel {
 
   @OneToMany(() => Message, (msg) => (msg.channel))
   messages: Message[];
+}
+
+export namespace Channel {
+  export import Status = ChannelStatus;
 }

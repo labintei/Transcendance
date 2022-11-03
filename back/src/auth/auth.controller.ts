@@ -6,10 +6,8 @@ export class AuthController
 {
 	@Get('auth')
 	@UseGuards(oauth42Guard)
-	//@Redirect(process.env.REACT_APP_WEBSITE_URL + 'profile', 302)
-	async loginWith42(@Query('redirectAfterLogin') redirURL, @Response() res) {
-		if (res.status === 200)
-			res.redirect(redirURL, 302);
+	async loginWith42() {
+		return "You are now logged in.";
 	}
 
 	@Get('logout')

@@ -24,7 +24,6 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
   }
 
   async validate(accessToken: string): Promise<any> {
-    console.log('validate()');
     const { data } = (await lastValueFrom(
 			this.http.get(
         'https://api.intra.42.fr/v2/me',
@@ -34,14 +33,10 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
           },
     	  })
 		));
-    let user = await this.userService.getUser(data.login);
-    if (!user) {
-      console.log('42 login "' + data.login + '" has not been found! Creating...');
+    let user = await this.userService.getUserByLogin(data.login);
+    if (!user)
       user = await this.userService.createNewUserFrom42Login(data.login);
-      console.log('User "' + user.username + '" Created.');
-    }
-    else
-      console.log('User "' + user.username + '" with 42 login "' + data.login + '" has been found.');
+    console.log('authenticated user "' + user.username + '" with 42 login "' + data.login + '".');
     return data;
   }
 

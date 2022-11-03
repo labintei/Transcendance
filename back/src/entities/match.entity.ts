@@ -1,7 +1,7 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
 import { User } from './user.entity';
 
-export enum MatchStatus {
+enum MatchStatus {
   MATCHED = "Matched",
   ONGOING = "Ongoing",
   ENDED = "Ended"
@@ -36,4 +36,8 @@ export class Match {
   @ManyToOne(() => User)
   @JoinColumn({ name: 'user2' })
   user2: User;
+}
+
+export namespace Match {
+  export import Status = MatchStatus;
 }

@@ -2,7 +2,7 @@ import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
-export enum ChannelUserStatus {
+enum ChannelUserStatus {
   OWNER = "Owner",
   JOINED = "Joined",
   MUTED = "Muted",
@@ -12,20 +12,25 @@ export enum ChannelUserStatus {
 @Entity('channel_user')
 export class ChannelUser {
 
-  @PrimaryColumn('int')
-  channel: Channel;
+  @PrimaryColumn({ type: 'int', name: 'channel' })
+  channelId: Channel;
 
-  @PrimaryColumn('varchar')
-  user: User;
+  @PrimaryColumn({ type: 'varchar', name: 'user' })
+  userFtLogin: User;
 
   @ManyToOne(() => Channel, (chan) => (chan.users))
   @JoinColumn({ name: 'channel' })
-  channel_setfk: Channel;
+  channel: Channel;
 
   @ManyToOne(() => User, (user) => (user.channels))
   @JoinColumn({ name: 'user' })
-  user_setfk: User;
+  user: User;
 
   @Column({ default: ChannelUserStatus.OWNER })
   status: ChannelUserStatus;
 }
+
+export namespace ChannelUser {
+  export import Status = ChannelUserStatus;
+}
+

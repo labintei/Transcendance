@@ -1,8 +1,8 @@
 import { Entity, PrimaryColumn, Index, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
-import { UserRelation } from './userrelation.entity';
+import { UserRelationship } from './userrelationship.entity';
 
-export enum UserStatus {
+enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   MATCHING = "Matching",
@@ -37,9 +37,13 @@ export class User {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @OneToMany(() => UserRelation, (relation) => (relation.owner))
-  relations: UserRelation[];
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
+  relationships: UserRelationship[];
 
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
+}
+
+export namespace User {
+  export import Status = UserStatus;
 }

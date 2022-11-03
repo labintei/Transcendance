@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
-import { RelationStatus, UserRelation } from 'src/entities/userrelation.entity';
+import { UserRelationship } from 'src/entities/userrelationship.entity';
 
 @Injectable()
 export class UserService {
@@ -41,45 +41,47 @@ export class UserService {
     return this.manager.save(user);
   }
 
-  async getUser(login: string): Promise<User> {
+  async getUserByLogin(login: string): Promise<User> {
     return this.manager.findOneBy(User, { ft_login: login })
   }
 
-  async addRelation(user: User, friend: User, relation: RelationStatus) {
-
+  async getUserByUsername(username: string): Promise<User> {
+    return this.manager.findOneBy(User, { username: username })
   }
 
-  async delRelation(user: User, friend: User, relation: RelationStatus) {
-
+  async setRelationship(user: User, relatedUser: User, relationStatus: UserRelationship.Status): Promise<UserRelationship> {
+    return this.manager.save(this.manager.create(UserRelationship, {
+      owner: user,
+      related: relatedUser,
+      status: relationStatus
+    }));
   }
 
-  async getFriends(user: User): Promise<UserRelation[]> {
-    const friends = this.manager.find(UserRelation, {
-      select: {
-        related: {
-          username: true
-        }
+  async delRelationship(user: User, relatedUser: User) {
+    return this.manager.delete(UserRelationship, this.manager.findOneBy(UserRelationship, {
+      owner: user,
+      related: relatedUser
+    }));
+  }
+
+  async getRelationship(user: User, relatedUser:User): Promise<UserRelationship.Status | null> {
+    const relationship = await this.manager.findOneBy(UserRelationship, { owner: user, related: relatedUser });
+    if (!relationship)
+      return null;
+    return relationship.status;
+  }
+
+  async getRelationshipList(user: User, relationshipStatus: UserRelationship.Status): Promise<any> {
+    const relationships = await this.manager.find(UserRelationship, {
+      relations: {
+          related: true
       },
       where: {
-        owner: user,
-        status: RelationStatus.FRIEND
+        owner : user,
+        status: relationshipStatus
       }
     });
-    return friends;
-  }
-
-  async getBlockeds(user: User): Promise<UserRelation[]> {
-    const friends = this.manager.find(UserRelation, {
-      select: {
-        related: {
-          username: true
-        }
-      },
-      where: {
-        owner: user,
-        status: RelationStatus.BLOCKED
-      }
-    });
-    return friends;
+    const result = relationships.map((relationship) => relationship.related);
+    return result;
   }
 }
