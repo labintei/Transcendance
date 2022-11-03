@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Redirect, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/auth/session.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';

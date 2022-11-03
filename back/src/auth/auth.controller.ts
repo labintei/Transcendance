@@ -1,4 +1,4 @@
-import { Controller, Get, Query, Request, Response, UseGuards } from '@nestjs/common';
+import { Controller, Get, Request, UseGuards } from '@nestjs/common';
 import { oauth42Guard } from './oauth42.guard';
 
 @Controller()

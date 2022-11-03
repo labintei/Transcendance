@@ -1,7 +1,6 @@
 import { Controller, Delete, Get, NotFoundException, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/auth/session.guard';
 import { User } from 'src/entities/user.entity';
-import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
