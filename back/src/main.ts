@@ -7,7 +7,7 @@ import * as passport from 'passport';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   app.use(session({
-    secret: pseudoRandomBytes(128).toString('base64url'),
+    secret: pseudoRandomBytes(128).toString('base64'),
     resave: false,
     saveUninitialized: false
   }));

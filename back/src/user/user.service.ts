@@ -49,6 +49,16 @@ export class UserService {
     return this.manager.findOneBy(User, { username: username })
   }
 
+  async updateUser(login: string, updates: object): Promise<User> {
+    const updated = await this.manager.preload(User, {...updates, ft_login: login});
+    delete updated.twoFA;
+    delete updated.rank;
+    delete updated.victories;
+    delete updated.defeats;
+    delete updated.draws;
+    return this.manager.save(updated);
+  }
+
   async setRelationship(user: User, relatedUser: User, relationStatus: UserRelationship.Status): Promise<UserRelationship> {
     return this.manager.save(this.manager.create(UserRelationship, {
       owner: user,

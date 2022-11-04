@@ -61,8 +61,6 @@ services:
       - POSTGRES_PASSWORD
       - API42_UID
       - API42_SECRET
-      - SESSION_SECRET
-      - JWT_SECRET
     env_file:
       - .hostname.env
 

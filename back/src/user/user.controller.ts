@@ -1,6 +1,7 @@
-import { Controller, Delete, Get, NotFoundException, Param, Post, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { SessionGuard } from 'src/auth/session.guard';
 import { User } from 'src/entities/user.entity';
+import { getManager } from 'typeorm';
 import { UserService } from './user.service';
 
 @Controller('user')
@@ -14,12 +15,17 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
-    return this.userService.getUserByLogin(req.user.login);
+    return this.userService.getUserByLogin(req.user.ft_login);
+  }
+
+  @Put()
+  async updateMe(@Request() req): Promise<User> {
+    return this.userService.updateUser(req.user.ft_login, req.body);
   }
 
   @Get(':username')
   async getUserAndRelationship(@Request() req, @Param('username') username): Promise<any> {
-    const user = await this.userService.getUserByLogin(req.user.login);
+    const user = await this.userService.getUserByLogin(req.user.ft_login);
     const related = await this.userService.getUserByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
@@ -29,7 +35,7 @@ export class UserController
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const user = await this.userService.getUserByLogin(req.user.login);
+    const user = await this.userService.getUserByLogin(req.user.ft_login);
     const related = await this.userService.getUserByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');

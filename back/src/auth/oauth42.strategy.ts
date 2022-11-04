@@ -19,7 +19,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
       clientSecret      : process.env.API42_SECRET,
       callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth",
       scope             : "public",
-      state             : true // Value doesn't matter, just defining it enables the state to be generated at each request.
+      store             : true // Value doesn't matter, just defining it enables the state to be generated at each request.
     });
   }
 
@@ -37,7 +37,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
     if (!user)
       user = await this.userService.createNewUserFrom42Login(data.login);
     console.log('authenticated user "' + user.username + '" with 42 login "' + data.login + '".');
-    return data;
+    return {...user, data42: data};
   }
 
 }
