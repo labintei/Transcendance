@@ -26,7 +26,11 @@ export class ChannelUser {
   @JoinColumn({ name: 'user' })
   user: User;
 
-  @Column({ default: ChannelUserStatus.OWNER })
+  @Column({
+    type: 'enum',
+    enum: ChannelUserStatus,
+    default: ChannelUserStatus.OWNER
+  })
   status: ChannelUserStatus;
 }
 

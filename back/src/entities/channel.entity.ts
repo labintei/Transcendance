@@ -14,7 +14,11 @@ export class Channel {
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: ChannelStatus.DIRECT })
+  @Column({
+    type: 'enum',
+    enum: ChannelStatus,
+    default: ChannelStatus.DIRECT
+  })
   status: ChannelStatus;
 
   @Column({ type: 'varchar', length: 60, nullable: true })

@@ -4,7 +4,7 @@ import { User } from './user.entity';
 enum MatchStatus {
   MATCHED = "Matched",
   ONGOING = "Ongoing",
-  ENDED = "Ended"
+  ENDED = "Finished"
 }
 
 @Entity('match')

@@ -17,31 +17,33 @@ export class AppService implements OnModuleInit {
   }
 
   generateExamples() {
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'iromanova',
-      username: 'aroma'
-    }));
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'lbintein',
-      username: 'labintei'
-    }));
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'omarecha',
-      username: 'bmarecha'
-    }));
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'edjubert',
-      username: 'edjavid'
-    }));
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'lraffin',
-      username: 'jraffin'
-    }));
-    this.manager.save(this.manager.create(User, {
-      ft_login: 'jraffin',
-      username: 'jraffin1',
-      twoFA: "123456",
-    }));
+    this.manager.save([
+      this.manager.create(User, {
+        ft_login: 'iromanova',
+        username: 'aroma'
+      }),
+      this.manager.create(User, {
+        ft_login: 'lbintein',
+        username: 'labintei'
+      }),
+      this.manager.create(User, {
+        ft_login: 'omarecha',
+        username: 'bmarecha'
+      }),
+      this.manager.create(User, {
+        ft_login: 'edjubert',
+        username: 'edjavid'
+      }),
+      this.manager.create(User, {
+        ft_login: 'lraffin',
+        username: 'jraffin'
+      }),
+      this.manager.create(User, {
+        ft_login: 'jraffin',
+        username: 'jraffin1',
+        twoFA: "123456",
+      })
+    ]);
   }
 
   onModuleInit() {

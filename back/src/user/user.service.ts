@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
+import { ConflictException, ExceptionFilter, ForbiddenException, Injectable } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
+import { lastValueFrom } from 'rxjs';
 
 @Injectable()
 export class UserService {
@@ -49,14 +50,19 @@ export class UserService {
     return this.manager.findOneBy(User, { username: username })
   }
 
-  async updateUser(login: string, updates: object): Promise<User> {
-    const updated = await this.manager.preload(User, {...updates, ft_login: login});
-    delete updated.twoFA;
-    delete updated.rank;
-    delete updated.victories;
-    delete updated.defeats;
-    delete updated.draws;
-    return this.manager.save(updated);
+  async updateUser(login: string, updates): Promise<User> {
+    let toUpdate = {
+      ft_login: login,
+      username: updates.username,
+      status: updates.status,
+      twoFA: updates.twoFA
+    };
+    try {
+      return await this.manager.save(User, toUpdate);
+    }
+    catch {
+      throw new ConflictException("User update failed because of a field value.");
+    }
   }
 
   async setRelationship(user: User, relatedUser: User, relationStatus: UserRelationship.Status): Promise<UserRelationship> {
@@ -81,7 +87,7 @@ export class UserService {
     return relationship.status;
   }
 
-  async getRelationshipList(user: User, relationshipStatus: UserRelationship.Status): Promise<any> {
+  async getRelationshipList(user: User, relationshipStatus: UserRelationship.Status): Promise<User[]> {
     const relationships = await this.manager.find(UserRelationship, {
       relations: {
           related: true
@@ -94,4 +100,30 @@ export class UserService {
     const result = relationships.map((relationship) => relationship.related);
     return result;
   }
+
+  xpAmountForNextLevel(user: User): number {
+    const x = 0.03;
+    const y = 1.5;
+    return ((user.level / x) ^ y);
+  }
+
+  async gainXP(user: User, xpToAdd: number): Promise<User> {
+    const rest = this.xpAmountForNextLevel(user) - user.xp;
+    if (rest <= xpToAdd) {
+      ++user.level;
+      user.xp = 0;
+      xpToAdd -= rest;
+    }
+    user.xp += xpToAdd;
+    return this.manager.save(user);
+  }
+
+  async looseXP(user: User, xpToLose: number): Promise<User> {
+    if (user.xp > xpToLose)
+      user.xp -= xpToLose;
+    else
+      user.xp = 0;
+    return this.manager.save(user);
+  }
+
 }

@@ -23,7 +23,11 @@ export class UserRelationship {
   @JoinColumn({ name: 'related' })
   related: User;
 
-  @Column({ default: UserRelationshipStatus.FRIEND })
+  @Column({
+    type: 'enum',
+    enum:  UserRelationshipStatus,
+    default: UserRelationshipStatus.FRIEND
+  })
   status: UserRelationshipStatus;
 }
 

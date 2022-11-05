@@ -19,7 +19,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
       clientSecret      : process.env.API42_SECRET,
       callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth",
       scope             : "public",
-      store             : true // Value doesn't matter, just defining it enables the state to be generated at each request.
+      store             : true
     });
   }
 
