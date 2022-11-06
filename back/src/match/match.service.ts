@@ -44,26 +44,25 @@ export class MatchService {
       ++match.user1.defeats;
     }
     // Resolve users XP gains/losses.
-
     if (match.score1 >= match.score2)
       this.userService.gainXP(match.user1,
-        (this.userService.xpAmountForNextLevel(match.user2) * fixedPercentGain) / 100
-        + (this.userService.xpAmountForNextLevel(match.user2) * scorePercentGain) * (score_diff / max_score) / 100
+        (this.userService.xpAmountForNextLevel(match.user2) * fixedPercentGain) / 100 +
+        (this.userService.xpAmountForNextLevel(match.user2) * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
       this.userService.gainXP(match.user1,
-        (this.userService.xpAmountForNextLevel(match.user2) * fixedPercentLoss) / 100
-        + (this.userService.xpAmountForNextLevel(match.user2) * scorePercentLoss) * (score_diff / max_score) / 100
+        (this.userService.xpAmountForNextLevel(match.user2) * fixedPercentLoss) / 100 +
+        (this.userService.xpAmountForNextLevel(match.user2) * scorePercentLoss) * (score_diff / max_score) / 100
       );
     if (match.score2 >= match.score1)
       this.userService.gainXP(match.user2,
-        (this.userService.xpAmountForNextLevel(match.user1) * fixedPercentGain) / 100
-        + (this.userService.xpAmountForNextLevel(match.user1) * scorePercentGain) * (score_diff / max_score) / 100
+        (this.userService.xpAmountForNextLevel(match.user1) * fixedPercentGain) / 100 +
+        (this.userService.xpAmountForNextLevel(match.user1) * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
       this.userService.gainXP(match.user2,
-        (this.userService.xpAmountForNextLevel(match.user1) * fixedPercentLoss) / 100
-        + (this.userService.xpAmountForNextLevel(match.user1) * scorePercentLoss) * (score_diff / max_score) / 100
+        (this.userService.xpAmountForNextLevel(match.user1) * fixedPercentLoss) / 100 +
+        (this.userService.xpAmountForNextLevel(match.user1) * scorePercentLoss) * (score_diff / max_score) / 100
       );
   }
 

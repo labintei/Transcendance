@@ -29,7 +29,7 @@ export class UserController
     if (!related)
       throw new NotFoundException('Username not found.');
     const relationship = await this.userService.getRelationship(user, related);
-    return { relationship, ...related };
+    return { relationship: relationship, ...related };
   }
 
   @Delete(':username')

@@ -1,16 +1,22 @@
 import { Controller, Get, Request, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { oauth42Guard } from './oauth42.guard';
-import { totp } from "otplib";
+import { authenticator } from "@otplib/preset-default-async";
 
 @Controller()
 export class AuthController
 {
+
+	constructor() {
+		authenticator.options = { ...authenticator.options, window: [1, 1]} ;
+	}
+
 	@Get('auth')
 	@UseGuards(oauth42Guard)
 	async loginWith42(@Request() req) {
-
-/*		if (req.user.twoFA && req.authInfo.state.code2FA !== req.user.twoFA)
-			throw new UnauthorizedException();*/
+		if (req.user.twoFA
+			&& (!req.authInfo.state.twoFAToken
+				|| !authenticator.check(req.authInfo.state.twoFAToken, req.user.twoFA)))
+			throw new UnauthorizedException();
 		return "You are now logged in.";
 	}
 
@@ -19,5 +25,7 @@ export class AuthController
 		req.session.destroy();
 		return "You are now logged out.";
 	}
+
+
 
 }

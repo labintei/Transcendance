@@ -1,6 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { pseudoRandomBytes } from 'crypto';
 import { EntityManager } from 'typeorm';
 import { User } from './entities/user.entity';
 
@@ -41,7 +40,7 @@ export class AppService implements OnModuleInit {
       this.manager.create(User, {
         ft_login: 'jraffin',
         username: 'jraffin1',
-        twoFA: "123456",
+        twoFA: "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
       })
     ]);
   }

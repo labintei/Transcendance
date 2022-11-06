@@ -7,7 +7,7 @@ export class oauth42Guard extends AuthGuard('oauth42') {
   getAuthenticateOptions(context: ExecutionContext): IAuthModuleOptions<any> {
     return {
       ...super.getAuthenticateOptions(context),
-      state: { code2FA: parseInt(context.switchToHttp().getRequest().query.code2FA) }
+      state: { twoFAToken: context.switchToHttp().getRequest().query.twoFAToken }
     };
   }
 
