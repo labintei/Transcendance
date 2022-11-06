@@ -1,5 +1,4 @@
-import { InjectEntityManager, InjectRepository } from '@nestjs/typeorm';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, getManager, EntityManager, Repository } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
@@ -12,11 +11,6 @@ enum UserStatus {
 
 @Entity('user')
 export class User {
-
-  constructor(
-    @InjectRepository(User)
-    private repository
-  ) {}
 
   @PrimaryColumn({ length: 10, unique: true })
   ft_login: string;
@@ -59,7 +53,5 @@ export class User {
 }
 
 export namespace User {
-
   export import Status = UserStatus;
-
 }
