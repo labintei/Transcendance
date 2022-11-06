@@ -16,6 +16,7 @@ export class UserController {
   getFriends(@Query('name') name:string): {friends:User[], others:User[]} {
     let fris:User[] = this.appService.getFriends(name);
     let oth:User[] = this.appService.getAll(name);
+    oth = oth.filter(user => !fris.some(friend => friend.username == user.username));
     return {friends:fris, others:oth};
   }
 
