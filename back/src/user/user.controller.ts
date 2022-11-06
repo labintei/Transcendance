@@ -1,10 +1,10 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
-import { SessionGuard } from 'src/auth/session.guard';
+import { Controller, Delete, Get, NotFoundException, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserService } from './user.service';
 
 @Controller('user')
-@UseGuards(SessionGuard)
+@UseGuards(TransGuard)
 export class UserController
 {
 
@@ -17,9 +17,11 @@ export class UserController
     return this.userService.getUserByLogin(req.user.ft_login);
   }
 
-  @Put()
+  @Patch()
   async updateMe(@Request() req): Promise<User> {
-    return this.userService.updateUser(req.user.ft_login, req.body);
+    const updated = await this.userService.updateUser(req.user.ft_login, req.body)
+    req.user = { ...req.user, ...updated };
+    return updated;
   }
 
   @Get(':username')

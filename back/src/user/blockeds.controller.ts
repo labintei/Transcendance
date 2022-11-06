@@ -1,11 +1,11 @@
 import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
-import { SessionGuard } from 'src/auth/session.guard';
+import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { UserService } from './user.service';
 
 @Controller('blockeds')
-@UseGuards(SessionGuard)
+@UseGuards(TransGuard)
 export class BlockedController
 {
 
