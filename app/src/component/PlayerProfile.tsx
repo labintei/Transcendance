@@ -67,7 +67,7 @@ export default class PlayerProfile extends React.Component {
     let player:Person = dflt;
     if (this.state !== undefined)
       player = { ...this.state.player};
-    axios.get("http://localhost:3000/users/one", {params: {name:"Enzo"}}).then(res => {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user/one", {params: {name:"Enzo"}}).then(res => {
       const data = res.data;
       console.log(res);
       if (data.username !== undefined && data.rank !== undefined) {
@@ -107,7 +107,7 @@ export default class PlayerProfile extends React.Component {
     else
         return (
           <><h1>{name}<button className='edit-button' onClick={() => this.setState({nameEdit:true})}></button></h1>
-          
+
           </>
         )
   }
