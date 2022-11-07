@@ -13,6 +13,7 @@ import PlayerProfile from './component/PlayerProfile';
 import MatchList from './component/MatchHistory';
 import LevelList from './component/LevelList';
 import PongGame from './Game/src/PongGame';
+import Chat from './Chat/ChatPage';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -43,6 +44,10 @@ const router = createBrowserRouter([
         path: "game",
         element: <PongGame />,
       },
+      {
+        path: "chat",
+        element: <Chat />,
+      }
     ],
   },
 ]);

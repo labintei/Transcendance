@@ -1,0 +1,35 @@
+.chat {
+    display: flex;
+    flex-direction: row;
+    /* display: flex;
+    flex-direction: row;
+    height: 100%; */
+    /* width: 30%; */
+}
+
+.sidebar {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 30%;
+}
+
+.messages {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    width: 70%;
+}
+
+.message {
+    outline: 1px solid beige;
+    margin: 10px;
+}
+
+.channel {
+    /* display: flex; */
+    outline: 1px solid white;
+    margin: 10px;
+    /* justify-content: center;
+    align-items: center; */
+}

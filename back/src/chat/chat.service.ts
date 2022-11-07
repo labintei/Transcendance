@@ -1,6 +1,7 @@
-import { Injectable } from '@nestjs/common';
+import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Channel, ChannelStatus } from 'src/entities/channel.entity';
+import { ChannelUser } from 'src/entities/channeluser.entity';
 import { Message } from 'src/entities/message.entity';
 import { User } from 'src/entities/user.entity';
 import { Repository } from 'typeorm';
@@ -13,7 +14,9 @@ export class ChatService {
     @InjectRepository(Message)
     private messageRepository: Repository<Message>,
     @InjectRepository(Channel)
-    private channelRepository: Repository<Channel>
+    private channelRepository: Repository<Channel>,
+    @InjectRepository(ChannelUser)
+    private channelUserRepository : Repository<ChannelUser>
   ) {}
 
   async createUser(username: string) {

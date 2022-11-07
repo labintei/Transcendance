@@ -8,7 +8,6 @@ import {
   WebSocketGateway,
   WebSocketServer
 } from '@nestjs/websockets';
-import { emit } from 'process';
 import { User } from 'src/entities/user.entity';
 import { ChatService } from './chat.service';
 
@@ -29,18 +28,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   async handleConnection(@ConnectedSocket() socket) {
     const query = socket.handshake.query;
-
+    console.log("User connected");
     this.nbUser++;
 
-    await this.chatService.createUser(query.username);
+    // await this.chatService.createUser(query.username);
   }
 
   async handleDisconnect(@ConnectedSocket() socket) {
     const query = socket.handshake.query;
-
+    console.log("User disconnected");
     this.nbUser--;
 
-    await this.chatService.deleteUser(query.username);
+    // await this.chatService.deleteUser(query.username);
   }
 
   @SubscribeMessage('message')
@@ -51,6 +50,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // data.channel ?
 
     console.log(data);
+ 
+    socket.emit('message', {"user":"bob", "key":12})
 
     // const users = await this.chatService.getUser();
 
@@ -58,6 +59,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
     // register in database
     // emit.to.room(msg)
+  }
+
+  @SubscribeMessage('getChannels')
+  getChannel(@ConnectedSocket() socket, @MessageBody() data) {
+    console.log("getChannel event fired up");
+    socket.emit('getChannels', [
+      {"id":1, "name":"general", "status":"public"},
+      {"id":2, "name":"private", "status":"private"},
+      {"id":3, "name":"bob", "status":"direct"},
+      {"id":4, "name":"alice", "status":"direct"},
+      {"id":5, "name":"secret", "status":"private"},
+    ]);
   }
 
   @SubscribeMessage('create')
@@ -122,9 +135,19 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
     // mute
   }
 
-  @SubscribeMessage('load')
-  loadMessages(@MessageBody() data) {
+  @SubscribeMessage('loadMessages')
+  loadMessages(@ConnectedSocket() socket, @MessageBody() data) {
     // target chan or msg
+
+    console.log("Loading messages for channel", data);
+
+    const key : string = data.toString();
+    socket.emit('loadMessages', [
+      {"sender": "From chan " + key, "content":"hello world !", "time": new Date()},
+      {"sender": "From chan " + key, "content":"hello world !", "time": new Date()},
+      {"sender": "From chan " + key, "content":"hello world !", "time": new Date(25)},
+      {"sender": "From chan " + key, "content":"hello world !", "time": new Date(1000)},
+    ]);
 
     // fetch all messages from db
     // return messages

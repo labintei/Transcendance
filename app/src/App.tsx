@@ -4,6 +4,7 @@ import PersonList from './component/PersonList';
 import LevelList from './component/LevelList';
 import MatchList from './component/MatchHistory';
 import PlayerProfile from './component/PlayerProfile';
+import Chat from './Chat/ChatPage';
 import PongGame from './Game/src/PongGame';
 import { Outlet, Link, useNavigate, useParams, useLocation, Navigate } from "react-router-dom";
 import { useStore } from 'Game/src/State/state';
@@ -16,6 +17,7 @@ const components = {
   levels: LevelList,
   default: PersonList,
   game: PongGame,
+  chat: Chat,
 }
 
 function App () {
@@ -35,6 +37,7 @@ function App () {
         <li><button onClick={() => {navigate("match-history")}}>History</button></li>
         <li><button onClick={() => {navigate("profile")}}>Profile</button></li>
         <li><button onClick={() => {navigate("game")}}>game</button></li>
+        <li><button onClick={() => {navigate("chat")}}>chat</button></li>
       </menu> }
       <div className="content">
         <Outlet />
