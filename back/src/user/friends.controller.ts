@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 
 @Controller('friends')
 @UseGuards(TransGuard)
-export class FriendController
+export class FriendsController
 {
 
   constructor(

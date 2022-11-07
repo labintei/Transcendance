@@ -27,6 +27,9 @@ export class User {
   status: UserStatus;
 
   @Column({ nullable: true })
+  avatarURL: string;
+
+  @Column({ nullable: true })
   twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })

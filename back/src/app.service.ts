@@ -19,28 +19,33 @@ export class AppService implements OnModuleInit {
     this.manager.save([
       this.manager.create(User, {
         ft_login: 'iromanova',
-        username: 'aroma'
+        username: 'aroma',
+        avatarURL: 'no_image.jpg'
       }),
       this.manager.create(User, {
         ft_login: 'lbintein',
-        username: 'labintei'
+        username: 'labintei',
+        avatarURL: 'no_image.jpg'
       }),
       this.manager.create(User, {
         ft_login: 'omarecha',
-        username: 'bmarecha'
+        username: 'bmarecha',
+        avatarURL: 'no_image.jpg'
       }),
       this.manager.create(User, {
         ft_login: 'edjubert',
-        username: 'edjavid'
+        username: 'edjavid',
+        avatarURL: 'no_image.jpg'
       }),
       this.manager.create(User, {
         ft_login: 'lraffin',
-        username: 'jraffin'
+        username: 'jraffin',
+        avatarURL: 'no_image.jpg'
       }),
       this.manager.create(User, {
         ft_login: 'jraffin',
         username: 'jraffin1',
-        twoFASecret: "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
+        avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg'
       })
     ]);
   }

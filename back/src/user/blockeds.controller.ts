@@ -6,7 +6,7 @@ import { UserService } from './user.service';
 
 @Controller('blockeds')
 @UseGuards(TransGuard)
-export class BlockedController
+export class BlockedsController
 {
 
   constructor(

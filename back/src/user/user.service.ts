@@ -21,7 +21,7 @@ export class UserService {
   **  This sorted array obtained in result permits to check rapidly for the
   **  first available login(+number) available.
   */
-  async createNewUserFrom42Login(login: string): Promise<User> {
+  async createNewUserFrom42Login(login: string, avatarURL: string): Promise<User> {
     const similarusers = await this.manager.query(`
       SELECT username
       FROM "user"
@@ -37,7 +37,8 @@ export class UserService {
     }
     const user = this.manager.create(User, {
       username: login + suffix,
-      ft_login: login
+      ft_login: login,
+      avatarURL: avatarURL
     });
     return this.manager.save(user);
   }

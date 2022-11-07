@@ -42,6 +42,8 @@ export class AuthController
 	@Get('42')
 	@UseGuards(Oauth42Guard)
 	async loginWith42(@Request() req, @Response() res) {
+		if (!req.authInfo.state)
+			res.redirect(process.env.REACT_APP_WEBSITE_URL);	//redirectURL not accessible in case of 42API refusal.
 		const redir = req.authInfo.state.redirectURL;
 		if (redir)
 			res.redirect(redir);
