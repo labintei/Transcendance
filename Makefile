@@ -6,7 +6,7 @@
 #    By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/01 16:27:27 by jraffin           #+#    #+#              #
-#    Updated: 2022/11/03 18:29:19 by jraffin          ###   ########.fr        #
+#    Updated: 2022/11/07 12:37:47 by jraffin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -70,6 +70,8 @@ hostname			:	envcheck
 
 #	cleans compilated dev data
 clean				:	stop
+	rm -rf $(FRONT)/package-lock.json
+	rm -rf $(BACK)/package-lock.json
 	rm -rf $(FRONT)/node_modules
 	rm -rf $(BACK)/node_modules
 	rm -rf $(BACK)/dist
