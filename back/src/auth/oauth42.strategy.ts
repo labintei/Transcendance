@@ -17,7 +17,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
       tokenURL          : "https://api.intra.42.fr/oauth/token",
       clientID          : process.env.API42_UID,
       clientSecret      : process.env.API42_SECRET,
-      callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth",
+      callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth/42",
       scope             : "public",
       store             : true
     });

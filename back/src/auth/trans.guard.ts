@@ -4,7 +4,7 @@ import { SessionGuard } from "./session.guard";
 @Injectable()
 export class TransGuard extends SessionGuard {
   async canActivate(context: ExecutionContext) {
-    super.canActivate(context);
+    await super.canActivate(context);
     const request = context.switchToHttp().getRequest()
     if (!request.session.is2FAOK)
       throw new ForbiddenException('Partially logged in : you need to validate a 2FA token.')

@@ -3,12 +3,14 @@ import { AuthGuard, IAuthModuleOptions } from '@nestjs/passport';
 
 @Injectable()
 export class Oauth42Guard extends AuthGuard('oauth42') {
+
   getAuthenticateOptions(context: ExecutionContext): IAuthModuleOptions<any> {
     return {
       ...super.getAuthenticateOptions(context),
-      state: { frontendCallbackURL: context.switchToHttp().getRequest().query.frontendCallbackURL }
+      state: { redirectURL: context.switchToHttp().getRequest().query.redirectURL }
     };
   }
+
   async canActivate(context: ExecutionContext) {
     let result;
     try {
