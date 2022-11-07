@@ -70,9 +70,9 @@ export default class PlayerProfile extends React.Component {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user/one", {params: {name:"Enzo"}}).then(res => {
       const data = res.data;
       console.log(res);
-      if (data.username !== undefined && data.rank !== undefined) {
+      if (data.username !== undefined && data.level !== undefined) {
         player.name = data.username;
-        player.rank = data.rank;
+        player.rank = data.level;
         if (data.victories !== undefined && data.defeats !== undefined && data.draws !== undefined) {
           player.defeats = data.defeats;
           player.victories = data.victories;

@@ -23,7 +23,7 @@ export default class PersonList extends React.Component {
   state:State= {pwait:0, listp:[], waiting:false, listf:[]};
 
   componentDidMount() {
-    axios.get(`http://localhost:3000/users/friends`, {params: {name:"Enzo"}})
+    axios.get(process.env.REACT_APP_BACKEND_URL + "users/friends", {params: {name:"Enzo"}})
       .then(res => {
         console.log(res);
         const friends = res.data.friends;
@@ -34,8 +34,8 @@ export default class PersonList extends React.Component {
         for (var person of friends) {
             let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
             console.log(person);
-            if (person.rank !== undefined && person.username !== undefined) {
-                one.rank = person.rank;
+            if (person.level !== undefined && person.username !== undefined) {
+                one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
                 listftmp.push(one);
@@ -44,8 +44,8 @@ export default class PersonList extends React.Component {
         }
         for (var persono of others) {
             let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
-            if (persono.rank !== undefined && persono.username !== undefined) {
-                one.rank = persono.rank;
+            if (persono.level !== undefined && persono.username !== undefined) {
+                one.rank = persono.level;
                 one.name = persono.username;
                 one.friend = false;
                 listtmp.push(one);

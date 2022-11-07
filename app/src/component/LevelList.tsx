@@ -20,17 +20,17 @@ export default class LevelList extends React.Component {
   state:State= {listl:[]};
 
   componentDidMount() {
-    axios.get(`http://localhost:3000/users/rank`, {params: {name:"Enzo"}})
+    axios.get(process.env.REACT_APP_BACKEND_URL + "users/rank", {params: {name:"Enzo"}})
       .then(res => {
         const pranks = res.data;
         console.log(pranks);
         let listtmp: Array<PRank> = [];   
         for (var prank of pranks) {
             let one: PRank = {id: 0, name: '', rank: 50, avatar_location:defaultavatar, status:0};
-            if (prank.username !== undefined && prank.rank !== undefined) {
-                one.id = prank.rank;
+            if (prank.username !== undefined && prank.level !== undefined) {
+                one.id = prank.level;
                 one.name = prank.username;
-                one.rank = prank.rank;
+                one.rank = prank.level;
                 one.status = prank.id % 3;
                 listtmp.push(one);
             }
