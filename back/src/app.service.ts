@@ -46,6 +46,7 @@ export class AppService implements OnModuleInit {
   }
 
   onModuleInit() {
-    this.generateExamples();
+//  Uncomment the line below to activate the example generation on application load.
+//    this.generateExamples();
   }
 }
