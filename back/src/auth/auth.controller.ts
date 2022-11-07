@@ -1,6 +1,6 @@
 import { Controller, ForbiddenException, Get, Request, Response, UseGuards } from '@nestjs/common';
 import { Oauth42Guard } from './oauth42.guard';
-import { authenticator } from "@otplib/preset-default-async";
+import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 
@@ -56,7 +56,7 @@ export class AuthController
 			return "2FA is not activated on your profile, no need for a 2FA token."
 		if (!req.query.twoFAToken)
 			throw new ForbiddenException('missing query parameter : "twoFAToken"');
-		if (!await authenticator.check(req.query.twoFAToken, req.user.twoFASecret))
+		if (!authenticator.check(req.query.twoFAToken, req.user.twoFASecret))
 			throw new ForbiddenException("2FA token is invalid.");
 		req.session.is2FAOK = true;
 		const redir = req.query.redirectURL;

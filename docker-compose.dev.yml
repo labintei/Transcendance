@@ -68,9 +68,6 @@ services:
       dockerfile: Dockerfile.dev
     container_name: front
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./app:/app
     ports:

@@ -37,14 +37,6 @@ services:
     build: back
     container_name: back
     restart: always
-    healthcheck:
-      test:
-        [
-          "CMD-SHELL",
-          "wget --spider -q localhost:3000 2> /dev/null"
-        ]
-      interval: 1s
-      start_period: 10s
     depends_on:
       db:
         condition: service_healthy
@@ -68,11 +60,6 @@ services:
     build: app
     container_name: front
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
-      back:
-        condition: service_healthy
     ports:
       - $WEBSITE_PORT:$WEBSITE_PORT
     networks:
