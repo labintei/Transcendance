@@ -1,9 +1,10 @@
-import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common"
+import { CanActivate, ExecutionContext, Injectable, UnauthorizedException } from "@nestjs/common"
 
 @Injectable()
 export class SessionGuard implements CanActivate {
   async canActivate(context: ExecutionContext) {
-    const request = context.switchToHttp().getRequest()
-    return request.isAuthenticated()
+    if (!context.switchToHttp().getRequest().isAuthenticated())
+      throw new UnauthorizedException('Not logged in : you need to get 42 API authorization.')
+    return true;
   }
 }

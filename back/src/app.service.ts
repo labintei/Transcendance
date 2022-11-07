@@ -40,13 +40,14 @@ export class AppService implements OnModuleInit {
       this.manager.create(User, {
         ft_login: 'jraffin',
         username: 'jraffin1',
-        twoFA: "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
+        twoFASecret: "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
       })
     ]);
   }
 
   onModuleInit() {
-    this.generateExamples();
+//  Uncomment the line below to activate the example generation on application load.
+//    this.generateExamples();
   }
   getUser(): User {
     let connectedClient:User = {

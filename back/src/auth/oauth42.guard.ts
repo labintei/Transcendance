@@ -2,18 +2,33 @@ import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard, IAuthModuleOptions } from '@nestjs/passport';
 
 @Injectable()
-export class oauth42Guard extends AuthGuard('oauth42') {
+export class Oauth42Guard extends AuthGuard('oauth42') {
 
   getAuthenticateOptions(context: ExecutionContext): IAuthModuleOptions<any> {
     return {
       ...super.getAuthenticateOptions(context),
-      state: { twoFAToken: context.switchToHttp().getRequest().query.twoFAToken }
+      state: { redirectURL: context.switchToHttp().getRequest().query.redirectURL }
     };
   }
 
   async canActivate(context: ExecutionContext) {
-    const result = (await super.canActivate(context)) as boolean;
-    await super.logIn(context.switchToHttp().getRequest());
-    return result
+    let result;
+    try {
+      result = await super.canActivate(context) as boolean;
+    }
+    catch {
+      result = false;
+    }
+    finally {
+      const request = context.switchToHttp().getRequest();
+      if (result)
+      {
+        await super.logIn(request);
+        request.session.is2FAOK = !request.user.twoFASecret;
+      }
+      else
+        request.session.destroy();
+      return true;
+    }
   }
 }

@@ -27,7 +27,7 @@ export class User {
   status: UserStatus;
 
   @Column({ nullable: true })
-  twoFA: string;
+  twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })
   level: number;

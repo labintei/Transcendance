@@ -4,7 +4,7 @@ RUN npm install -g npm@latest
 
 WORKDIR /app
 
-COPY ["package.json", "package-lock.json*", "./"]
+COPY ["package.json", "./"]
 
 RUN npm install
 
