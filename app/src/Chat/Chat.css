@@ -1,24 +1,37 @@
 .chat {
+    display: grid;
+    flex-direction: row;
+    flex-flow: wrap;
+    height: calc(100vh - 65px); /* from ../App.css in menu */
+    grid-template-areas:
+        "header header header"
+        "sidebar messages messages"
+        "sidebar messages messages"
+        "empty messageInput messageInput";
+    grid-template-columns: 30% auto auto;
+}
+
+.header {
     display: flex;
-    flex-direction: row;
-    /* display: flex;
-    flex-direction: row;
-    height: 100%; */
-    /* width: 30%; */
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    outline: 1px solid salmon;
+    grid-area: header;
 }
 
 .sidebar {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 30%;
+    outline: 1px solid royalblue;
+    grid-area: sidebar;
 }
 
 .messages {
     display: flex;
     flex-direction: column;
-    height: 100%;
-    width: 70%;
+    outline: 1px solid orange;
+    grid-area: messages;
 }
 
 .message {
@@ -27,9 +40,23 @@
 }
 
 .channel {
-    /* display: flex; */
     outline: 1px solid white;
     margin: 10px;
-    /* justify-content: center;
-    align-items: center; */
+}
+
+.messageInput {
+    display: flex;
+    flex-direction: column;
+    /* align-items: center; */
+    /* width: 100%; */
+    /* height: 100%; */
+    outline: 1px solid black;   
+    grid-area: messageInput;
+}
+
+.inputBox {
+    align-items: center;
+    justify-content: center;
+    
+    width: 65vw;
 }

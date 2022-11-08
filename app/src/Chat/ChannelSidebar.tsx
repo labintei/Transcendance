@@ -22,8 +22,6 @@ function ChannelSidebar(props: ChannelSidebarProps) {
     });
   }, [props.socket]);
 
-
-
   return (
       <div className="sidebar">
         <p>ChannelSidebar</p>

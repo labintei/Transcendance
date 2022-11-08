@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import ChannelMessage from './ChannelMessage';
 import ChannelSidebar from './ChannelSidebar';
+import MessageInput from './MessageInput';
 
 function Chat() {
   const [socket, setSocket] = useState<Socket | null>(null);
@@ -44,18 +45,20 @@ function Chat() {
   }
 
   return (
-    <div>
-        <h1>Chat</h1>
-        <div className="chat">
-        <ChannelSidebar
-          socket={socket}
-          onChannelClick={loadMessageChannel}
-        />
-        <ChannelMessage
-          socket={socket}
-          channelKey={channelKey}
-        />
-      </div>
+    <div className="chat">
+      <div className="header"><h1>Chat</h1></div>
+      <ChannelSidebar
+        socket={socket}
+        onChannelClick={loadMessageChannel}
+      />
+      <ChannelMessage
+        socket={socket}
+        channelKey={channelKey}
+      />
+      <MessageInput
+        socket={socket}
+        channelKey={channelKey}
+      />
     </div>
   );
 }
