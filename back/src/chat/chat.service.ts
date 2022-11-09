@@ -1,6 +1,6 @@
 import { Inject, Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Channel, ChannelStatus } from 'src/entities/channel.entity';
+import { Channel } from 'src/entities/channel.entity';
 import { ChannelUser } from 'src/entities/channeluser.entity';
 import { Message } from 'src/entities/message.entity';
 import { User } from 'src/entities/user.entity';
@@ -47,7 +47,9 @@ export class ChatService {
 
   }
 
-  async createChannel(channel: string, status: ChannelStatus, password: string = null) {
+
+  // need to rewrite function 
+  async createChannel(channel: string, status: Channel.Status, password: string = null) {
     const count : number = await this.channelRepository.countBy({name: channel});
     if (count != 0) {
       console.log("Channel " + channel + " already exists.");
@@ -55,7 +57,7 @@ export class ChatService {
     }
     const chan = new Channel;
     chan.status = status;
-    chan.password = password;
+    chan.bcrypthash = password;
     chan.name = channel;
 
     // add user to channel

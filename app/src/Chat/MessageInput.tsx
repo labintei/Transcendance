@@ -17,11 +17,8 @@ function MessageInput(props: MessageInputProps) {
 
     const keyHandler = (event : React.KeyboardEvent<HTMLElement>) => {
         if (!props.socket) return ;
-        if (!props.channelKey) {
-            alert("Not in a channel");
-            setName("");
-        }
         if (event.key === "Enter") { // enter key
+            if (!props.channelKey) return ;
             props.socket.emit("message",
                 {"channel":props.channelKey, "message": name});
             setName("");
