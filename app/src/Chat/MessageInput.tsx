@@ -10,20 +10,37 @@ interface MessageInputProps {
 function MessageInput(props: MessageInputProps) {
     const [name, setName] = useState("");
 
-    const onSubmit = (event : React.FormEvent<HTMLFormElement> ) => {
+    const onSubmit = (event : React.KeyboardEvent<HTMLElement> ) => {
         event.preventDefault();
         alert(`Message was: ${name}`);
     }
 
+    const keyHandler = (event : React.KeyboardEvent<HTMLElement>) => {
+        if (!props.socket) return ;
+        if (!props.channelKey) {
+            alert("Not in a channel");
+            setName("");
+        }
+        if (event.key === "Enter") { // enter key
+            props.socket.emit("message",
+                {"channel":props.channelKey, "message": name});
+            setName("");
+        }
+    }
+
     return (
         <div className='messageInput'>
-            <form onSubmit={onSubmit}>
+            <form>
                 {/* <label>New Message */}
-                    <input
+                    <textarea
                         className="inputBox"
-                        type="text"
                         value={name}
-                        onChange={(e) => {setName(e.target.value)}}
+                        onChange={(e) => {
+                            if (e.target.value === "\n")
+                                return ;
+                            setName(e.target.value)
+                        }}
+                        onKeyDown={keyHandler}
                     />
                 {/* </label> */}
             </form>

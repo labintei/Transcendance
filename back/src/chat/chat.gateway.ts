@@ -26,6 +26,8 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   nbUser: number = 0;
 
+  messages : object[][] = [];
+
   async handleConnection(@ConnectedSocket() socket) {
     const query = socket.handshake.query;
     console.log("User connected");
@@ -139,10 +141,18 @@ export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
   loadMessages(@ConnectedSocket() socket, @MessageBody() data) {
     // target chan or msg
 
+    if (this.messages[0] === undefined)
+      this.messages[0] = [];
+
     console.log("Loading messages for channel", data);
 
+    this.messages[0].push({"sender": "bob", "content":"hello", "time": new Date()});
+
+    console.log(this.messages[0]);
+  
     const key : string = data.toString();
     socket.emit('loadMessages', [
+      this.messages[0][0],
       {"sender": "From chan " + key, "content":"hello world !", "time": new Date()},
       {"sender": "From chan " + key, "content":"hello world !", "time": new Date()},
       {"sender": "From chan " + key, "content":"hello world !", "time": new Date(25)},
