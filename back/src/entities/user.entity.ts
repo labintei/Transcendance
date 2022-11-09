@@ -1,31 +1,42 @@
-import { Entity, PrimaryColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
-import { UserRelation } from './userrelation.entity';
+import { UserRelationship } from './userrelationship.entity';
 
-export enum UserStatus {
+enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   MATCHING = "Matching",
   PLAYING = "Playing"
 }
 
-@Entity()
+@Entity('user')
 export class User {
 
-  @PrimaryColumn({ length: 24, unique: true })
-  username: string;
-
-  @Column({ length: 8, unique: true })
+  @PrimaryColumn({ length: 10, unique: true })
   ft_login: string;
 
-  @Column({ default: UserStatus.ONLINE })
+  @Index({ unique: true })
+  @Column({ length: 24 })
+  username: string;
+
+  @Column({
+    type: 'enum',
+    enum:  UserStatus,
+    default: UserStatus.ONLINE
+  })
   status: UserStatus;
 
   @Column({ nullable: true })
-  twoFA: string;
+  avatarURL: string;
 
-  @Column({ type: 'float', default: 1 })
-  rank: number;
+  @Column({ nullable: true })
+  twoFASecret: string;
+
+  @Column({ type: 'int', default: 1 })
+  level: number;
+
+  @Column({ type: 'int', default: 0 })
+  xp: number
 
   @Column({ type: 'int', default: 0 })
   victories: number;
@@ -36,9 +47,14 @@ export class User {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @OneToMany(() => UserRelation, (relation) => (relation.owner))
-  relations: UserRelation[];
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
+  relationships: UserRelationship[];
 
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
+
+}
+
+export namespace User {
+  export import Status = UserStatus;
 }

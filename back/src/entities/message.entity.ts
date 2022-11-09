@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, Jo
 import { Channel } from './channel.entity';
 import { User } from './user.entity';
 
-@Entity()
+@Entity('message')
 export class Message {
 
   @PrimaryGeneratedColumn()

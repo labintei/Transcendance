@@ -26,8 +26,6 @@ services:
       start_period: 30s
     volumes:
       - db_data:/var/lib/postgresql/data
-    ports:
-      - 5432:5432  #only for dev rules
     networks:
       - transcendence-network
     environment:
@@ -35,7 +33,7 @@ services:
       - POSTGRES_USER
       - POSTGRES_PASSWORD
 
-  back:
+  back-dev:
     build:
       context: ./back
       dockerfile: Dockerfile.dev
@@ -64,15 +62,12 @@ services:
     env_file:
       - .hostname.env
 
-  front:
+  front-dev:
     build:
       context: ./app
       dockerfile: Dockerfile.dev
     container_name: front
     restart: always
-    depends_on:
-      db:
-        condition: service_healthy
     volumes:
       - ./app:/app
     ports:

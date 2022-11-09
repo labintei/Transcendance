@@ -6,7 +6,7 @@
 #    By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/01 16:27:27 by jraffin           #+#    #+#              #
-#    Updated: 2022/10/01 18:01:26 by jraffin          ###   ########.fr        #
+#    Updated: 2022/11/07 12:37:47 by jraffin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -36,7 +36,7 @@ dev-front			: stop
 	docker-compose -f docker-compose.dev.yml up front || exit 0
 
 stop					: hostname
-	docker-compose down
+	docker-compose down --remove-orphans
 
 package-rebuild		:	stop
 	@-rm $(BACK)/package-lock.json
@@ -62,13 +62,16 @@ ip					:
 	@hostname -I | cut -d' ' -f1
 
 hostname			:	envcheck
-	@echo "REACT_APP_WEBSITE_HOSTNAME=$(shell hostname)" > .hostname.env
+	@echo "REACT_APP_HOSTNAME=$(shell hostname)" > .hostname.env
 	@source .env && echo "REACT_APP_WEBSITE_PORT=$$WEBSITE_PORT" >> .hostname.env
-	@echo "REACT_APP_WEBSITE_BASE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
-	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_BASE_URL"
+	@echo "REACT_APP_WEBSITE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
+	@echo "REACT_APP_BACKEND_URL=http://$(shell hostname):3000/" >> .hostname.env
+	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_URL"
 
 #	cleans compilated dev data
 clean				:	stop
+	rm -rf $(FRONT)/package-lock.json
+	rm -rf $(BACK)/package-lock.json
 	rm -rf $(FRONT)/node_modules
 	rm -rf $(BACK)/node_modules
 	rm -rf $(BACK)/dist
@@ -97,4 +100,4 @@ list				:
 	@docker volume ls
 	@echo ;
 
-.PHONY				:	all $(NAME) dev stop package-rebuild envcheck ip hostname clean cclean pclean fclean re list
+.PHONY				:	all $(NAME) dev dev-back dev-front stop package-rebuild envcheck ip hostname clean cclean pclean fclean re list

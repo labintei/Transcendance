@@ -2,23 +2,27 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 
-export enum ChannelStatus {
+enum ChannelStatus {
   DIRECT = "Direct",
   PUBLIC = "Public",
   PRIVATE = "Private"
 }
 
-@Entity()
+@Entity('channel')
 export class Channel {
 
   @PrimaryGeneratedColumn()
   id: number;
 
-  @Column({ default: ChannelStatus.DIRECT })
+  @Column({
+    type: 'enum',
+    enum: ChannelStatus,
+    default: ChannelStatus.DIRECT
+  })
   status: ChannelStatus;
 
-  @Column({ nullable: true })
-  password: string;
+  @Column({ type: 'varchar', length: 60, nullable: true })
+  bcrypthash: string;
 
   @Column({ nullable: true })
   name: string;
@@ -28,4 +32,8 @@ export class Channel {
 
   @OneToMany(() => Message, (msg) => (msg.channel))
   messages: Message[];
+}
+
+export namespace Channel {
+  export import Status = ChannelStatus;
 }

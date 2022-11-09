@@ -1,11 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
 import { EntityManager } from 'typeorm';
-import { Message } from './entities/message.entity';
 import { User } from './entities/user.entity';
 
 @Injectable()
-export class AppService {
+export class AppService implements OnModuleInit {
 
   constructor(
     @InjectEntityManager()
@@ -16,30 +15,43 @@ export class AppService {
     return 'Hello world';
   }
 
-  getDetails()
-  {
-    return this.manager.connection.options;
+  generateExamples() {
+    this.manager.save([
+      this.manager.create(User, {
+        ft_login: 'iromanova',
+        username: 'aroma',
+        avatarURL: 'no_image.jpg'
+      }),
+      this.manager.create(User, {
+        ft_login: 'lbintein',
+        username: 'labintei',
+        avatarURL: 'no_image.jpg'
+      }),
+      this.manager.create(User, {
+        ft_login: 'omarecha',
+        username: 'bmarecha',
+        avatarURL: 'no_image.jpg'
+      }),
+      this.manager.create(User, {
+        ft_login: 'edjubert',
+        username: 'edjavid',
+        avatarURL: 'no_image.jpg'
+      }),
+      this.manager.create(User, {
+        ft_login: 'lraffin',
+        username: 'jraffin',
+        avatarURL: 'no_image.jpg'
+      }),
+      this.manager.create(User, {
+        ft_login: 'jraffin',
+        username: 'jraffin1',
+        avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg'
+      })
+    ]);
   }
 
-  async newUser() {
-    const user = this.manager.create(User);
-    user.username = 'jraffin8';
-    user.ft_login = 'jraffin8';
-    console.log(user.username + ' created.');
-    await this.manager.save(user);
-    console.log(user.username + ' saved.');
-    const msg = this.manager.create(Message);
-    msg.content = 'content';
-    msg.sender = user;
-    console.log('message created.');
-    await this.manager.save(msg);
-    console.log('message saved.');
-    const retuser = await this.manager.find(User, { where: { username: user.username }});
-    const retmsg = await this.manager.find(Message, { where: { id: msg.id }});
-    return { retuser, retmsg };
-  }
-
-  async getUsers() {
-    return this.manager.find(User);
+  onModuleInit() {
+//  Uncomment the line below to activate the example generation on application load.
+//    this.generateExamples();
   }
 }
