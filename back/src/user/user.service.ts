@@ -1,12 +1,11 @@
-import { ConflictException, Injectable } from '@nestjs/common';
+import { ConflictException, Injectable, OnModuleInit } from '@nestjs/common';
 import { InjectEntityManager } from '@nestjs/typeorm';
-import { EntityManager } from 'typeorm';
+import { Between, EntityManager } from 'typeorm';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { lastValueFrom } from 'rxjs';
 
 @Injectable()
-export class UserService {
+export class UserService implements OnModuleInit {
 
   constructor(
     @InjectEntityManager()
@@ -75,10 +74,10 @@ export class UserService {
   }
 
   async delRelationship(user: User, relatedUser: User) {
-    return this.manager.delete(UserRelationship, this.manager.findOneBy(UserRelationship, {
+    return this.manager.delete(UserRelationship, {
       owner: user,
       related: relatedUser
-    }));
+    });
   }
 
   async getRelationship(user: User, relatedUser:User): Promise<UserRelationship.Status | null> {
@@ -102,14 +101,8 @@ export class UserService {
     return result;
   }
 
-  xpAmountForNextLevel(user: User): number {
-    const x = 0.03;
-    const y = 1.5;
-    return ((user.level / x) ^ y);
-  }
-
   async gainXP(user: User, xpToAdd: number): Promise<User> {
-    const rest = this.xpAmountForNextLevel(user) - user.xp;
+    const rest = user.xpAmountForNextLevel - user.xp;
     if (rest <= xpToAdd) {
       ++user.level;
       user.xp = 0;
@@ -125,6 +118,49 @@ export class UserService {
     else
       user.xp = 0;
     return this.manager.save(user);
+  }
+
+  async getPodium(howMany: number): Promise<User[]> {
+    return this.manager.find(User, {
+      order: {
+        rank: "ASC"
+      },
+      take: howMany
+    });
+  }
+
+  async getRanksAround(user: User, howMany: number): Promise<User[]> {
+    return this.manager.find(User, {
+      where: {
+        rank: Between(user.rank - howMany, user.rank + howMany)
+      },
+      order: {
+        rank: "ASC"
+      }
+    });
+  }
+
+  async refreshRanks() {
+    await this.manager.query(`
+      UPDATE "user"
+      SET rank = sub.rank
+      FROM (
+        SELECT
+          ft_login,
+          ROW_NUMBER()
+            OVER(
+              ORDER BY
+                level DESC,
+                xp DESC
+            ) AS rank
+        FROM "user"
+      ) sub
+      WHERE "user".ft_login = sub.ft_login
+    `);
+  }
+
+  onModuleInit() {
+    this.refreshRanks();
   }
 
 }

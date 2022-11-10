@@ -10,6 +10,7 @@ enum UserStatus {
 }
 
 @Entity('user')
+@Index(["level", "xp"])
 export class User {
 
   @PrimaryColumn({ length: 10, unique: true })
@@ -47,11 +48,21 @@ export class User {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
+  @Column({ type: 'int', default: 0})
+  @Index()
+  rank: number;
+
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner), {cascade: true})
   relationships: UserRelationship[];
 
-  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user), {cascade: true})
   channels: ChannelUser[];
+
+  public get xpAmountForNextLevel(): number {
+    const x = 0.03;
+    const y = 1.5;
+    return ((this.level / x) ^ y);
+  }
 
 }
 

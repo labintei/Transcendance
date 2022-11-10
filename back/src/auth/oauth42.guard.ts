@@ -1,8 +1,15 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard, IAuthModuleOptions } from '@nestjs/passport';
+import { UserService } from 'src/user/user.service';
 
 @Injectable()
 export class Oauth42Guard extends AuthGuard('oauth42') {
+
+  constructor(
+    private userService: UserService
+  ) {
+    super();
+  }
 
   getAuthenticateOptions(context: ExecutionContext): IAuthModuleOptions<any> {
     return {
@@ -24,7 +31,8 @@ export class Oauth42Guard extends AuthGuard('oauth42') {
       if (result)
       {
         await super.logIn(request);
-        request.session.is2FAOK = !request.user.twoFASecret;
+        const user = await this.userService.getUserByLogin(request.user.login);
+        request.session.twoFASecret = user.twoFASecret;
       }
       else
         request.session.destroy();

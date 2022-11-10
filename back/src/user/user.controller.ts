@@ -14,19 +14,20 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
-    return this.userService.getUserByLogin(req.user.ft_login);
+    const user = await this.userService.getUserByLogin(req.user.login);
+    return user;
   }
 
   @Patch()
   async updateMe(@Request() req): Promise<User> {
-    const updated = await this.userService.updateUser(req.user.ft_login, req.body)
+    const updated = await this.userService.updateUser(req.user.login, req.body)
     req.user = { ...req.user, ...updated };
     return updated;
   }
 
   @Get(':username')
   async getUserAndRelationship(@Request() req, @Param('username') username): Promise<any> {
-    const user = await this.userService.getUserByLogin(req.user.ft_login);
+    const user = await this.userService.getUserByLogin(req.user.login);
     const related = await this.userService.getUserByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
@@ -36,7 +37,7 @@ export class UserController
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const user = await this.userService.getUserByLogin(req.user.ft_login);
+    const user = await this.userService.getUserByLogin(req.user.login);
     const related = await this.userService.getUserByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');

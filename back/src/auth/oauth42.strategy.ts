@@ -36,6 +36,6 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
     let user = await this.userService.getUserByLogin(data.login);
     if (!user)
       user = await this.userService.createNewUserFrom42Login(data.login, data.image_url);
-    return { ...user, ...data };
+    return data;
   }
 }
