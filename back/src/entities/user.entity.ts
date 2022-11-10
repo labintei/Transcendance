@@ -1,5 +1,5 @@
 import { ConflictException } from '@nestjs/common';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLiteral, FindOptionsWhere, Between } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLiteral, FindOptionsWhere, Between, UpdateResult } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
@@ -59,6 +59,9 @@ export class User extends BaseEntity {
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user), {cascade: true})
   channels: ChannelUser[];
 
+  // Virtual field to be able to return the relationship status (or null if not related) of a searched user.
+  relationshipStatus: UserRelationship.Status;
+
   /** MEMBER METHODS */
 
   public get xpAmountForNextLevel(): number {
@@ -76,20 +79,21 @@ export class User extends BaseEntity {
   }
 
   async setRelationship(related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    return User.setRelationship(this, related, status);
+    return UserRelationship.relate(this, related, status);
   }
 
   async delRelationship(related: User) {
-    return User.delRelationship(this, related);
+    return UserRelationship.unRelate(this, related);
   }
 
   async getRelationship(related: User): Promise<UserRelationship.Status | null> {
-   return User.getRelationship(this, related);
+   return UserRelationship.getStatus(this, related);
   }
 
   async getRelationshipList(status: UserRelationship.Status): Promise<User[]> {
-    return User.getRelationshipList(this, status);
+    return UserRelationship.getList(this, status);
   }
+
   async getRanksAround(howMany: number): Promise<User[]> {
     return User.getRanksAround(this, howMany);
   }
@@ -133,21 +137,6 @@ export class User extends BaseEntity {
     return user.save();
   }
 
-  static async updateUser(login: string, updates: ObjectLiteral): Promise<User> {
-    let toUpdate = {
-      ft_login: login,
-      username: updates.username,
-      status: updates.status,
-      twoFA: updates.twoFA
-    };
-    try {
-      return await User.save(toUpdate);
-    }
-    catch {
-      throw new ConflictException("User update failed because of a field value.");
-    }
-  }
-
   static async gainXP(user: User, amount: number): Promise<User> {
     const rest = user.xpAmountForNextLevel - user.xp;
     if (rest <= amount) {
@@ -165,45 +154,6 @@ export class User extends BaseEntity {
     else
       user.xp = 0;
     return user.save();
-  }
-
-  static async setRelationship(owner: User, related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    const relationship = new UserRelationship();
-    relationship.owner = owner;
-    relationship.related = related;
-    relationship.status = status;
-    return relationship.save();
-  }
-
-  static async delRelationship(owner: User, related: User) {
-    return UserRelationship.delete({
-      owner: owner,
-      related: related
-    } as FindOptionsWhere<UserRelationship>);
-  }
-
-  static async getRelationship(owner: User, related: User): Promise<UserRelationship.Status | null> {
-    const relationship = await UserRelationship.findOneBy({
-      owner: owner,
-      related: related
-    } as FindOptionsWhere<UserRelationship>);
-    if (!relationship)
-      return null;
-    return relationship.status;
-  }
-
-  static async getRelationshipList(owner: User, status: UserRelationship.Status): Promise<User[]> {
-    const relationships = await UserRelationship.find({
-      relations: {
-          related: true
-      },
-      where: {
-        owner : owner,
-        status: status
-      } as FindOptionsWhere<UserRelationship>
-    });
-    const result = relationships.map((relationship) => relationship.related);
-    return result;
   }
 
   static async getPodium(howMany: number): Promise<User[]> {

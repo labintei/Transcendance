@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, FindOptionsWhere, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
 enum UserRelationshipStatus {
@@ -29,6 +29,46 @@ export class UserRelationship extends BaseEntity {
     default: UserRelationshipStatus.FRIEND
   })
   status: UserRelationshipStatus;
+
+  static async relate(owner: User, related: User, status: UserRelationship.Status): Promise<UserRelationship> {
+    return UserRelationship.create({
+      ownerLogin: owner.ft_login,
+      relatedLogin: related.ft_login,
+      status: status
+    }).save();
+  }
+
+  static async unRelate(owner: User, related: User) {
+    return UserRelationship.delete({
+      owner: owner,
+      related: related
+    } as FindOptionsWhere<UserRelationship>);
+  }
+
+  static async getStatus(owner: User, related: User): Promise<UserRelationship.Status | null> {
+    const relationship = await UserRelationship.findOneBy({
+      owner: owner,
+      related: related
+    } as FindOptionsWhere<UserRelationship>);
+    if (!relationship)
+      return null;
+    return relationship.status;
+  }
+
+  static async getList(owner: User, status: UserRelationship.Status): Promise<User[]> {
+    const relationships = await UserRelationship.find({
+      relations: {
+          related: true
+      },
+      where: {
+        owner : owner,
+        status: status
+      } as FindOptionsWhere<UserRelationship>
+    });
+    const result = relationships.map((relationship) => relationship.related);
+    return result;
+  }
+
 }
 
 export namespace UserRelationship {

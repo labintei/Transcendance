@@ -1,35 +1,37 @@
 import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 
 @Controller('blockeds')
 @UseGuards(TransGuard)
+@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class BlockedsController
 {
 
   @Get()
   async getBlockeds(@Request() req): Promise<User[]> {
-    const user = await User.findByLogin(req.user.login);
-    return user.getRelationshipList(UserRelationship.Status.BLOCKED);
+    const me = await User.findByLogin(req.user.login);
+    return me.getRelationshipList(UserRelationship.Status.BLOCKED);
   }
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username) {
-    const user = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user.login);
     const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
-    user.setRelationship(related, UserRelationship.Status.BLOCKED);
+    me.setRelationship(related, UserRelationship.Status.BLOCKED);
   }
 
   @Delete(':username')
   async delAsFriend(@Request() req, @Param('username') username) {
-    const user = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user.login);
     const related = await User.findByUsername(username);
-    if (!related || await user.getRelationship(related) !== UserRelationship.Status.BLOCKED)
+    if (!related || await me.getRelationship(related) !== UserRelationship.Status.BLOCKED)
       throw new NotFoundException('Username not found.');
-    user.delRelationship(related);
+    me.delRelationship(related);
   }
 
 }
