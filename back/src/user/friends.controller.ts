@@ -6,7 +6,7 @@ import { UserRelationship } from 'src/entities/userrelationship.entity';
 
 @Controller('friends')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class FriendsController
 {
 
