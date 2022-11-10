@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 
@@ -9,7 +9,7 @@ enum ChannelStatus {
 }
 
 @Entity('channel')
-export class Channel {
+export class Channel extends BaseEntity {
 
   @PrimaryGeneratedColumn()
   id: number;

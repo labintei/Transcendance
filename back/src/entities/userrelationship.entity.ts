@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
 enum UserRelationshipStatus {
@@ -7,7 +7,7 @@ enum UserRelationshipStatus {
 };
 
 @Entity('user_relationship')
-export class UserRelationship {
+export class UserRelationship extends BaseEntity {
 
   @PrimaryColumn({ type: 'varchar', name: 'owner' })
   ownerLogin: string;
