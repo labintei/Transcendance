@@ -14,11 +14,11 @@ export class Message extends BaseEntity {
   @Column()
   content: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { orphanedRowAction: "nullify" })
   @JoinColumn({ name: 'sender' })
   sender: User;
 
-  @ManyToOne(() => Channel)
+  @ManyToOne(() => Channel, { cascade: ["remove"] })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
 }

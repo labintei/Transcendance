@@ -53,10 +53,10 @@ export class User extends BaseEntity {
   @Index()
   rank: number;
 
-  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner), {cascade: true})
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
   relationships: UserRelationship[];
 
-  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user), {cascade: true})
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
 
   // Virtual field to be able to return the relationship status (or null if not related) of a searched user.

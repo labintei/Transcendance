@@ -31,11 +31,11 @@ export class UserRelationship extends BaseEntity {
   status: UserRelationshipStatus;
 
   static async relate(owner: User, related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    return UserRelationship.create({
-      ownerLogin: owner.ft_login,
-      relatedLogin: related.ft_login,
+    return UserRelationship.save({
+      owner: owner,
+      related: related,
       status: status
-    }).save();
+    });
   }
 
   static async unRelate(owner: User, related: User) {
