@@ -3,14 +3,13 @@ import { HttpService } from '@nestjs/axios';
 import { Injectable } from '@nestjs/common';
 import { Strategy } from 'passport-oauth2';
 import { lastValueFrom } from 'rxjs';
-import { UserService } from 'src/user/user.service';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 {
   constructor(
-		private http: HttpService,
-    private userService: UserService
+		private http: HttpService
   ) {
     super({
       authorizationURL  : "https://api.intra.42.fr/oauth/authorize",
@@ -33,9 +32,9 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
           },
     	  })
 		));
-    let user = await this.userService.getUserByLogin(data.login);
+    let user = await User.findByLogin(data.login);
     if (!user)
-      user = await this.userService.createNewUserFrom42Login(data.login, data.image_url);
+      user = await User.createFrom42Login(data.login, data.image_url);
     return data;
   }
 }

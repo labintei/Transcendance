@@ -1,9 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
 import { Channel } from './channel.entity';
 import { User } from './user.entity';
 
 @Entity('message')
-export class Message {
+export class Message extends BaseEntity {
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -14,11 +14,11 @@ export class Message {
   @Column()
   content: string;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { orphanedRowAction: "nullify" })
   @JoinColumn({ name: 'sender' })
   sender: User;
 
-  @ManyToOne(() => Channel)
+  @ManyToOne(() => Channel, { cascade: ["remove"] })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
 }

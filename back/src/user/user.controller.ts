@@ -1,47 +1,59 @@
-import { Controller, Delete, Get, NotFoundException, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
-import { UserService } from './user.service';
+import { UpdateResult } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class UserController
 {
 
-  constructor(
-    private readonly userService: UserService
-  ) {}
-
   @Get()
   async getMe(@Request() req): Promise<User> {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    return user;
+    const me = await User.findOne({
+      relations: {
+        relationships: {
+          related: true
+        }
+      },
+      where: {
+        ft_login: req.user.login
+      }
+    });
+    return me;
   }
 
   @Patch()
-  async updateMe(@Request() req): Promise<User> {
-    const updated = await this.userService.updateUser(req.user.login, req.body)
-    req.user = { ...req.user, ...updated };
-    return updated;
+  async updateMe(@Request() req): Promise<UpdateResult> {
+    const toUpdate = {
+      username: req.body.username,
+      status: req.body.status,
+      twoFASecret: req.body.twoFASecret
+    };
+    if (toUpdate.username === undefined && toUpdate.status === undefined && toUpdate.twoFASecret === undefined)
+      throw new NotAcceptableException("No updatable field in request body.");
+    return await User.update(req.user.login, toUpdate);
   }
 
   @Get(':username')
-  async getUserAndRelationship(@Request() req, @Param('username') username): Promise<any> {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    const related = await this.userService.getUserByUsername(username);
+  async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<User> {
+    const me = await User.findByLogin(req.user.login);
+    const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
-    const relationship = await this.userService.getRelationship(user, related);
-    return { relationship: relationship, ...related };
+    related.relationshipStatus = await me.getRelationship(related);
+    return related;
   }
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    const related = await this.userService.getUserByUsername(username);
+    const me = await User.findByLogin(req.user.login);
+    const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
-    this.userService.delRelationship(user, related);
+    me.delRelationship(related);
   }
 
 }

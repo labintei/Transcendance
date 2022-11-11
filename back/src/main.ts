@@ -1,9 +1,9 @@
-import { NestFactory, Reflector } from '@nestjs/core';
+import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { pseudoRandomBytes } from 'crypto';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import { TransGuard } from './auth/trans.guard';
+import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -14,6 +14,13 @@ async function bootstrap() {
   }));
   app.use(passport.initialize());
   app.use(passport.session());
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+         // Custom CSP and CORS go there
+      }
+    }
+  }));
   const port = process.env.PORT;
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

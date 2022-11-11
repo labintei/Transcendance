@@ -1,24 +1,33 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
 enum ChannelUserStatus {
+  DIRECT = "Direct",
   OWNER = "Owner",
+  ADMIN = "Admin",
   JOINED = "Joined",
+  INVITED = "Invited",
   MUTED = "Muted",
   BANNED = "Banned"
 }
 
 @Entity('channel_user')
-export class ChannelUser {
+export class ChannelUser extends BaseEntity {
 
   @PrimaryColumn({ type: 'int', name: 'channel' })
   channelId: Channel;
 
   @PrimaryColumn({ type: 'varchar', name: 'user' })
-  userFtLogin: User;
+  userLogin: User;
 
-  @ManyToOne(() => Channel, (chan) => (chan.users))
+  @UpdateDateColumn()
+  updated: Date;
+
+  @Column({ nullable: true })
+  duration: number;
+
+  @ManyToOne(() => Channel, (chan) => (chan.users), { cascade: ["insert", "remove"] })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
 
@@ -29,9 +38,10 @@ export class ChannelUser {
   @Column({
     type: 'enum',
     enum: ChannelUserStatus,
-    default: ChannelUserStatus.OWNER
+    default: ChannelUserStatus.DIRECT
   })
   status: ChannelUserStatus;
+
 }
 
 export namespace ChannelUser {
