@@ -54,7 +54,7 @@ export class AppService implements OnModuleInit {
       username: "Kevin", level: 10, xp:0, victories: 10, defeats: 5, draws: 3, relationships: null,
       ft_login: '',
       status: UserStatus.ONLINE,
-      twoFA: '',
+      twoFASecret : '',
       channels: []
     };
     return connectedClient;

@@ -20,8 +20,9 @@ export default class MatchList extends React.Component {
   state:State= {listp:[]};
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
-      .then(res => {
+    axios.get(`https://jsonplaceholder.typicode.com/users`, {
+      withCredentials: true
+    }).then(res => {
         const matchs = res.data;
         let listtmp: Array<Match> = [];   
         for (var match of matchs) {

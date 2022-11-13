@@ -67,7 +67,9 @@ export default class PlayerProfile extends React.Component {
     let player:Person = dflt;
     if (this.state !== undefined)
       player = { ...this.state.player};
-    axios.get(process.env.REACT_APP_BACKEND_URL + "user/one", {params: {name:"Enzo"}}).then(res => {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then(res => {
       const data = res.data;
       console.log(res);
       if (data.username !== undefined && data.level !== undefined) {
@@ -81,6 +83,8 @@ export default class PlayerProfile extends React.Component {
       }
       if (player !== this.state.player)
         this.setState({player:player});
+    }).catch(error => {
+      console.log(error);
     });
   }
 

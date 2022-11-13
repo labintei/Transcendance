@@ -101,6 +101,19 @@ export class UserService {
     return result;
   }
 
+  async getNoRelationshipList(user: User): Promise<User[]> {
+    const relationships = await this.manager.find(UserRelationship, {
+      relations: {
+          related: false
+      },
+      where: {
+        owner : user
+      }
+    });
+    const result = relationships.map((relationship) => relationship.related);
+    return result;
+  }
+
   xpAmountForNextLevel(user: User): number {
     const x = 0.03;
     const y = 1.5;

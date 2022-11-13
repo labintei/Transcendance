@@ -20,8 +20,9 @@ export default class LevelList extends React.Component {
   state:State= {listl:[]};
 
   componentDidMount() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "users/rank", {params: {name:"Enzo"}})
-      .then(res => {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "users/rank", {
+      withCredentials: true
+    }).then(res => {
         const pranks = res.data;
         console.log(pranks);
         let listtmp: Array<PRank> = [];   

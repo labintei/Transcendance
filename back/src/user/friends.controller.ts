@@ -19,6 +19,14 @@ export class FriendController
     return this.userService.getRelationshipList(user, UserRelationship.Status.FRIEND);
   }
 
+  @Get("andNotFriends")
+  async getAll(@Request() req): Promise<{friends:User[], others:User[]}> {
+    const user = await this.userService.getUserByLogin(req.user.login);
+    const frnds:User[] = await this.userService.getRelationshipList(user, UserRelationship.Status.FRIEND);
+    const oth:User[] = await this.userService.getNoRelationshipList(user);
+    return {friends:frnds, others:oth};
+  }
+
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username) {
     const user = await this.userService.getUserByLogin(req.user.login);

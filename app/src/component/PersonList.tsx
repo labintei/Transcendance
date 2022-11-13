@@ -17,14 +17,18 @@ type State = {
   waiting:boolean
   listp:Array<Person>
   listf:Array<Person>
+  logged:boolean
 }
 
 export default class PersonList extends React.Component {
-  state:State= {pwait:0, listp:[], waiting:false, listf:[]};
+  state:State= {pwait:0, listp:[], waiting:false, listf:[], logged:false};
+
+
 
   componentDidMount() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "users/friends", {params: {name:"Enzo"}})
-      .then(res => {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "friends/andNotFriends", {
+      withCredentials: true
+    }).then(res => {
         console.log(res);
         const friends = res.data.friends;
         const others = res.data.others;
@@ -54,7 +58,9 @@ export default class PersonList extends React.Component {
         }
         this.setState({listp: listtmp, listf: listftmp, pwait: Math.trunc(Math.random() * 4)});
         console.log(this.state);
-      }).catch(error => console.log(error))
+      }).catch(error => {
+        console.log(error)
+      });
   }
 
   challengeClicked(id:number) {

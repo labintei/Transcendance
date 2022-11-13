@@ -3,10 +3,17 @@ import { AppModule } from './app.module';
 import { pseudoRandomBytes } from 'crypto';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import { TransGuard } from './auth/trans.guard';
+import cors from "cors";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {cors: true});
+  const app = await NestFactory.create(AppModule);
+  app.enableCors({
+    origin: "http://baptiste-rog-strix-g531gt-g531gt:3080",
+    methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
+    preflightContinue: false,
+    optionsSuccessStatus: 204,
+    credentials: true
+  });
   app.use(session({
     secret: pseudoRandomBytes(128).toString('base64'),
     resave: false,
@@ -18,6 +25,7 @@ async function bootstrap() {
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   })
+  //console.log(process.env.REACT_APP_WEBSITE_URL);
 }
 
 bootstrap();

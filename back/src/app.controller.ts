@@ -1,6 +1,6 @@
 import { Controller, Get, Query } from '@nestjs/common';
 import { AppService } from './app.service';
-import { User } from 'entities/user.entity';
+import { User } from 'src/entities/user.entity';
 
 @Controller("users")
 export class UserController {
@@ -20,17 +20,17 @@ export class UserController {
     return {friends:fris, others:oth};
   }
 
-  @Get('rank')
+  @Get('level')
   aroundUser(@Query('name') name:string) : User[] {
     let test:User = this.appService.getUser();
     test.username = name;
     let list:User[] = this.appService.getAll("");
-    if (test.rank < 10 && list.length > 10)
+    if (test.level < 10 && list.length > 10)
       list.splice(11, list.length - 10)
     for (let i:number = 0; i < list.length && list.length > 10; i++) {
-      let rank = list[i].rank;
-      let diff = rank - test.rank;
-      if ((diff * diff > 9 && rank > 3) || rank < 1){
+      let level = list[i].level;
+      let diff = level - test.level;
+      if ((diff * diff > 9 && level > 3) || level < 1){
         list.splice(i, 1);
         --i;
       }

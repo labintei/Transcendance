@@ -2,7 +2,7 @@ import { Entity, PrimaryColumn, Index, Column, OneToMany } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
-enum UserStatus {
+export enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   MATCHING = "Matching",
