@@ -5,14 +5,14 @@ import { User } from 'src/entities/user.entity';
 @Controller("users")
 export class UserController {
   constructor(private readonly appService: AppService) {}
-
+/* 
   @Get()
   allUser() : User[] {
     let test:User[] = this.appService.getAll("");
     return test;
   }
 
-  @Get('friends')
+ @Get('friends')
   getFriends(@Query('name') name:string): {friends:User[], others:User[]} {
     let fris:User[] = this.appService.getFriends(name);
     let oth:User[] = this.appService.getAll(name);
@@ -44,7 +44,7 @@ export class UserController {
     test.username = name;
     console.log(name);
     return test;
-  }
+  }*/
 }
 
 @Controller()

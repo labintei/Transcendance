@@ -49,8 +49,9 @@ export default class LoginPage extends React.Component {
     axios.get(process.env.REACT_APP_BACKEND_URL + "auth/logout", {
       withCredentials: true
     }).then(res => {
-      
+      this.setState({logged:LogStatus.NotLogged});
     }).catch(error => {
+      this.setState({logged:LogStatus.NotLogged});
       console.log(error);
     });
   }
@@ -61,7 +62,7 @@ export default class LoginPage extends React.Component {
         { this.state.logged == LogStatus.Logged ?
           <button onClick={() => this.requestLogout()}>Log Out</button>
         :
-          <button onClick={() => this.requestLogin()}>Log In</button>
+          <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
           //<a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"} >Log in</a>
         }</>
 

@@ -18,9 +18,9 @@ export class FriendsController
 
   @Get("andNotFriends")
   async getAll(@Request() req): Promise<{friends:User[], others:User[]}> {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    const frnds:User[] = await this.userService.getRelationshipList(user, UserRelationship.Status.FRIEND);
-    const oth:User[] = await this.userService.getNoRelationshipList(user);
+    const me = await User.findByLogin(req.user.login);
+    const frnds:User[] = await me.getRelationshipList(UserRelationship.Status.FRIEND);
+    const oth:User[] = Array();
     return {friends:frnds, others:oth};
   }
 
