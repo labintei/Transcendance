@@ -1,4 +1,4 @@
-import { Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
@@ -10,7 +10,7 @@ enum ChannelUserStatus {
 }
 
 @Entity('channel_user')
-export class ChannelUser {
+export class ChannelUser extends BaseEntity {
 
   @PrimaryColumn({ type: 'int', name: 'channel' })
   channelId: Channel;

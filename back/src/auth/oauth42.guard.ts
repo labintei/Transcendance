@@ -1,5 +1,6 @@
 import { ExecutionContext, Injectable } from '@nestjs/common';
 import { AuthGuard, IAuthModuleOptions } from '@nestjs/passport';
+import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class Oauth42Guard extends AuthGuard('oauth42') {
@@ -24,7 +25,8 @@ export class Oauth42Guard extends AuthGuard('oauth42') {
       if (result)
       {
         await super.logIn(request);
-        request.session.is2FAOK = !request.user.twoFASecret;
+        const me = await User.findByLogin(request.user.login);
+        request.session.twoFASecret = me.twoFASecret;
       }
       else
         request.session.destroy();

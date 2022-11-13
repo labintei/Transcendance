@@ -1,40 +1,37 @@
 import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { UserService } from './user.service';
 
 @Controller('blockeds')
 @UseGuards(TransGuard)
-export class BlockedController
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+export class BlockedsController
 {
-
-  constructor(
-    private readonly userService: UserService
-  ) {}
 
   @Get()
   async getBlockeds(@Request() req): Promise<User[]> {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    return this.userService.getRelationshipList(user, UserRelationship.Status.BLOCKED);
+    const me = await User.findByLogin(req.user.login);
+    return me.getRelationshipList(UserRelationship.Status.BLOCKED);
   }
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username) {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    const related = await this.userService.getUserByUsername(username);
+    const me = await User.findByLogin(req.user.login);
+    const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
-    this.userService.setRelationship(user, related, UserRelationship.Status.BLOCKED);
+    me.setRelationship(related, UserRelationship.Status.BLOCKED);
   }
 
   @Delete(':username')
   async delAsFriend(@Request() req, @Param('username') username) {
-    const user = await this.userService.getUserByLogin(req.user.login);
-    const related = await this.userService.getUserByUsername(username);
-    if (!related || await this.userService.getRelationship(user, related) !== UserRelationship.Status.BLOCKED)
+    const me = await User.findByLogin(req.user.login);
+    const related = await User.findByUsername(username);
+    if (!related || await me.getRelationship(related) !== UserRelationship.Status.BLOCKED)
       throw new NotFoundException('Username not found.');
-    this.userService.delRelationship(user, related);
+    me.delRelationship(related);
   }
 
 }
