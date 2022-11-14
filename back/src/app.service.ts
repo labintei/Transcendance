@@ -1,5 +1,5 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { User } from './entities/user.entity';
+import { User , UserStatus } from './entities/user.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
 
 @Injectable()
@@ -27,7 +27,7 @@ export class AppService implements OnModuleInit {
       },
       {
         ft_login: 'omarecha',
-        username: 'bmarecha',
+        username: 'bmarechafaux',
         avatarURL: 'no_image.jpg',
         level:  2,
         xp: 0

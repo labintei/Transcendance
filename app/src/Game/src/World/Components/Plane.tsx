@@ -1,14 +1,12 @@
 import { useRef, useState } from "react"
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import {
-  CubeTextureLoader,
   CubeCamera,
   WebGLCubeRenderTarget,
   RGBAFormat,
   LinearMipmapLinearFilter,
   TextureLoader,
 } from "three";
-import { PivotControls } from "@react-three/drei";
 import { useStore } from "../../State/state";
 import pv_color from "../Textures/Marble/Marble006_1K_Color.png"
 import pv_dipl from "../Textures/Marble/Marble006_1K_Displacement.png"

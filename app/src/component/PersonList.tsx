@@ -17,34 +17,50 @@ type State = {
   waiting:boolean
   listp:Array<Person>
   listf:Array<Person>
+  logged:boolean
 }
 
 export default class PersonList extends React.Component {
-  state:State= {pwait:0, listp:[], waiting:false, listf:[]};
+  state:State= {pwait:0, listp:[], waiting:false, listf:[], logged:false};
+
+
 
   componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`)
-      .then(res => {
-        const persons = res.data;
+    axios.get(process.env.REACT_APP_BACKEND_URL + "friends/andNotFriends", {
+      withCredentials: true
+    }).then(res => {
+        console.log(res);
+        const friends = res.data.friends;
+        const others = res.data.others;
         let listftmp: Array<Person> = [];
         let listtmp: Array<Person> = [];
-        for (var person of persons) {
-            let one: Person = {id: 0, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+        let id = 0;
+        for (var person of friends) {
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
             console.log(person);
-            if (person.id !== undefined && person.name !== undefined) {
-                one.id = person.id;
-                one.name = person.name;
-                if (person.id < 4)
-                  one.friend = true;
-                if (one.friend)
-                  listftmp.push(one);
-                else
-                  listtmp.push(one);
+            if (person.level !== undefined && person.username !== undefined) {
+                one.rank = person.level;
+                one.name = person.username;
+                one.friend = true;
+                listftmp.push(one);
             }
+            id++;
+        }
+        for (var persono of others) {
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            if (persono.level !== undefined && persono.username !== undefined) {
+                one.rank = persono.level;
+                one.name = persono.username;
+                one.friend = false;
+                listtmp.push(one);
+            }
+            id++;
         }
         this.setState({listp: listtmp, listf: listftmp, pwait: Math.trunc(Math.random() * 4)});
         console.log(this.state);
-      })
+      }).catch(error => {
+        console.log(error)
+      });
   }
 
   challengeClicked(id:number) {

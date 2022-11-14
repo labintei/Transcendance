@@ -16,6 +16,14 @@ export class FriendsController
     return me.getRelationshipList(UserRelationship.Status.FRIEND);
   }
 
+  @Get("andNotFriends")
+  async getAll(@Request() req): Promise<{friends:User[], others:User[]}> {
+    const me = await User.findByLogin(req.user.login);
+    const frnds:User[] = await me.getRelationshipList(UserRelationship.Status.FRIEND);
+    const oth:User[] = Array();
+    return {friends:frnds, others:oth};
+  }
+
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username) {
     const me = await User.findByLogin(req.user.login);

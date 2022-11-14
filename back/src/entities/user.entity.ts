@@ -3,7 +3,7 @@ import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLite
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
-enum UserStatus {
+export enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   thisING = "thising",
