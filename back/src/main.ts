@@ -8,8 +8,10 @@ import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  let origine = process.env.REACT_APP_WEBSITE_URL;
+  origine = origine.slice(0, -1);
   app.enableCors({
-    origin: "http://baptiste-rog-strix-g531gt-g531gt:3080",
+    origin: origine,
     methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
     preflightContinue: false,
     optionsSuccessStatus: 204,
@@ -33,7 +35,7 @@ async function bootstrap() {
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   })
-  //console.log(process.env.REACT_APP_WEBSITE_URL);
+  console.log("Website :" + origine);
 }
 
 bootstrap();
