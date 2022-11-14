@@ -61,9 +61,11 @@ export default class LoginPage extends React.Component {
         <>
         { this.state.logged == LogStatus.Logged ?
           <button onClick={() => this.requestLogout()}>Log Out</button>
-        :
+        : (this.state.logged == LogStatus.NotLogged ?
           <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
-          //<a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"} >Log in</a>
+          :
+          <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>
+          )
         }</>
 
     )

@@ -1,6 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './LevelList.css';
+import { Navigate } from 'react-router-dom';
 
 type PRank = {
     id: number
@@ -13,31 +14,55 @@ type PRank = {
 const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 type State = {
-  listl:Array<PRank>
+  listl:Array<PRank>,
+  logged:boolean,
+  rank:number
 }
 
 export default class LevelList extends React.Component {
-  state:State= {listl:[]};
+  state:State;
 
-  componentDidMount() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "users/rank", {
+  constructor (props:any) {
+    super(props);
+    this.state = {listl:[], logged:true, rank:42};
+    this.requestUser();
+  }
+
+  requestUser() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
     }).then(res => {
+      if (res.data.rank !== undefined)
+        this.setState({rank:res.data.rank});
+    }).catch(error => {
+      this.setState({logged:false});
+    });
+  }
+
+  componentDidMount() {
+    let str = (this.state.rank < 11 ? "ranking/user" : "ranking/")
+    axios.get(process.env.REACT_APP_BACKEND_URL + str, {
+      withCredentials: true,
+      params: {count:10}
+    }).then(res => {
         const pranks = res.data;
-        console.log(pranks);
-        let listtmp: Array<PRank> = [];   
+        console.log(res);
+        let listtmp: Array<PRank> = [];
+        let i = 1;
         for (var prank of pranks) {
             let one: PRank = {id: 0, name: '', rank: 50, avatar_location:defaultavatar, status:0};
             if (prank.username !== undefined && prank.level !== undefined) {
-                one.id = prank.level;
+                one.id = i;
                 one.name = prank.username;
-                one.rank = prank.level;
+                one.rank = i++;
                 one.status = prank.id % 3;
                 listtmp.push(one);
             }
         }
         console.log(listtmp);
         this.setState({listl: listtmp});
+      }).catch(error => {
+        console.log(error);
       })
   }
 
@@ -92,6 +117,8 @@ export default class LevelList extends React.Component {
 
   render() {
     return (
+      <>
+        {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <ul id="level-list">
         {
           this.state.listl.map(prank =>
@@ -104,6 +131,7 @@ export default class LevelList extends React.Component {
             )
         }
       </ul>
+      </>
     )
   }
 }

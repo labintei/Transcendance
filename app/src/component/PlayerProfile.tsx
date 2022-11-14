@@ -3,6 +3,7 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
+import { Navigate } from 'react-router-dom';
 
 type Person = {
     name: string;
@@ -20,6 +21,7 @@ type State = {
   query:string
   query2:File | null
   avatarEdit:boolean
+  logged:boolean
 }
 
 function get_status (num:number, bgd:number) {
@@ -84,13 +86,13 @@ export default class PlayerProfile extends React.Component {
       if (player !== this.state.player)
         this.setState({player:player});
     }).catch(error => {
-      console.log(error);
+      this.setState({logged:false});
     });
   }
 
   constructor (props:any) {
     super(props);
-    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
+    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true};
     this.requestUser();
   }
 
@@ -164,6 +166,7 @@ export default class PlayerProfile extends React.Component {
   render() {
     return (
         <>
+        {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <div className='place_name'>
           {this.nameFormat(this.state.nameEdit, this.state.player.name)}
         </div>

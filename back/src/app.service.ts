@@ -27,7 +27,7 @@ export class AppService implements OnModuleInit {
       },
       {
         ft_login: 'omarecha',
-        username: 'bmarecha',
+        username: 'bmarechafaux',
         avatarURL: 'no_image.jpg',
         level:  2,
         xp: 0

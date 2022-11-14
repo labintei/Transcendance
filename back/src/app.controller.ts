@@ -58,4 +58,8 @@ export class AppController
   getHello() {
     return this.appService.getHello();
   }
+  @Get("exemples")
+  generate() {
+    return this.appService.generateExamples();
+  }
 }
