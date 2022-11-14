@@ -9,7 +9,7 @@ import helmet from 'helmet';
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   let origine = process.env.REACT_APP_WEBSITE_URL;
-  origine = origine.slice(0, -1);
+  origine = origine.slice(0, -1).toLowerCase();
   app.enableCors({
     origin: origine,
     methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
@@ -35,7 +35,7 @@ async function bootstrap() {
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
   })
-  console.log("Website :" + origine);
+  console.log("Website : " + origine);
 }
 
 bootstrap();
