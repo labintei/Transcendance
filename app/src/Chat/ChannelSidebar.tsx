@@ -14,10 +14,10 @@ function ChannelSidebar(props: ChannelSidebarProps) {
   useEffect(() => {
 
     if (!props.socket) return;
-    props.socket.emit('getChannels');
+    props.socket.emit('getChannels', {"user": "aroma"} );
 
     props.socket.on('getChannels', (data) => {
-      // console.log('getChannels', data);
+      console.log('getChannels', data);
       setChannels(data);
     });
   }, [props.socket]);

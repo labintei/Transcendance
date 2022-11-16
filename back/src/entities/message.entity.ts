@@ -21,4 +21,19 @@ export class Message extends BaseEntity {
   @ManyToOne(() => Channel, { cascade: ["remove"] })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
+
+  static async createMessage(login: string, msg: string, channel: number) {
+    const user = await User.findByLogin(login);
+    const chan = await Channel.findOneBy({id: channel});
+
+    const message = new Message();
+    message.content = msg;
+    message.sender = user;
+    message.channel = chan;
+
+    chan.messages ;
+    chan.save();
+
+    return message.save();
+  }
 }

@@ -1,6 +1,7 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
+import { Channel } from './entities/channel.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -53,30 +54,54 @@ export class AppService implements OnModuleInit {
         avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg',
         level:  3,
         xp: 587.
-      }
+      },
+      {
+        ft_login: 'lratio',
+        username: 'elon_musk',
+        avatarURL: 'no_image.jpg',
+        level:  1,
+        xp: 42
+      },
     ]);
-    UserRelationship.save([
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "lbintein",
-        status: UserRelationship.Status.FRIEND
-      } as UserRelationship,
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "omarecha",
-        status: UserRelationship.Status.FRIEND
-      } as UserRelationship,
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "iromanova",
-        status: UserRelationship.Status.BLOCKED
-      } as UserRelationship
-    ]);
+    // UserRelationship.save([
+    //   {
+    //     ownerLogin: "jraffin",
+    //     relatedLogin: "lbintein",
+    //     status: UserRelationship.Status.FRIEND
+    //   } as UserRelationship,
+    //   {
+    //     ownerLogin: "jraffin",
+    //     relatedLogin: "omarecha",
+    //     status: UserRelationship.Status.FRIEND
+    //   } as UserRelationship,
+    //   {
+    //     ownerLogin: "jraffin",
+    //     relatedLogin: "iromanova",
+    //     status: UserRelationship.Status.BLOCKED
+    //   } as UserRelationship
+    // ]);
+  }
+
+  async generateChannel() {
+    Channel.createPublicChannel(await User.findByUsername("aroma"), "#lobby");
+    Channel.createPublicChannel(await User.findByUsername("aroma"), "#agora");
+    Channel.createPublicChannel(await User.findByUsername("aroma"), "#rusty");
+    Channel.createPublicChannel(await User.findByUsername("aroma"), "#ilovec");
+    Channel.createPublicChannel(await User.findByUsername("aroma"), "#rust_is_awesome");
+    const chan = await Channel.findOneBy({name: "#lobby"});
+    console.log(chan);
+
+    await chan.join(await User.findByUsername("jraffin"));
+    await chan.join(await User.findByUsername("edjavid"));
+    await chan.join(await User.findByUsername("bmarecha"));
+    await chan.join(await User.findByUsername("labintei"));
   }
 
   onModuleInit() {
 //  Uncomment the line below to activate the example generation on application load.
-//    this.generateExamples();
+    this.generateExamples();
     User.refreshRanks();
+    // generate some channels
+    this.generateChannel();
   }
 }

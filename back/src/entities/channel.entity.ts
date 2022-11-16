@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindManyOptions } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 import { User } from './user.entity';
@@ -41,6 +41,9 @@ export class Channel extends BaseEntity {
 
   async isOwner(user: User): Promise<boolean> {
     const channel: Channel = this;
+
+    if (user.username === undefined || user.ft_login === undefined) return false;
+
     return !!(await ChannelUser.findOneBy({
       channel: channel,
       user: user,
@@ -50,10 +53,30 @@ export class Channel extends BaseEntity {
 
   async isAdmin(user: User): Promise<boolean> {
     const channel = this as Channel;
+
+    if (user.username === undefined || user.ft_login === undefined) return false;
+
     return !!(await ChannelUser.findOneBy({
       channel: channel,
       user: user,
       status: ChannelUser.Status.OWNER || ChannelUser.Status.ADMIN
+    } as FindOptionsWhere<ChannelUser>));
+  }
+
+  async isIn(user: User): Promise<boolean> {
+    const channel: Channel = this;
+
+    if (user.username === undefined || user.ft_login === undefined) return false;
+
+    if (await this.isAdmin(user) || await this.isOwner(user)) return true;
+
+    return !!(await ChannelUser.findOneBy({
+      channel: channel,
+      user: user,
+      status: 
+        ChannelUser.Status.DIRECT ||
+        ChannelUser.Status.JOINED ||
+        ChannelUser.Status.MUTED
     } as FindOptionsWhere<ChannelUser>));
   }
 
@@ -79,8 +102,11 @@ export class Channel extends BaseEntity {
   static async createPublicChannel(owner: User, name: string, password?: string): Promise<Channel> {
     if (!name)
       throw new BadRequestException("Channel name is required.")
-    if (!!Channel.findOneBy({ name: name }))
-      throw new ConflictException("Channel name already in use.")
+    if (!!await Channel.findOneBy({ name: name })) {
+      // throw new ConflictException("Channel name already in use.")
+      console.log("Channel name already exist. Skipping...");
+      return ;
+    }
     return await Channel.save({
       status: Channel.Status.PUBLIC,
       bcrypthash: password ? await bcrypt.hash(password, this.bcryptSaltRounds) : undefined,
@@ -123,7 +149,7 @@ export class Channel extends BaseEntity {
     });
   }
 
-  static async destroyCHannel(channel: Channel) {
+  static async destroyChannel(channel: Channel) {
     ChannelUser.delete(channel.users as FindOptionsWhere<ChannelUser>);
     Message.delete({channel: channel} as FindOptionsWhere<Message>);
     Channel.delete(channel as FindOptionsWhere<Channel>);
