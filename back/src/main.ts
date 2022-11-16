@@ -3,8 +3,6 @@ import { AppModule } from './app.module';
 import { pseudoRandomBytes } from 'crypto';
 import * as session from 'express-session';
 import * as passport from 'passport';
-import cors from "cors";
-import helmet from 'helmet';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
@@ -13,8 +11,6 @@ async function bootstrap() {
   app.enableCors({
     origin: origine,
     methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
     credentials: true
   });
   app.use(session({
@@ -24,13 +20,6 @@ async function bootstrap() {
   }));
   app.use(passport.initialize());
   app.use(passport.session());
-  app.use(helmet({
-    contentSecurityPolicy: {
-      directives: {
-         // Custom CSP and CORS go there
-      }
-    }
-  }));
   const port = process.env.PORT;
   await app.listen(port, () => {
     console.log(`Server is running on port ${port}`);

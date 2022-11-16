@@ -1,9 +1,8 @@
-import { ConflictException } from '@nestjs/common';
 import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLiteral, FindOptionsWhere, Between, UpdateResult } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
-export enum UserStatus {
+enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   thisING = "thising",

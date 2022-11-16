@@ -1,12 +1,14 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { User , UserStatus } from './entities/user.entity';
+import { User } from './entities/user.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
 
-  getHello() {
-    return 'Hello world';
+  onModuleInit() {
+//  Uncomment the line below to activate the example generation on application load.
+//    this.generateExamples();
+    User.refreshRanks();
   }
 
   generateExamples() {
@@ -27,7 +29,7 @@ export class AppService implements OnModuleInit {
       },
       {
         ft_login: 'omarecha',
-        username: 'bmarechafaux',
+        username: 'bmarecha',
         avatarURL: 'no_image.jpg',
         level:  2,
         xp: 0
@@ -74,9 +76,4 @@ export class AppService implements OnModuleInit {
     ]);
   }
 
-  onModuleInit() {
-//  Uncomment the line below to activate the example generation on application load.
-//    this.generateExamples();
-    User.refreshRanks();
-  }
 }
