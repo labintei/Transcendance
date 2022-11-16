@@ -3,7 +3,7 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
-import { preProcessFile } from 'typescript';
+import { Navigate } from 'react-router-dom';
 
 type Person = {
     name: string;
@@ -11,9 +11,9 @@ type Person = {
     rank: number;
     victories: number;
     defeats:number;
-    max_level:number;
+    draws:number;
 }
-const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, max_level:0};
+const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, draws:0};
 
 type State = {
   player:Person
@@ -21,7 +21,9 @@ type State = {
   query:string
   query2:File | null
   avatarEdit:boolean
+  logged:boolean
 }
+
 function get_status (num:number, bgd:number) {
   return (bgd === num ? "selected":"not-select")
 }
@@ -33,7 +35,6 @@ function Customize(props: {pprof:PlayerProfile}) {
   const changeBg:any = useStore((s:any) => s.changeBgd);
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
-  console.log(bgd);
 
   return (
     <>
@@ -62,26 +63,45 @@ function Customize(props: {pprof:PlayerProfile}) {
 }
 
 export default class PlayerProfile extends React.Component {
-  state:State={player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null};
+  state:State;
 
-  componentDidMount() {
-
-    axios.get(process.env.REACT_APP_BACKEND_URL + "user/")
-      .then(res => {
-        console.log(res);
-        console.log(res.data);
-      })
-
+  requestUser() {
     let player:Person = dflt;
+    if (this.state !== undefined)
+      player = { ...this.state.player};
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then(res => {
+      const data = res.data;
+      console.log(res);
+      if (data.username !== undefined && data.level !== undefined) {
+        player.name = data.username;
+        player.rank = data.level;
+        if (data.victories !== undefined && data.defeats !== undefined && data.draws !== undefined) {
+          player.defeats = data.defeats;
+          player.victories = data.victories;
+          player.draws = data.draws;
+        }
+      }
+      if (player !== this.state.player)
+        this.setState({player:player});
+    }).catch(error => {
+      this.setState({logged:false});
+    });
+  }
 
-    this.setState({player:player});
+  constructor (props:any) {
+    super(props);
+    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true};
+    this.requestUser();
   }
 
   nameFormat(editing:boolean, name:string) {
     if (editing)
       return (
         <input type="text"
-        placeholder={this.state.player.name}
+          placeholder={name}
+          minLength={2}
           onChange={event => {this.setState({query: event.target.value})}}
           onKeyPress={event => {
                     if (event.key === 'Enter') {
@@ -106,7 +126,7 @@ export default class PlayerProfile extends React.Component {
 
   changeAvatar() {
     let temp:Person = this.state.player;
-    if (this.state.query2 != null)
+    if (this.state.query2 !== null)
     {
       temp.avatar_location = "/logo192.png";//this.state.query2.name;
     }
@@ -146,6 +166,7 @@ export default class PlayerProfile extends React.Component {
   render() {
     return (
         <>
+        {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <div className='place_name'>
           {this.nameFormat(this.state.nameEdit, this.state.player.name)}
         </div>
@@ -155,16 +176,16 @@ export default class PlayerProfile extends React.Component {
         <h3>Rank {this.state.player.rank}</h3>
         <ul id="stats-list">
             <li>
+                <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" />
+                <p>{this.state.player.victories + this.state.player.defeats + this.state.player.draws}</p>
+            </li>
+            <li>
                 <img className="image" src="https://cdn0.iconfinder.com/data/icons/education-340/100/Tilda_Icons_1ed_cup-512.png" alt="Trophy Icon" />
                 <p>{this.state.player.victories}</p>
             </li>
             <li>
                 <img className="image" src="https://cdn0.iconfinder.com/data/icons/font-awesome-solid-vol-2/512/heart-broken-512.png" alt="Broken heart Icon" />
                 <p>{this.state.player.defeats}</p>
-            </li>
-            <li>
-                <img className="image" src="https://cdn1.iconfinder.com/data/icons/business-rounded-outline-fill-style/64/illustration_Personal_Development-256.png" alt="Solo Progress" />
-                <p>{this.state.player.max_level}</p>
             </li>
         </ul>
         <Customize pprof={this}></Customize>

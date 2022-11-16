@@ -5,8 +5,10 @@ import { UserRelationship } from './entities/userrelationship.entity';
 @Injectable()
 export class AppService implements OnModuleInit {
 
-  getHello() {
-    return 'Hello world';
+  onModuleInit() {
+//  Uncomment the line below to activate the example generation on application load.
+//    this.generateExamples();
+    User.refreshRanks();
   }
 
   generateExamples() {
@@ -74,9 +76,4 @@ export class AppService implements OnModuleInit {
     ]);
   }
 
-  onModuleInit() {
-//  Uncomment the line below to activate the example generation on application load.
-//    this.generateExamples();
-    User.refreshRanks();
-  }
 }

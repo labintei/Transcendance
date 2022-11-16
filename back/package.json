@@ -32,7 +32,6 @@
     "@nestjs/websockets": "^9.2.0",
     "bcrypt": "^5.1.0",
     "express-session": "^1.17.3",
-    "helmet": "^6.0.0",
     "otplib": "^12.0.1",
     "passport-oauth2": "^1.6.1",
     "pg": "^8.8.0",
