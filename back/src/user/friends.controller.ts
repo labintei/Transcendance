@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Patch, Put, Request, UseGuards } from '@nestjs/common';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -17,17 +17,15 @@ export class FriendsController
   }
 
   @Get("andNotFriends")
-  async getAll(@Request() req): Promise<{friends:User[], others:User[]}> {
-    const me = await User.findByLogin(req.user.login);
-    const frnds:User[] = await me.getRelationshipList(UserRelationship.Status.FRIEND);
-    const oth:User[] = Array();
-    return {friends:frnds, others:oth};
+  async getAll(@Request() req): Promise<User[]> {
+    return User.find();
   }
 
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username) {
     const me = await User.findByLogin(req.user.login);
     const related = await User.findByUsername(username);
+    console.log("Patch test");
     if (!related)
       throw new NotFoundException('Username not found.');
     me.setRelationship(related, UserRelationship.Status.FRIEND);

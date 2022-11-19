@@ -10,7 +10,7 @@ async function bootstrap() {
   origine = origine.slice(0, -1).toLowerCase();
   app.enableCors({
     origin: origine,
-    methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH'],
+    methods: ['POST', 'PUT', 'DELETE', 'GET', 'PATCH', 'OPTIONS'],
     credentials: true
   });
   app.use(session({

@@ -4,6 +4,7 @@ import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
 import { Navigate } from 'react-router-dom';
+import { isTemplateExpression } from 'typescript';
 
 type Person = {
     name: string;
@@ -18,6 +19,7 @@ const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:
 type State = {
   player:Person
   nameEdit:boolean
+  alreadyUsed:string | null
   query:string
   query2:File | null
   avatarEdit:boolean
@@ -92,14 +94,14 @@ export default class PlayerProfile extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true};
+    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true, alreadyUsed:null};
     this.requestUser();
   }
 
   nameFormat(editing:boolean, name:string) {
     if (editing)
       return (
-        <input type="text"
+        <><input type="text"
           placeholder={name}
           minLength={2}
           onChange={event => {this.setState({query: event.target.value})}}
@@ -109,6 +111,7 @@ export default class PlayerProfile extends React.Component {
                     }
                   }}>
         </input>
+        </>
       )
     else
         return (
@@ -119,9 +122,17 @@ export default class PlayerProfile extends React.Component {
   }
 
   changeName() {
-    let temp:Person = this.state.player;
-    temp.name = this.state.query;
-    this.setState({player:temp, nameEdit:false});
+    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:this.state.query}, {withCredentials:true}).then(() => {
+      let temp:Person = this.state.player;
+      temp.name = this.state.query;
+      this.setState({player:temp, nameEdit:false, alreadyUsed:null});
+    }).catch(error => {
+      if (error.response.status === 500){
+        this.setState({alreadyUsed:this.state.query})
+        console.log("change alreadyUsed")
+      }
+      console.log(error)
+    })
   }
 
   changeAvatar() {
@@ -169,6 +180,7 @@ export default class PlayerProfile extends React.Component {
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <div className='place_name'>
           {this.nameFormat(this.state.nameEdit, this.state.player.name)}
+        {this.state.alreadyUsed === null ? <></> : <p className='warning-p'>{this.state.alreadyUsed} is already used.</p>}
         </div>
         <div className='place_avatar'>
           {this.avatarFormat(this.state.avatarEdit, this.state.player.avatar_location)}

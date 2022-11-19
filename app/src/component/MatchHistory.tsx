@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
 import {defaultavatar} from "./const";
+import { Navigate } from 'react-router-dom';
 
 type Match = {
     id: number;
@@ -13,12 +14,32 @@ type Match = {
 }
 
 type State = {
-  listp:Array<Match>
+  logged: boolean,
+  listp:Array<Match>,
+  avatar_loc:string
 }
 
 export default class MatchList extends React.Component {
-  state:State= {listp:[]};
+  state:State;
 
+  requestUser() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then(res => {
+      const data = res.data;
+      if (data.avatar_loc !== undefined) {
+        this.setState({avatar_loc:data.avatar_loc});
+      }
+    }).catch(error => {
+      this.setState({logged:false});
+    });
+  }
+
+  constructor (props:any) {
+    super(props);
+    this.state= {listp:[], logged:true, avatar_loc:defaultavatar};
+    this.requestUser();
+  }
   componentDidMount() {
     axios.get(`https://jsonplaceholder.typicode.com/users`, {
       withCredentials: true
@@ -82,12 +103,15 @@ export default class MatchList extends React.Component {
     else
         return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
   }
-  
-  render() {
-    return (
+
+  render_list(list:Array<Match>) {
+    if (list.length === 0)
+      return (<p>You have played no match on the server for now.</p>)
+    else
+      return (
         <ul id="match-list">
         {
-        this.state.listp.map(match =>
+        list.map(match =>
             <li key={match.id}>
                 <div className={this.render_status(match.score1, match.score2)}>
                   <img src={defaultavatar} alt="avatar"></img>
@@ -105,6 +129,17 @@ export default class MatchList extends React.Component {
             )
         }
         </ul>
+      )
+  }
+
+  render() {
+    return (
+      <>
+        {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
+        {
+          this.render_list(this.state.listp)
+        }
+      </>
     )
   }
 
