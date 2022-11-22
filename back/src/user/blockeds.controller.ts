@@ -12,13 +12,13 @@ export class BlockedsController
 
   @Get()
   async getBlockeds(@Request() req): Promise<User[]> {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     return me.getRelationshipList(UserRelationship.Status.BLOCKED);
   }
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
@@ -27,7 +27,7 @@ export class BlockedsController
 
   @Delete(':username')
   async delAsFriend(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     const related = await User.findByUsername(username);
     if (!related || await me.getRelationship(related) !== UserRelationship.Status.BLOCKED)
       throw new NotFoundException('Username not found.');

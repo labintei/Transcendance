@@ -19,7 +19,7 @@ export class UserController
         }
       },
       where: {
-        ft_login: req.user.login
+        ft_login: req.user
       }
     });
     return me;
@@ -34,12 +34,12 @@ export class UserController
     };
     if (toUpdate.username === undefined && toUpdate.status === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
-    return await User.update(req.user.login, toUpdate);
+    return await User.update(req.user, toUpdate);
   }
 
   @Get(':username')
   async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<User> {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');
@@ -49,7 +49,7 @@ export class UserController
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     const related = await User.findByUsername(username);
     if (!related)
       throw new NotFoundException('Username not found.');

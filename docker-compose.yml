@@ -41,11 +41,11 @@ services:
       db:
         condition: service_healthy
     ports:
-      - 3000:3000
+      - $BACKEND_PORT:$BACKEND_PORT
     networks:
       - transcendence-network
     environment:
-      - PORT=3000
+      - PORT=$BACKEND_PORT
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
       - POSTGRES_DB

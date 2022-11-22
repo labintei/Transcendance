@@ -35,6 +35,6 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
     let user = await User.findByLogin(data.login);
     if (!user)
       user = await User.createFrom42Login(data.login, data.image_url);
-    return data;
+    return data.login;
   }
 }

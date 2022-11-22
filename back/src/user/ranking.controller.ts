@@ -17,7 +17,7 @@ export class RankingController {
 
   @Get('user')
   async getMyRank(@Request() req, @Query('count') count): Promise<number | User[]> {
-    const me = await User.findByLogin(req.user.login);
+    const me = await User.findByLogin(req.user);
     if (!count)
       count = "0";
     return me.getRanksAround(parseInt(count));

@@ -25,7 +25,7 @@ export class Oauth42Guard extends AuthGuard('oauth42') {
       if (result)
       {
         await super.logIn(request);
-        const me = await User.findByLogin(request.user.login);
+        const me = await User.findByLogin(request.user);
         request.session.twoFASecret = me.twoFASecret;
       }
       else

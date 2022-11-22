@@ -54,7 +54,6 @@ export class AuthController
   @Get('2FA')
   @UseGuards(SessionGuard)
   async validate2FA(@Request() req, @Response({ passthrough: true }) res) {
-    console.log(req.session.twoFASecret);
     if (!req.session.twoFASecret)
       return "2FA is either already validated or not activated on your profile."
     if (!req.query.twoFAToken)

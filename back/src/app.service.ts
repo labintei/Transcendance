@@ -7,7 +7,7 @@ export class AppService implements OnModuleInit {
 
   onModuleInit() {
 //  Uncomment the line below to activate the example generation on application load.
-//    this.generateExamples();
+    //this.generateExamples();
     User.refreshRanks();
   }
 

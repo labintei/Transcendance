@@ -5,9 +5,7 @@ import { AuthGuard } from '@nestjs/passport';
 export class LogAsJraffin extends AuthGuard('oauth42') {
   async canActivate(context: ExecutionContext) {
     const request = context.switchToHttp().getRequest();
-    request.user = {
-      login: 'jraffin'
-    };
+    request.user = 'jraffin';
     await super.logIn(request);
     return true;
   }
