@@ -31,8 +31,8 @@ export class Message extends BaseEntity {
     message.sender = user;
     message.channel = chan;
 
-    chan.messages ;
-    chan.save();
+    // chan.messages ;
+    // chan.save();
 
     return message.save();
   }

@@ -89,7 +89,7 @@ export class AppService implements OnModuleInit {
     Channel.createPublicChannel(await User.findByUsername("aroma"), "#ilovec");
     Channel.createPublicChannel(await User.findByUsername("aroma"), "#rust_is_awesome");
     const chan = await Channel.findOneBy({name: "#lobby"});
-    console.log(chan);
+    // console.log(chan);
 
     await chan.join(await User.findByUsername("jraffin"));
     await chan.join(await User.findByUsername("edjavid"));

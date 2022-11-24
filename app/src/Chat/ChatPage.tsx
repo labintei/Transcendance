@@ -10,7 +10,11 @@ function Chat() {
   const [channelKey, setChannelKey] = useState(0);
 
   useEffect(() => {
-    const socket = io('localhost:3000');
+    const socket = io('localhost:3000', {
+      auth: {
+        ft_login: "iromanova"
+      }
+    });
     setSocket(socket);
 
     socket.on('connect', () => {

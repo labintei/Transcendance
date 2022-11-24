@@ -17,7 +17,7 @@ function ChannelMessage(props: ChannelMessageProps) {
       setMessages(data);
     });
     console.log('UseEffect ChannelMessage');
-    props.socket.emit('loadMessages', props.channelKey);
+    props.socket.emit('loadMessages', {id: props.channelKey});
   }, [props.channelKey]);
 
   return (

@@ -1,3 +1,113 @@
+import {  ConnectedSocket,
+          MessageBody,
+          OnGatewayConnection,
+          SubscribeMessage,
+          WebSocketGateway,
+          WebSocketServer,
+        } from '@nestjs/websockets';
+import { Server } from 'socket.io';
+import { Channel } from '../entities/channel.entity'
+import { User } from 'src/entities/user.entity';
+import { Message } from 'src/entities/message.entity';
+import { FindOptionsWhere } from 'typeorm';
+
+const options = {
+  cors: {
+    origin: "*",    // TEMPORARY: BAD PRACTICE
+  }
+}
+
+@WebSocketGateway(options)
+export class ChatGateway implements OnGatewayConnection{
+
+
+  @WebSocketServer()
+  server: Server;
+
+  // server.in(theSocketId).socketsJoin("room");
+
+  login_sid_map = new Map();
+
+  async handleConnection(@ConnectedSocket() socket) {
+    const query = socket.handshake.auth;
+    console.log("User connected");
+    console.log(query);
+
+    this.login_sid_map.set(query.ft_login, socket.id);
+    console.log(this.login_sid_map.get(query.ft_login));
+    console.log(this.login_sid_map);
+  }
+
+  @SubscribeMessage('message')
+  async handleMessage(@ConnectedSocket() socket, @MessageBody() data) {
+    const msg = await Message.createMessage(data.login, data.content, data.id);
+    socket.emit('message', {
+      "sender" : msg.sender.username,
+      "content" : msg.content,
+      "time" : msg.time,
+    });
+  }
+
+  @SubscribeMessage('loadMessages')
+  async loadMessages(@ConnectedSocket() socket, @MessageBody() data) {
+    // fetch Channel corresponding to id
+    const chan = await Channel.findOneBy({
+      id: data.id
+    } as FindOptionsWhere<Channel>);
+    if (chan === null) {
+      console.error("Invalid id : channel with id #%d does not exist.", data.id);
+      return ;
+    }
+
+    // fetch Message in appropriate channel
+    const messages = await Message.find({
+      relations: { sender: true, channel: true },
+      where: {
+        channel: chan
+      } as FindOptionsWhere<Message>});
+    if (messages === undefined) {
+      console.log("No messages");
+      return ;
+    }
+
+    // organize data before sending
+    const messagesToSend = messages.map((msg) => {
+      return ({
+        "sender" : msg.sender.username,
+        "content" : msg.content,
+        "time" : msg.time
+      })
+    })
+
+    socket.emit('loadMessages', messagesToSend);
+  }
+
+  @SubscribeMessage('getChannels')
+  async getChannel(@ConnectedSocket() socket, @MessageBody() data) {
+    // console.log('debug #2');
+    const chans = await Channel.find();
+
+    // console.log(data);
+
+    const user = await User.findByUsername(data.user);
+    const user2 = await User.findByLogin('lratio');
+    const chan = await Channel.findOneBy({name: "#ilovec"});
+
+    const chansToSend = chans.map((channel) => {
+      return ({
+        "id": channel.id,
+        "name": channel.name,
+        "status": channel.status
+      })
+    })
+
+    // console.log(chansToSend)
+
+    socket.emit('getChannels', chansToSend);
+  }
+}
+
+
 // import { InjectRepository } from '@nestjs/typeorm';
 // import {
 //   ConnectedSocket,
@@ -174,78 +284,3 @@
 //   }
 // }
 
-import { SubscribeMessage, WebSocketGateway } from '@nestjs/websockets';
-import { ConnectedSocket, MessageBody } from '@nestjs/websockets';
-import { Channel } from '../entities/channel.entity'
-import { User } from 'src/entities/user.entity';
-import { Message } from 'src/entities/message.entity';
-
-const options = {
-  cors: {
-    origin: "*",    // TEMPORARY: BAD PRACTICE
-  }
-}
-
-@WebSocketGateway(options)
-export class ChatGateway {
-
-  @SubscribeMessage('message')
-  handleMessage(client: any, payload: any): string {
-    console.log("Hello World !");
-
-    Message.createMessage("iromanova", "Hello World !", 6);
-
-    return 'How do you do fellow postman';
-  }
-
-  @SubscribeMessage('loadMessages')
-  async loadMessages(@ConnectedSocket() socket, @MessageBody() data) {
-
-    // const messages = await Message.findBy({id: data.id} as FindOptionsWhere<Message>);
-
-    const chan = await Channel.findOneBy({id: data.id});
-
-    console.log(chan);
-
-    const messages = chan.messages;
-
-    console.log(messages);
-
-    const messagesToSend = messages.map((msg) => {
-      return ({
-        "sender" : msg.sender.username,
-        "content" : msg.content,
-        "data" : msg.time
-      })
-    })
-
-    console.log(messagesToSend);
-
-    socket.emit('loadMessages', messagesToSend);
-  }
-
-  @SubscribeMessage('getChannels')
-  async getChannel(@ConnectedSocket() socket, @MessageBody() data) {
-    const chans = await Channel.find();
-
-    console.log(data);
-
-    const user = await User.findByUsername(data.user);
-    const user2 = await User.findByLogin('lratio');
-    const chan = await Channel.findOneBy({name: "#ilovec"});
-
-    console.log(typeof(data.user));
-
-    const chansToSend = chans.map((channel) => {
-      return ({
-        "id": channel.id,
-        "name": channel.name,
-        "status": channel.status
-      })
-    })
-
-    // console.log(chansToSend)
-
-    socket.emit('getChannels', chansToSend);
-  }
-}
