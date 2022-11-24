@@ -1,9 +1,8 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { AfterRemove, BaseEntity, BeforeRemove, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
 enum ChannelUserStatus {
-  DIRECT = "Direct",
   OWNER = "Owner",
   ADMIN = "Admin",
   JOINED = "Joined",
@@ -16,31 +15,28 @@ enum ChannelUserStatus {
 export class ChannelUser extends BaseEntity {
 
   @PrimaryColumn({ type: 'int', name: 'channel' })
-  channelId: Channel;
+  channelId: number;
 
   @PrimaryColumn({ type: 'varchar', name: 'user' })
-  userLogin: User;
-
-  @UpdateDateColumn()
-  updated: Date;
-
-  @Column({ nullable: true })
-  duration: number;
-
-  @ManyToOne(() => Channel, (chan) => (chan.users), { cascade: ["insert", "remove"] })
-  @JoinColumn({ name: 'channel' })
-  channel: Channel;
-
-  @ManyToOne(() => User, (user) => (user.channels))
-  @JoinColumn({ name: 'user' })
-  user: User;
+  userLogin: string;
 
   @Column({
     type: 'enum',
     enum: ChannelUserStatus,
-    default: ChannelUserStatus.DIRECT
+    default: ChannelUserStatus.INVITED
   })
   status: ChannelUserStatus;
+
+  @Column({ nullable: true })
+  statusEnd: Date;
+
+  @ManyToOne(() => Channel, (chan) => (chan.users), { onDelete: "CASCADE" })
+  @JoinColumn({ name: 'channel' })
+  channel: Channel;
+
+  @ManyToOne(() => User, (user) => (user.channels), { onDelete: "CASCADE" })
+  @JoinColumn({ name: 'user' })
+  user: User;
 
 }
 

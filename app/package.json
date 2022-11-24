@@ -49,6 +49,10 @@
     ]
   },
   "devDependencies": {
-    "@types/three": "^0.144.0"
+    "@types/three": "^0.144.0",
+    "@svgr/webpack": "^6.2.1"
+  },
+  "overrides": {
+    "@svgr/webpack": "$@svgr/webpack"
   }
 }

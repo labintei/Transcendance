@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, Index } from 'typeorm';
 import { Channel } from './channel.entity';
 import { User } from './user.entity';
 
@@ -8,32 +8,18 @@ export class Message extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @CreateDateColumn()
   time: Date;
 
   @Column()
   content: string;
 
-  @ManyToOne(() => User, { orphanedRowAction: "nullify" })
+  @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'sender' })
   sender: User;
 
-  @ManyToOne(() => Channel, { cascade: ["remove"] })
+  @ManyToOne(() => Channel, { onDelete: "CASCADE" })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
-
-  static async createMessage(login: string, msg: string, channel: number) {
-    const user = await User.findByLogin(login);
-    const chan = await Channel.findOneBy({id: channel});
-
-    const message = new Message();
-    message.content = msg;
-    message.sender = user;
-    message.channel = chan;
-
-    // chan.messages ;
-    // chan.save();
-
-    return message.save();
-  }
 }

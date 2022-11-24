@@ -7,13 +7,13 @@ import reportWebVitals from './reportWebVitals';
 import {
   createBrowserRouter,
   RouterProvider,
-  Route,
 } from "react-router-dom";
 import PlayerProfile from './component/PlayerProfile';
 import MatchList from './component/MatchHistory';
 import LevelList from './component/LevelList';
 import PongGame from './Game/src/PongGame';
 import Chat from './Chat/ChatPage';
+import LoginPage from 'component/LoginPage';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -39,6 +39,10 @@ const router = createBrowserRouter([
       {
         path: "profile",
         element: <PlayerProfile />,
+      },
+      {
+        path: "login",
+        element: <LoginPage />,
       },
       {
         path: "game",

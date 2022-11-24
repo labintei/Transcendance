@@ -1,10 +1,16 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindManyOptions } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, Not, CannotAttachTreeChildrenEntityError, In, BeforeRemove } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 import { User } from './user.entity';
-import bcrypt from 'bcrypt';
 import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import bcrypt from 'bcrypt';
 
+const channelPublicFilter = {
+  id: true,
+  status: true,
+  bcrypthash: false,
+  name: true,
+};
 
 enum ChannelStatus {
   DIRECT = "Direct",
@@ -23,7 +29,7 @@ export class Channel extends BaseEntity {
   @Column({
     type: 'enum',
     enum: ChannelStatus,
-    default: ChannelStatus.DIRECT
+    default: ChannelStatus.PUBLIC
   })
   status: ChannelStatus;
 
@@ -59,32 +65,47 @@ export class Channel extends BaseEntity {
     return !!(await ChannelUser.findOneBy({
       channel: channel,
       user: user,
-      status: ChannelUser.Status.OWNER || ChannelUser.Status.ADMIN
+      status: ChannelUser.Status.OWNER
+        || ChannelUser.Status.ADMIN
     } as FindOptionsWhere<ChannelUser>));
   }
 
-  async isIn(user: User): Promise<boolean> {
-    const channel: Channel = this;
-
-    if (user.username === undefined || user.ft_login === undefined) return false;
-
-    if (await this.isAdmin(user) || await this.isOwner(user)) return true;
-
+  async isMember(user: User): Promise<boolean> {
+    const channel = this as Channel;
     return !!(await ChannelUser.findOneBy({
       channel: channel,
       user: user,
-      status: 
-        ChannelUser.Status.DIRECT ||
-        ChannelUser.Status.JOINED ||
-        ChannelUser.Status.MUTED
+      status: ChannelUser.Status.OWNER
+        || ChannelUser.Status.ADMIN
+        || ChannelUser.Status.JOINED
+        || ChannelUser.Status.MUTED
     } as FindOptionsWhere<ChannelUser>));
   }
 
-  async join(user: User, password?: string) {
+  async canSpeak(user: User): Promise<boolean> {
     const channel = this as Channel;
+    return !!(await ChannelUser.findOneBy({
+      channel: channel,
+      user: user,
+      status: ChannelUser.Status.OWNER
+        || ChannelUser.Status.ADMIN
+        || ChannelUser.Status.JOINED
+    } as FindOptionsWhere<ChannelUser>));
+  }
+
+  async join(user: User, password?: string): Promise<ChannelUser> {
+    const channel = this as Channel;
+    if (this.status != Channel.Status.PUBLIC)
+      throw new ForbiddenException("Channel is not public, you must be invited.");
     if (this.bcrypthash && await !bcrypt.compare(password, this.bcrypthash))
       throw new ForbiddenException("Channel Password does not match.");
-    ChannelUser.save({
+    const chanUser = await ChannelUser.findOneBy({
+      channel: channel,
+      user: user
+    } as FindOptionsWhere<ChannelUser>);
+    if (chanUser && chanUser.status === ChannelUser.Status.BANNED)
+      throw new ForbiddenException("You are banned from this channel.");
+    return ChannelUser.save({
       channel: channel,
       user: user,
       status: ChannelUser.Status.JOINED
@@ -95,68 +116,122 @@ export class Channel extends BaseEntity {
     const channel = this as Channel;
     ChannelUser.delete({
       channel: channel,
-      user: user
+      user: user,
+      status: Not(ChannelUser.Status.BANNED)
+    } as FindOptionsWhere<ChannelUser>);
+  }
+
+  async ban(user: User) {
+    const channel = this as Channel;
+    ChannelUser.delete({
+      channel: channel,
+      user: user,
+      status: Not(ChannelUser.Status.BANNED)
+    } as FindOptionsWhere<ChannelUser>);
+  }
+
+  async unban(user: User) {
+    const channel = this as Channel;
+    ChannelUser.delete({
+      channel: channel,
+      user: user,
+      status: Not(ChannelUser.Status.BANNED)
     } as FindOptionsWhere<ChannelUser>);
   }
 
   static async createPublicChannel(owner: User, name: string, password?: string): Promise<Channel> {
     if (!name)
       throw new BadRequestException("Channel name is required.")
-    if (!!await Channel.findOneBy({ name: name })) {
-      // throw new ConflictException("Channel name already in use.")
-      console.log("Channel name already exist. Skipping...");
-      return ;
-    }
-    return await Channel.save({
+    if (!!Channel.findOneBy({ name: name }))
+      throw new ConflictException("Channel name already in use.")
+    return await Channel.create({
       status: Channel.Status.PUBLIC,
       bcrypthash: password ? await bcrypt.hash(password, this.bcryptSaltRounds) : undefined,
       name: name,
-      users: [{
-        user: owner,
-        status: ChannelUser.Status.OWNER
-      }]
-    });
-  }
-
-  static async createPrivateChannel(owner: User, name?: string): Promise<Channel> {
-    if (name && !!Channel.findOneBy({ name: name }))
-      name = undefined;
-    return await Channel.save({
-      status: Channel.Status.PRIVATE,
-      name: name,
-      users: [{
-        user: owner,
-        status: ChannelUser.Status.OWNER
-      }]
-    });
-  }
-
-  static async createOrGetDirectChannel(user1: User, user2: User) {
-    // Check if channel exists.
-    // else
-    return await Channel.save({
-      status: Channel.Status.DIRECT,
       users: [
         {
-          user: user1,
-          status: ChannelUser.Status.DIRECT
-        },
-        {
-          user: user2,
-          status: ChannelUser.Status.DIRECT
+          user: owner,
+          status: ChannelUser.Status.OWNER
         }
       ]
+    }).save();
+  }
+
+  static async createPrivateChannel(owner: User, name: string): Promise<Channel> {
+    if (name && !!Channel.findOneBy({ name: name }))
+      name = undefined;
+    return await Channel.create({
+      status: Channel.Status.PRIVATE,
+      name: name,
+      users: [
+        {
+        user: owner,
+        status: ChannelUser.Status.OWNER
+        }
+      ]
+    }).save();
+  }
+
+  static async getDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
+    if ((await User.countBy([owner, other] as FindOptionsWhere<User>)) < 2)
+      throw new BadRequestException("wrong user parameters.")
+    const channel = await Channel.createQueryBuilder()
+      .innerJoin("channel.users","owner")
+      .innerJoin("channel.users","other")
+      .where("channel.status = :status", { status: Channel.Status.DIRECT })
+      .andWhere("owner.id = :ownerLogin", { ownerLogin: owner.ft_login })
+      .andWhere("other.id = :otherLogin", { otherLogin: other.ft_login })
+      .andWhere("other.status = :otherStatus", { otherStatus: ChannelUser.Status.JOINED })
+      .getOne();
+    if (channel)
+      return channel;
+    return await Channel.create({
+      status: Channel.Status.PRIVATE,
+      users: [
+        {
+          user: owner,
+          status: ChannelUser.Status.OWNER
+        },
+        {
+          user: owner,
+          status: ChannelUser.Status.OWNER
+        }
+      ]
+    }).save();
+  }
+
+  static async getPublicList(): Promise<Channel[]> {
+    return Channel.find({
+      select: Channel.publicFilter,
+      where: {
+        status: Channel.Status.PUBLIC
+      } as FindOptionsWhere<Channel>
     });
   }
 
-  static async destroyChannel(channel: Channel) {
-    ChannelUser.delete(channel.users as FindOptionsWhere<ChannelUser>);
-    Message.delete({channel: channel} as FindOptionsWhere<Message>);
-    Channel.delete(channel as FindOptionsWhere<Channel>);
+  static async getUserList(user: User): Promise<ChannelUser[]> {
+    return ChannelUser.find({
+      relations: {
+        channel: true
+      },
+      select: {
+        channel: Channel.publicFilter
+      },
+      where: {
+        user: user,
+        status: Not( In( [ ChannelUser.Status.BANNED ] ) )
+      } as FindOptionsWhere<ChannelUser>
+    });
+  }
+
+  static async getMsgs(howMany: number, offset?: number): Promise<Message[]> {
+
+    return
   }
 
 }
 
 export namespace Channel {
   export import Status = ChannelStatus;
+  export const publicFilter = channelPublicFilter;
 }
