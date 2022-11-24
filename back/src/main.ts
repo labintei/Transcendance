@@ -14,17 +14,20 @@ const sessionSecret = pseudoRandomBytes(64).toString('base64');
 const sessionStore = new expressSession.MemoryStore();
 
 class SessionIOAdapter extends IoAdapter {
-
   createIOServer(port: number, options?: ServerOptions): any {
     const io: Server = super.createIOServer(port, options);
-
     io.use((socket, next) => {
       const req = socket.request as Request;
+
+      //  ********** FOR DEVELOPMENT ONLY **********
+      //  Uncomment this to ignore the session cookie and automatically log in the websocckets as an existing user.
+      req.user = 'jraffin'; return next();
+
       const cookies = cookie.parse(req.headers.cookie);
       const sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret) as string;
       sessionStore.get(sessionID, (err, session: any) => {
         if (err)
-          return next(err);
+          return next(new Error(err));
         if (session?.passport?.user) {
           req.user = session.passport.user;
           if (!session.twoFASecret)

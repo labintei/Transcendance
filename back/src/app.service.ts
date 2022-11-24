@@ -1,18 +1,25 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
+import { identity } from 'rxjs';
+import { FindOptionsWhere } from 'typeorm';
+import { Channel } from './entities/channel.entity';
+import { ChannelUser } from './entities/channeluser.entity';
+import { Message } from './entities/message.entity';
 import { User } from './entities/user.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
 
-  onModuleInit() {
-//  Uncomment the line below to activate the example generation on application load.
-    //this.generateExamples();
-    User.refreshRanks();
+  async onModuleInit() {
+    //  ********** FOR DEVELOPMENT ONLY **********
+    //  Uncomment the single line below to activate the example generation on application load.
+    await this.generateExamples();
+
+    await User.reinitSockets();
   }
 
-  generateExamples() {
-    User.save([
+  async generateExamples() {
+    await User.save([
       {
         ft_login: 'iromanova',
         username: 'aroma',
@@ -54,10 +61,11 @@ export class AppService implements OnModuleInit {
         twoFASecret: null,//"EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
         avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg',
         level:  3,
-        xp: 587.
+        xp: 587,
+        status: User.Status.OFFLINE
       }
     ]);
-    UserRelationship.save([
+    await UserRelationship.save([
       {
         ownerLogin: "jraffin",
         relatedLogin: "lbintein",
@@ -74,6 +82,38 @@ export class AppService implements OnModuleInit {
         status: UserRelationship.Status.BLOCKED
       } as UserRelationship
     ]);
+    let chan = (await Channel.findOneBy({name: "testChannel"}))//?.remove();
+    if (!chan)
+      chan = await Channel.save(
+      {
+        name: "testChannel",
+        status: Channel.Status.PUBLIC,
+        users: [
+          {
+            user: {ft_login:"jraffin"},
+            status: ChannelUser.Status.OWNER
+          }
+        ]
+      }
+    );
+    console.log(chan);
+    let msg = await Message.save(
+      {
+        id:4321,
+        sender: await User.findOneBy({ft_login: 'jraffin'}),
+        content: "This is a test !",
+        channel: chan
+      }
+    );
+    // await ChannelUser.save({
+    //   channel: chan,
+    //   user: { ft_login: "jraffin" },
+    //   status: ChannelUser.Status.OWNER
+    // })
+    let chanusr = (await ChannelUser.findOneBy({channelId: chan.id, user: {ft_login: "jraffin"}} as FindOptionsWhere<ChannelUser>))
+    console.log(chanusr);
+    await Channel.remove(chan);
+    //console.log(await ChannelUser.remove(chanusr));
+    await User.refreshRanks();
   }
-
 }

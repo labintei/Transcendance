@@ -12,24 +12,24 @@ export class RankingController {
   async getPodium(@Query('count') count): Promise<User[]> {
     if (!count)
       count = "10";
-    return User.getPodium(parseInt(count));
+    return User.getPodium(Number(count));
   }
 
   @Get('user')
   async getMyRank(@Request() req, @Query('count') count): Promise<number | User[]> {
-    const me = await User.findByLogin(req.user);
+    const me = await User.findOneBy({ft_login: req.user});
     if (!count)
       count = "0";
-    return me.getRanksAround(parseInt(count));
+    return me.getRanksAround(Number(count));
   }
 
   @Get('user/:username')
   async getUserRank(@Param('username') username, @Query('count') count): Promise<number | User[]> {
-    const user = await User.findByUsername(username);
+    const user = await User.findOneBy({username: username});
     if (!user)
       throw new NotFoundException('Username ' + username + ' was not found.');
     if (!count)
       count = "0";
-    return user.getRanksAround(parseInt(count));
+    return user.getRanksAround(Number(count));
   }
 }

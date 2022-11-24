@@ -1,12 +1,31 @@
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLiteral, FindOptionsWhere, Between, UpdateResult } from 'typeorm';
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
+
+const userPublicFilter = {
+  ft_login: true,
+  username: true,
+  status: true,
+  avatarURL: true,
+  twoFASecret: false,
+  level: true,
+  xp: true,
+  victories: true,
+  defeats: true,
+  draws: true,
+  rank: true,
+  socket: false
+} as FindOptionsSelect<User>;
+
+const usernamePattern = new RegExp('^$', );
 
 enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
-  thisING = "thising",
-  PLAYING = "Playing"
+  MATCHING = "Matching",
+  PLAYING = "Playing",
+  BANNED = "Banned"
 }
 
 @Entity('user')
@@ -23,7 +42,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'enum',
     enum:  UserStatus,
-    default: UserStatus.ONLINE
+    default: UserStatus.OFFLINE
   })
   status: UserStatus;
 
@@ -52,6 +71,9 @@ export class User extends BaseEntity {
   @Index()
   rank: number;
 
+  @Column({ nullable: true })
+  socket: string;
+
   @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
   relationships: UserRelationship[];
 
@@ -59,7 +81,7 @@ export class User extends BaseEntity {
   channels: ChannelUser[];
 
   // Virtual field to be able to return the relationship status (or null if not related) of a searched user.
-  relationshipStatus: UserRelationship.Status;
+  relationshipStatus?: UserRelationship.Status;
 
   /** MEMBER METHODS */
 
@@ -99,12 +121,56 @@ export class User extends BaseEntity {
 
   /** STATIC METHODS */
 
-  static async findByLogin( login: string ): Promise<User> {
-    return this.findOneBy({ ft_login : login });
+  static async gainXP(user: User, amount: number): Promise<User> {
+    const rest = user.xpAmountForNextLevel - user.xp;
+    if (rest <= amount) {
+      ++user.level;
+      user.xp = 0;
+      amount -= rest;
+    }
+    user.xp += amount;
+    return user.save();
   }
 
-  static async findByUsername( username: string ): Promise<User> {
-    return this.findOneBy({ username : username });
+  static async looseXP(user: User, amount: number): Promise<User> {
+    if (user.xp > amount)
+      user.xp -= amount;
+    else
+      user.xp = 0;
+    return user.save();
+  }
+
+  static async getPodium(howMany: number): Promise<User[]> {
+    return User.find({
+      select : User.publicFilter,
+      order: {
+        rank: "ASC"
+      },
+      take: howMany
+    });
+  }
+
+  static async getRanksAround(user: User, howMany: number): Promise<User[]> {
+    return User.find({
+      select : User.publicFilter,
+      where: {
+        rank: Between(user.rank - howMany, user.rank + howMany)
+      },
+      order: {
+        rank: "ASC"
+      }
+    });
+  }
+
+  static async changeUsername(user: User, newUsername: string): Promise<User> {
+    if (user.username === newUsername)
+      return user;
+    if (!usernamePattern.test(newUsername))
+      throw new BadRequestException("Invalid username");
+    if (await User.findOneBy({username: newUsername}))
+      throw new ConflictException("Username " + newUsername + " already exists in database.");
+    user.username = newUsername;
+    return user.save();
   }
 
   /*
@@ -136,45 +202,6 @@ export class User extends BaseEntity {
     return user.save();
   }
 
-  static async gainXP(user: User, amount: number): Promise<User> {
-    const rest = user.xpAmountForNextLevel - user.xp;
-    if (rest <= amount) {
-      ++user.level;
-      user.xp = 0;
-      amount -= rest;
-    }
-    user.xp += amount;
-    return user.save();
-  }
-
-  static async looseXP(user: User, amount: number): Promise<User> {
-    if (user.xp > amount)
-      user.xp -= amount;
-    else
-      user.xp = 0;
-    return user.save();
-  }
-
-  static async getPodium(howMany: number): Promise<User[]> {
-    return User.find({
-      order: {
-        rank: "ASC"
-      },
-      take: howMany
-    });
-  }
-
-  static async getRanksAround(user: User, howMany: number): Promise<User[]> {
-    return User.find({
-      where: {
-        rank: Between(user.rank - howMany, user.rank + howMany)
-      },
-      order: {
-        rank: "ASC"
-      }
-    });
-  }
-
   static async refreshRanks() {
     await this.query(`
       UPDATE "user"
@@ -194,8 +221,16 @@ export class User extends BaseEntity {
     `);
   }
 
+  static async reinitSockets() {
+    User.update({}, {
+      status: User.Status.OFFLINE,
+      socket: null
+    });
+  }
+
 }
 
 export namespace User {
   export import Status = UserStatus;
+  export const publicFilter = userPublicFilter;
 }

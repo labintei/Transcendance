@@ -15,11 +15,11 @@ export class UserRelationship extends BaseEntity {
   @PrimaryColumn({ type: 'varchar', name: 'related' })
   relatedLogin: string;
 
-  @ManyToOne(() => User, (user) => (user.relationships))
+  @ManyToOne(() => User, (user) => (user.relationships), { onDelete: "CASCADE" })
   @JoinColumn({ name: 'owner' })
   owner: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "CASCADE" })
   @JoinColumn({ name: 'related' })
   related: User;
 

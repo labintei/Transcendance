@@ -29,11 +29,11 @@ export class Match extends BaseEntity {
   @Column('smallint')
   score2: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user1' })
   user1: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user2' })
   user2: User;
 

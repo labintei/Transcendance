@@ -39,8 +39,8 @@ export class UserController
 
   @Get(':username')
   async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<User> {
-    const me = await User.findByLogin(req.user);
-    const related = await User.findByUsername(username);
+    const me = await User.findOneBy({ft_login: req.user});
+    const related = await User.findOne({select:User.publicFilter, where:{username: username}});
     if (!related)
       throw new NotFoundException('Username not found.');
     related.relationshipStatus = await me.getRelationship(related);
@@ -49,8 +49,8 @@ export class UserController
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user);
-    const related = await User.findByUsername(username);
+    const me = await User.findOneBy({ft_login: req.user});
+    const related = await User.findOneBy({username: username});
     if (!related)
       throw new NotFoundException('Username not found.');
     me.delRelationship(related);

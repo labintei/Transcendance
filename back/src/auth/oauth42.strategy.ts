@@ -1,6 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpService } from '@nestjs/axios';
-import { Injectable } from '@nestjs/common';
+import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { Strategy } from 'passport-oauth2';
 import { lastValueFrom } from 'rxjs';
 import { User } from 'src/entities/user.entity';
@@ -18,7 +18,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
       clientSecret      : process.env.API42_SECRET,
       callbackURL       : process.env.REACT_APP_BACKEND_URL + "auth/42",
       scope             : "public",
-      store             : true
+      state             : true
     });
   }
 
@@ -32,7 +32,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
           },
     	  })
 		));
-    let user = await User.findByLogin(data.login);
+    let user = await User.findOneBy({ft_login: data.login});
     if (!user)
       user = await User.createFrom42Login(data.login, data.image_url);
     return data.login;
