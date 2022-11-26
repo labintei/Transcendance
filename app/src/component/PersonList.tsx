@@ -23,7 +23,7 @@ type State = {
 }
 
 export default class PersonList extends React.Component {
-  state:State= {pwait:0, listp:[], waiting:false, listf:[], logged:false, query:""};
+  state:State= {pwait:0, listp:[], waiting:false, listf:[], logged:true, query:""};
 
   constructor(props:any) {
     super(props);
@@ -58,6 +58,8 @@ export default class PersonList extends React.Component {
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
+        if (error.response.status === 401)
+          this.setState({logged:false});
         console.log(error)
       });
     }
@@ -81,8 +83,10 @@ export default class PersonList extends React.Component {
             }
             id++;
         }
-        this.setState({listf: listftmp});
+        this.setState({listf: listftmp, logged:true});
       }).catch(error => {
+        if (error.response.status === 401)
+          this.setState({logged:false});
         console.log(error)
       });
   }
@@ -176,10 +180,12 @@ export default class PersonList extends React.Component {
             }
             id++;
         }
-        this.setState({listp: listtmp});
+        this.setState({listp: listtmp, logged:true});
         console.log(this.state);
       }).catch(error => {
-        console.log(error)
+        console.log(error);
+        if (error.response.status === 401)
+          this.setState({logged:false});
       });
   }
 

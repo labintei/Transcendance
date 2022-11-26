@@ -16,7 +16,8 @@ type Match = {
 type State = {
   logged: boolean,
   listp:Array<Match>,
-  avatar_loc:string
+  avatar_loc:string,
+  username:string
 }
 
 export default class MatchList extends React.Component {
@@ -27,9 +28,10 @@ export default class MatchList extends React.Component {
       withCredentials: true
     }).then(res => {
       const data = res.data;
-      if (data.avatar_loc !== undefined) {
-        this.setState({avatar_loc:data.avatar_loc});
+      if (data.avatarURL !== undefined && data.username !== undefined) {
+        this.setState({avatar_loc:data.avatarURL, username:data.username});
       }
+      this.getMatches();
     }).catch(error => {
       this.setState({logged:false});
     });
@@ -37,23 +39,31 @@ export default class MatchList extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state= {listp:[], logged:true, avatar_loc:defaultavatar};
+    this.state= {listp:[], logged:true, avatar_loc:defaultavatar, username:""};
     this.requestUser();
   }
-  componentDidMount() {
-    axios.get(`https://jsonplaceholder.typicode.com/users`, {
+
+  getMatches() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "match/history", {
       withCredentials: true
     }).then(res => {
         const matchs = res.data;
+        console.log(matchs);
         let listtmp: Array<Match> = [];   
         for (var match of matchs) {
             let one: Match = {
               id: 0, idopp: 0, statusopp: Math.trunc(Math.random() * 3), name: '', score1:Math.trunc(Math.random() * 5), score2:Math.trunc(Math.random() * 5)
             };
-            if (match.id !== undefined && match.name !== undefined) {
+            let isOne:boolean = true;
+            if (match.id !== undefined && match.score1 !== undefined && match.score2 !== undefined) {
                 one.id = match.id;
-                one.name = match.name;
-                
+                if (match.user1 !== undefined && match.user2 !== undefined  && match.user1.username !== undefined && match.user2.username !== undefined) {
+                  if (match.user1.username !== this.state.username)
+                    isOne = false;
+                  one.name = (isOne ? match.user2.username : match.user1.username);
+                }
+                one.score1 = (isOne ? match.score1 : match.score2);
+                one.score2 = (isOne ? match.score2 : match.score1);
                 listtmp.push(one);
             }
         }

@@ -19,7 +19,7 @@ const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:
 type State = {
   player:Person
   nameEdit:boolean
-  alreadyUsed:string | null
+  errormsg:string | null
   query:string
   query2:File | null
   avatarEdit:boolean
@@ -94,7 +94,7 @@ export default class PlayerProfile extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true, alreadyUsed:null};
+    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true, errormsg:null};
     this.requestUser();
   }
 
@@ -104,6 +104,7 @@ export default class PlayerProfile extends React.Component {
         <><input type="text"
           placeholder={name}
           minLength={2}
+          maxLength={24}
           onChange={event => {this.setState({query: event.target.value})}}
           onKeyPress={event => {
                     if (event.key === 'Enter') {
@@ -125,12 +126,14 @@ export default class PlayerProfile extends React.Component {
     axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:this.state.query}, {withCredentials:true}).then(() => {
       let temp:Person = this.state.player;
       temp.name = this.state.query;
-      this.setState({player:temp, nameEdit:false, alreadyUsed:null});
+      this.setState({player:temp, nameEdit:false, errormsg:null});
     }).catch(error => {
       if (error.response.status === 500){
-        this.setState({alreadyUsed:this.state.query})
-        console.log("change alreadyUsed")
-      }
+        this.setState({errormsg:this.state.query + " is already taken."})
+      } else if (error.response.status === 412) {
+        this.setState({errormsg:"Name is too long (24 characters max)."});
+      } else if (error.response.status === 401)
+        this.setState({logged:false});
       console.log(error)
     })
   }
@@ -180,7 +183,7 @@ export default class PlayerProfile extends React.Component {
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <div className='place_name'>
           {this.nameFormat(this.state.nameEdit, this.state.player.name)}
-        {this.state.alreadyUsed === null ? <></> : <p className='warning-p'>{this.state.alreadyUsed} is already used.</p>}
+        {this.state.errormsg === null ? <></> : <p className='warning-p'>{this.state.errormsg}</p>}
         </div>
         <div className='place_avatar'>
           {this.avatarFormat(this.state.avatarEdit, this.state.player.avatar_location)}

@@ -1,5 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
+import { Match } from './entities/match.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
 
 @Injectable()
@@ -73,6 +74,62 @@ export class AppService implements OnModuleInit {
         relatedLogin: "iromanova",
         status: UserRelationship.Status.BLOCKED
       } as UserRelationship
+    ]);
+    Match.save([
+      {
+        score1: 4,
+        score2: 7,
+        user1: {
+          ft_login: 'lraffin',
+          username: 'jraffin',
+          avatarURL: 'no_image.jpg',
+          level:  1,
+          xp: 630
+        },
+        user2: {
+          ft_login: 'bmarecha',
+          username: 'bmarecha',
+          avatarURL: 'no_image.jpg',
+          level:  2,
+          xp: 0
+        }
+      },
+      {
+        score1: 4,
+        score2: 4,
+        user1: {
+          ft_login: 'bmarecha',
+          username: 'bmarecha',
+          avatarURL: 'no_image.jpg',
+          level:  2,
+          xp: 0
+        },
+        user2: {
+          ft_login: 'lraffin',
+          username: 'jraffin',
+          avatarURL: 'no_image.jpg',
+          level:  1,
+          xp: 630
+        }
+      },
+      {
+        score1: 2,
+        score2: 5,
+        user1: {
+          ft_login: 'lraffin',
+          username: 'jraffin',
+          avatarURL: 'no_image.jpg',
+          level:  1,
+          xp: 630
+        },
+        user2: {
+          ft_login: 'bmarecha',
+          username: 'bmarecha',
+          avatarURL: 'no_image.jpg',
+          level:  2,
+          xp: 0
+        }
+      }
     ]);
   }
 

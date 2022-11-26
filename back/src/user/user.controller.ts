@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, PreconditionFailedException, Request, UseGuards } from '@nestjs/common';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -34,7 +34,9 @@ export class UserController
     };
     if (toUpdate.username === undefined && toUpdate.status === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
-    return await User.update(req.user.login, toUpdate);
+    if (toUpdate.username.length > 24)
+      throw new PreconditionFailedException("Username too long.")
+    return User.update(req.user.login, toUpdate);
   }
 
   @Get(':username')
