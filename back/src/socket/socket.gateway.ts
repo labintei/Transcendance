@@ -1,4 +1,4 @@
-import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer } from '@nestjs/websockets';
+import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, SubscribeMessage } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { User } from 'src/entities/user.entity';
 import { SocketService } from './socket.service';
@@ -22,32 +22,38 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async handleConnection(client: Socket) {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     client.data.login = user.ft_login;
-    console.log('Websocket Client Connected : ' + user.ft_login);
+		await this.socketService.userDisconnect(user);
     user.socket = client.id;
     user.status = User.Status.ONLINE;
-    user.save();
+    await user.save();
+    console.log('Websocket Client Connected : ' + user.ft_login);
     client.data.pingOK = true;
     this.ping(client);
   }
 
   async handleDisconnect(client: Socket) {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log('Websocket Client Disconnected : ' + user.ft_login);
     user.socket = null;
     user.status = User.Status.OFFLINE;
-    user.save();
+    await user.save();
+    console.log('Websocket Client Disconnected : ' + user.ft_login);
   }
 
   async ping(client: Socket) {
     if (!client.data.pingOK)
-      client.disconnect(true);
+      await client.disconnect(true);
     else {
       client.data.pingOK = false;
-      client.emit('ping');
+      await client.emit('ping');
       setTimeout(() => {
         this.ping(client)
       }, pingTimeout);
     }
   }
 
+	@SubscribeMessage('pong')
+	async pong(client: Socket) {
+		client.data.pingOK = true;
+	}
+	
 }

@@ -8,22 +8,22 @@ import { FindOptionsWhere } from 'typeorm';
 @UseGuards(TransGuard)
 export class GameController {
 
-    @Get("history")
-    async gethistory(@Request() req): Promise<Match[]> {
-      const me = await User.findBy({ft_login: req.user.login});
-      return Match.find({
-        relations: {
-          user1:true,
-          user2:true
-        },
-        where: [{
-            user1: me
-          },
-          {
-            user2: me
-          }
-        ] as FindOptionsWhere<Match>[]
-      });
-    }
+	@Get("history")
+	async gethistory(@Request() req): Promise<Match[]> {
+		const me = await User.findBy({ft_login: req.user.login});
+		return Match.find({
+			relations: {
+				user1:true,
+				user2:true
+			},
+			where: [{
+					user1: me
+				},
+				{
+					user2: me
+				}
+			] as FindOptionsWhere<Match>[]
+		});
+	}
 
 }

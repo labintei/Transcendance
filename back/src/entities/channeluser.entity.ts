@@ -5,11 +5,10 @@ import { User } from "./user.entity";
 enum ChannelUserStatus {
   OWNER = "Owner",
   ADMIN = "Admin",
-  JOINED = "Joined",
   INVITED = "Invited",
-  MUTED_JOINED = "Muted",
-	MUTED_UNJOINED = "Muted (not joined)",
-  BANNED = "Banned"
+  MUTED = "Muted",
+  BANNED = "Banned",
+	DIRECT_ALTER = "Direct Message Alter"
 }
 
 @Entity('channel_user')
@@ -23,10 +22,14 @@ export class ChannelUser extends BaseEntity {
 
   @Column({
     type: 'enum',
+		nullable: true,
     enum: ChannelUserStatus,
-    default: ChannelUserStatus.INVITED
+    default: null
   })
   status: ChannelUserStatus;
+
+  @Column({ default: null })
+  joined: boolean;
 
   @Column({ nullable: true })
   statusEnd: Date;
@@ -40,22 +43,17 @@ export class ChannelUser extends BaseEntity {
   user: User;
 
 	isOwner(): boolean {
-		return this.status == ChannelUser.Status.OWNER;
+		return this.status === ChannelUser.Status.OWNER;
   }
 
   isAdmin(): boolean {
 		return this.isOwner()
-			|| this.status == ChannelUser.Status.ADMIN;
+			|| this.status === ChannelUser.Status.ADMIN;
   }
 
   canSpeak(): boolean {
-		return this.isAdmin()
-		|| this.status == ChannelUser.Status.JOINED;
-  }
-
-	isMember(): boolean {
-		return this.canSpeak()
-		|| this.status == ChannelUser.Status.MUTED_JOINED;
+		return this.joined
+		&& this.status !== ChannelUser.Status.MUTED;
   }
 
 }

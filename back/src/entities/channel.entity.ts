@@ -64,19 +64,17 @@ export class Channel extends BaseEntity {
       user: user
     } as FindOptionsWhere<ChannelUser>);
 		if (chanUser) {
+			if (chanUser.joined)
+				return chanUser;
 			if (chanUser.status === ChannelUser.Status.BANNED)
 				throw new ForbiddenException("You are banned from this channel.");
 			if (chanUser.status === ChannelUser.Status.INVITED) {
-				chanUser.status = ChannelUser.Status.JOINED;
-				chanUser.save();
+				chanUser.status = null;
 			}
-			else if (chanUser.status === ChannelUser.Status.MUTED_UNJOINED) {
-				chanUser.status = ChannelUser.Status.MUTED_JOINED;
-				chanUser.save();
-			}
-			return chanUser;
+			chanUser.joined = true;
+			return chanUser.save();
 		}
-    if (this.status != Channel.Status.PUBLIC)
+    if (this.status !== Channel.Status.PUBLIC)
       throw new ForbiddenException("Channel is not public, you must be invited.");
     if (this.bcrypthash) {
 			if (!password)
@@ -87,24 +85,23 @@ export class Channel extends BaseEntity {
     return ChannelUser.save({
       channel: channel,
       user: user,
-      status: ChannelUser.Status.JOINED
+      status: null,
+			joined: true
     });
   }
 
-  async leave(user: User) {
+  async leave(user: User): Promise<ChannelUser> {
     const channel = this as Channel;
 		const chanUser = await ChannelUser.findOneBy({
       channel: channel,
       user: user
     } as FindOptionsWhere<ChannelUser>);
-		if (!chanUser || !chanUser.isMember())
+		if (!chanUser || !chanUser.joined)
 			throw new NotFoundException("User is not a member of this channel.");
-		if (chanUser.status === ChannelUser.Status.MUTED_JOINED) {
-			chanUser.status = ChannelUser.Status.MUTED_UNJOINED;
-			chanUser.save();
-		}
-		else
-			ChannelUser.delete(chanUser as FindOptionsWhere<ChannelUser>);
+		chanUser.joined = false;
+		if (!chanUser.status)
+			return chanUser.remove();
+		return chanUser.save();
   }
 
   async ban(user: User): Promise<ChannelUser> {
@@ -113,20 +110,22 @@ export class Channel extends BaseEntity {
       channel: channel,
       user: user
     } as FindOptionsWhere<ChannelUser>);
-		if (!chanUser || !chanUser.isMember())
+		if (!chanUser || !chanUser.joined)
 			throw new NotFoundException("User is not a member of this channel.");
 		chanUser.status = ChannelUser.Status.BANNED;
-		chanUser.save();
-		return chanUser;
+		chanUser.joined = false;
+		return chanUser.save();
   }
 
-  async unban(user: User) {
+  async unban(user: User): Promise<ChannelUser> {
     const channel = this as Channel;
-    ChannelUser.delete({
+    const chanUser = await ChannelUser.findOneBy({
       channel: channel,
-      user: user,
-      status: ChannelUser.Status.BANNED
+      user: user
     } as FindOptionsWhere<ChannelUser>);
+		if (chanUser?.status === ChannelUser.Status.BANNED)
+			return chanUser.remove();
+		return chanUser;
   }
 
   static async createPublicChannel(owner: User, name: string, password?: string): Promise<Channel> {
@@ -162,17 +161,19 @@ export class Channel extends BaseEntity {
     }).save();
   }
 
-	static async createDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
+	static async createDirectChannel(owner: User, other: User, join: boolean = false): Promise<Channel> {
 		return await Channel.save({
 			status: Channel.Status.DIRECT,
 			users: [
 				{
 					user: owner,
-					status: isSenderSide ? ChannelUser.Status.JOINED : ChannelUser.Status.INVITED
+					status: join ? null : ChannelUser.Status.INVITED,
+					joined: join
 				},
 				{
 					user: other,
-					status: ChannelUser.Status.MUTED_UNJOINED
+					status: null,
+					joined: false
 				}
 			]
 		});
@@ -181,14 +182,13 @@ export class Channel extends BaseEntity {
   static async getDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
     if ((await User.countBy([owner, other] as FindOptionsWhere<User>)) < 2)
       throw new BadRequestException("wrong user parameters.")
-    const channel = await Channel.createQueryBuilder()
-			.select("*", "channel")
+    let channel = await Channel.createQueryBuilder("channel")
       .innerJoin("channel.users","owner")
       .innerJoin("channel.users","other")
       .where("channel.status = :status", { status: Channel.Status.DIRECT })
-      .andWhere("owner.id = :ownerLogin", { ownerLogin: owner.ft_login })
-      .andWhere("other.id = :otherLogin", { otherLogin: other.ft_login })
-      .andWhere("other.status = :otherStatus", { otherStatus: ChannelUser.Status.JOINED })
+      .andWhere("owner.userLogin = :ownerLogin", { ownerLogin: owner.ft_login })
+      .andWhere("other.userLogin = :otherLogin", { otherLogin: other.ft_login })
+      .andWhere("other.status = :otherStatus", { otherStatus: ChannelUser.Status.DIRECT_ALTER })
       .getOne();
     if (channel)
       return channel;
@@ -205,7 +205,7 @@ export class Channel extends BaseEntity {
     });
   }
 
-  static async getUserList(user: User): Promise<ChannelUser[]> {
+  static async getJoinedList(user: User): Promise<ChannelUser[]> {
     return ChannelUser.find({
       relations: {
         channel: true
@@ -215,7 +215,7 @@ export class Channel extends BaseEntity {
       },
       where: {
         user: user,
-        status: Not( In( [ ChannelUser.Status.BANNED ] ) )
+        joined: true
       } as FindOptionsWhere<ChannelUser>
     });
   }

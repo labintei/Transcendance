@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere, Like } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
@@ -80,7 +80,7 @@ export class User extends BaseEntity {
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
 
-  // Virtual field to be able to return the relationship status (or null if not related) of a searched user.
+  // Virtual field to be able to store the relationship status to another user (or null if not related).
   relationshipStatus?: UserRelationship.Status;
 
   /** MEMBER METHODS */
@@ -161,6 +161,17 @@ export class User extends BaseEntity {
       }
     });
   }
+
+	//	WIP
+	static async getSimilarWithRelashionship(username: string, user: User, howMany: number): Promise<User[]> {
+		const list = User.createQueryBuilder("user")
+			.leftJoinAndMapOne("relationshipstatus", "user.relationships", "relationship")
+			.where("user.username = :usernameStart%", { usernameStart: username })
+			.andWhere("relationship.related = user.ft_login")
+			.andWhere("relationship.owner = :userLogin", { userLogin: user.ft_login })
+			.getMany();
+		return list
+	}
 
   static async changeUsername(user: User, newUsername: string): Promise<User> {
     if (user.username === newUsername)
