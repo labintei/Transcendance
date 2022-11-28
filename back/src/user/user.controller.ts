@@ -1,4 +1,6 @@
-import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, PreconditionFailedException, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Post, PreconditionFailedException, Request, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -23,6 +25,16 @@ export class UserController
       }
     });
     return me;
+  }
+
+  @Post()
+  @UseInterceptors(FileInterceptor('file', {
+    storage: diskStorage({
+      destination:'./img'
+    })
+  }))
+  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Res() res) {
+    return res.sendFile(file.filename, {root: file.destination});
   }
 
   @Patch()

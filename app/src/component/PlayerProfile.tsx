@@ -21,6 +21,7 @@ type State = {
   errormsg:string | null
   query:string
   query2:File | null
+  avatar:File | null
   avatarEdit:boolean
   logged:boolean
 }
@@ -93,7 +94,10 @@ export default class PlayerProfile extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true, errormsg:null};
+    this.state = {
+      player:dflt, nameEdit:false, avatarEdit:false,
+      query:'', query2:null, avatar:null, logged:true, errormsg:null
+    };
     this.requestUser();
   }
 
@@ -139,12 +143,35 @@ export default class PlayerProfile extends React.Component {
 
   changeAvatar() {
     let temp:Person = this.state.player;
-    if (this.state.query2 !== null)
+    if (this.state.query2 === null)
     {
-      temp.avatar_location = "/logo192.png";//this.state.query2.name;
+      console.log(temp.avatar_location);
+      this.setState({player:temp, avatarEdit:false});
+      return ;
     }
-    console.log(temp.avatar_location);
-    this.setState({player:temp, avatarEdit:false});
+    let formData = new FormData();
+    formData.set('file', this.state.query2);
+    axios.post(process.env.REACT_APP_BACKEND_URL + "user", formData, {
+      withCredentials:true,
+      onUploadProgress: progressEvent => {
+        const percentCompleted = Math.round(
+          (progressEvent.loaded * 100) / progressEvent.total
+        );
+        console.log(`upload process: ${percentCompleted}%`);
+      }
+    }).then(res => {
+      console.log(res);
+      let avatar:File = res.data;
+      temp.avatar_location = URL.createObjectURL(avatar); 
+      this.setState({player:temp, avatarEdit:false});
+    }).catch(error => {
+      if (error.response === undefined)
+        console.log(error);
+      else if (error.response.status === 401)
+        this.setState({logged:false});
+      else
+        console.log(error);
+    });
   }
 
   avatarFormat(editing:boolean, loc:string) {
