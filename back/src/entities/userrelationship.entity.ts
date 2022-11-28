@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, FindOptionsWhere, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, FindOptionsWhere, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
 enum UserRelationshipStatus {
@@ -45,14 +45,14 @@ export class UserRelationship extends BaseEntity {
     } as FindOptionsWhere<UserRelationship>);
   }
 
-  static async getStatus(owner: User, related: User): Promise<UserRelationship.Status | null> {
+  static async getStatus(owner: User, related: User): Promise<UserRelationship | null> {
     const relationship = await UserRelationship.findOneBy({
       owner: owner,
       related: related
     } as FindOptionsWhere<UserRelationship>);
     if (!relationship)
       return null;
-    return relationship.status;
+    return relationship;
   }
 
   static async getList(owner: User, status: UserRelationship.Status): Promise<User[]> {

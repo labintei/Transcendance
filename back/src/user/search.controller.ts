@@ -5,7 +5,7 @@ import { User } from "src/entities/user.entity";
 
 @Controller('search')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class SearchController {
 
   @Get(':username')

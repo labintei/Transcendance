@@ -43,7 +43,7 @@ export class UserController
     const related = await User.findOne({select:User.publicFilter, where:{username: username}});
     if (!related)
       throw new NotFoundException('Username not found.');
-    related.relationshipStatus = await me.getRelationship(related);
+    related.relatedToUser = await me.getRelationship(related);
     return related;
   }
 

@@ -29,7 +29,7 @@ export class BlockedsController
   async delAsFriend(@Request() req, @Param('username') username) {
     const me = await User.findOneBy({ft_login: req.user});
     const related = await User.findOneBy({username: username});
-    if (!related || await me.getRelationship(related) !== UserRelationship.Status.BLOCKED)
+    if (!related || (await me.getRelationship(related)).status !== UserRelationship.Status.BLOCKED)
       throw new NotFoundException('Username not found.');
     me.delRelationship(related);
   }

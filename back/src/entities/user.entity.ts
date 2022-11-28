@@ -1,5 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere, Like } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere, Like, createQueryBuilder } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
@@ -53,7 +53,7 @@ export class User extends BaseEntity {
   twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })
-  level: number;
+  level: number;ionship
 
   @Column({ type: 'int', default: 0 })
   xp: number
@@ -81,7 +81,7 @@ export class User extends BaseEntity {
   channels: ChannelUser[];
 
   // Virtual field to be able to store the relationship status to another user (or null if not related).
-  relationshipStatus?: UserRelationship.Status;
+  relatedToUser: UserRelationship | null;
 
   /** MEMBER METHODS */
 
@@ -107,7 +107,7 @@ export class User extends BaseEntity {
     return UserRelationship.unRelate(this, related);
   }
 
-  async getRelationship(related: User): Promise<UserRelationship.Status | null> {
+  async getRelationship(related: User): Promise<UserRelationship | null> {
    return UserRelationship.getStatus(this, related);
   }
 
@@ -162,15 +162,19 @@ export class User extends BaseEntity {
     });
   }
 
-	//	WIP
-	static async getSimilarWithRelashionship(username: string, user: User, howMany: number): Promise<User[]> {
-		const list = User.createQueryBuilder("user")
-			.leftJoinAndMapOne("relationshipstatus", "user.relationships", "relationship")
-			.where("user.username = :usernameStart%", { usernameStart: username })
-			.andWhere("relationship.related = user.ft_login")
-			.andWhere("relationship.owner = :userLogin", { userLogin: user.ft_login })
-			.getMany();
-		return list
+	static async getSimilarWithRelashionship(partialUsername: string, user: User, howMany: number): Promise<User[]> {
+		const users = User.createQueryBuilder("user")
+			.leftJoinAndMapOne(
+				"user.relatedToUser",
+				UserRelationship,
+				"relationship",
+				"relationship.relatedLogin = user.ft_login AND relationship.ownerLogin = '"+user.ft_login+"'"
+			)
+			.where("user.username LIKE :partialUsername",
+			 	{ partialUsername: `${partialUsername}%` }
+			)
+
+		return await users.getMany();
 	}
 
   static async changeUsername(user: User, newUsername: string): Promise<User> {
