@@ -96,24 +96,24 @@ export class AppService implements OnModuleInit {
         ]
       }
     );
-    console.log(chan);
-    let msg = await Message.save(
-      {
-        id:4321,
-        sender: await User.findOneBy({ft_login: 'jraffin'}),
-        content: "This is a test !",
-        channel: chan
-      }
-    );
+    // console.log(chan);
+    // let msg = await Message.save(
+    //   {
+    //     id:4321,
+    //     sender: await User.findOneBy({ft_login: 'jraffin'}),
+    //     content: "This is a test !",
+    //     channel: chan
+    //   }
+    // );
     // await ChannelUser.save({
     //   channel: chan,
     //   user: { ft_login: "jraffin" },
     //   status: ChannelUser.Status.OWNER
     // })
-    let chanusr = (await ChannelUser.findOneBy({channelId: chan.id, user: {ft_login: "jraffin"}} as FindOptionsWhere<ChannelUser>))
-    console.log(chanusr);
-    await Channel.remove(chan);
-    //console.log(await ChannelUser.remove(chanusr));
+    // let chanusr = (await ChannelUser.findOneBy({channelId: chan.id, user: {ft_login: "jraffin"}} as FindOptionsWhere<ChannelUser>))
+    // console.log(chanusr);
+    // await Channel.remove(chan);
+    // console.log(await ChannelUser.remove(chanusr));
     await User.refreshRanks();
   }
 }

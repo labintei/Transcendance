@@ -22,5 +22,4 @@ export class Message extends BaseEntity {
   @ManyToOne(() => Channel, { onDelete: "CASCADE" })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
-
 }
