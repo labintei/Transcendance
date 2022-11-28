@@ -4,7 +4,6 @@ import './PlayerProfile.css';
 import {defaultavatar} from "./const";
 import { useStore } from 'Game/src/State/state';
 import { Navigate } from 'react-router-dom';
-import { isTemplateExpression } from 'typescript';
 
 type Person = {
     name: string;

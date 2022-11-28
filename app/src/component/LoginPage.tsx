@@ -21,9 +21,9 @@ export default class LoginPage extends React.Component {
       this.setState({logged:LogStatus.Logged})
     }).catch(error => {
       console.log(error);
-      if (error.status == 401)
+      if (error.status === 401)
         this.setState({logged:LogStatus.NotLogged})
-      if (error.status == 403)
+      if (error.status === 403)
         this.setState({logged:LogStatus.twoFA})
     });
   }
@@ -59,9 +59,9 @@ export default class LoginPage extends React.Component {
   render() {
     return (
         <>
-        { this.state.logged == LogStatus.Logged ?
+        { this.state.logged === LogStatus.Logged ?
           <button onClick={() => this.requestLogout()}>Log Out</button>
-        : (this.state.logged == LogStatus.NotLogged ?
+        : (this.state.logged === LogStatus.NotLogged ?
           <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
           :
           <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>
