@@ -2,7 +2,7 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOpti
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 import { User } from './user.entity';
-import { BadRequestException, ConflictException, ForbiddenException } from '@nestjs/common';
+import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 
 const channelPublicFilter = {
@@ -45,60 +45,45 @@ export class Channel extends BaseEntity {
   @OneToMany(() => Message, (msg) => (msg.channel))
   messages: Message[];
 
-  async isOwner(user: User): Promise<boolean> {
-    const channel: Channel = this;
-    return !!(await ChannelUser.findOneBy({
-      channel: channel,
-      user: user,
-      status: ChannelUser.Status.OWNER
-    } as FindOptionsWhere<ChannelUser>));
-  }
-
-  async isAdmin(user: User): Promise<boolean> {
+	async setPassword(user: User, password?: string): Promise<Channel> {
     const channel = this as Channel;
-    return !!(await ChannelUser.findOneBy({
-      channel: channel,
-      user: user,
-      status: ChannelUser.Status.OWNER
-        || ChannelUser.Status.ADMIN
-    } as FindOptionsWhere<ChannelUser>));
-  }
-
-  async isMember(user: User): Promise<boolean> {
-    const channel = this as Channel;
-    return !!(await ChannelUser.findOneBy({
-      channel: channel,
-      user: user,
-      status: ChannelUser.Status.OWNER
-        || ChannelUser.Status.ADMIN
-        || ChannelUser.Status.JOINED
-        || ChannelUser.Status.MUTED
-    } as FindOptionsWhere<ChannelUser>));
-  }
-
-  async canSpeak(user: User): Promise<boolean> {
-    const channel = this as Channel;
-    return !!(await ChannelUser.findOneBy({
-      channel: channel,
-      user: user,
-      status: ChannelUser.Status.OWNER
-        || ChannelUser.Status.ADMIN
-        || ChannelUser.Status.JOINED
-    } as FindOptionsWhere<ChannelUser>));
-  }
-
-  async join(user: User, password?: string): Promise<ChannelUser> {
-    const channel = this as Channel;
-    if (this.status != Channel.Status.PUBLIC)
-      throw new ForbiddenException("Channel is not public, you must be invited.");
-    if (this.bcrypthash && await !bcrypt.compare(password, this.bcrypthash))
-      throw new ForbiddenException("Channel Password does not match.");
-    const chanUser = await ChannelUser.findOneBy({
+		const chanUser = await ChannelUser.findOneBy({
       channel: channel,
       user: user
     } as FindOptionsWhere<ChannelUser>);
-    if (chanUser && chanUser.status === ChannelUser.Status.BANNED)
-      throw new ForbiddenException("You are banned from this channel.");
+		if (!chanUser.isOwner())
+			throw new UnauthorizedException("Only the owner of the channel can set the password.");
+		this.bcrypthash = password ? await bcrypt.hash(password, Channel.bcryptSaltRounds) : null;
+		return this.save();
+	}
+
+  async join(user: User, password?: string): Promise<ChannelUser> {
+    const channel = this as Channel;
+		const chanUser = await ChannelUser.findOneBy({
+      channel: channel,
+      user: user
+    } as FindOptionsWhere<ChannelUser>);
+		if (chanUser) {
+			if (chanUser.status === ChannelUser.Status.BANNED)
+				throw new ForbiddenException("You are banned from this channel.");
+			if (chanUser.status === ChannelUser.Status.INVITED) {
+				chanUser.status = ChannelUser.Status.JOINED;
+				chanUser.save();
+			}
+			else if (chanUser.status === ChannelUser.Status.MUTED_UNJOINED) {
+				chanUser.status = ChannelUser.Status.MUTED_JOINED;
+				chanUser.save();
+			}
+			return chanUser;
+		}
+    if (this.status != Channel.Status.PUBLIC)
+      throw new ForbiddenException("Channel is not public, you must be invited.");
+    if (this.bcrypthash) {
+			if (!password)
+				throw new ForbiddenException("Protected Channel, password is required.");
+			if (await !bcrypt.compare(password, this.bcrypthash))
+				throw new ForbiddenException("Channel password does not match.");
+		}
     return ChannelUser.save({
       channel: channel,
       user: user,
@@ -108,20 +93,31 @@ export class Channel extends BaseEntity {
 
   async leave(user: User) {
     const channel = this as Channel;
-    ChannelUser.delete({
+		const chanUser = await ChannelUser.findOneBy({
       channel: channel,
-      user: user,
-      status: Not(ChannelUser.Status.BANNED)
+      user: user
     } as FindOptionsWhere<ChannelUser>);
+		if (!chanUser || !chanUser.isMember())
+			throw new NotFoundException("User is not a member of this channel.");
+		if (chanUser.status === ChannelUser.Status.MUTED_JOINED) {
+			chanUser.status = ChannelUser.Status.MUTED_UNJOINED;
+			chanUser.save();
+		}
+		else
+			ChannelUser.delete(chanUser as FindOptionsWhere<ChannelUser>);
   }
 
-  async ban(user: User) {
+  async ban(user: User): Promise<ChannelUser> {
     const channel = this as Channel;
-    ChannelUser.delete({
+		const chanUser = await ChannelUser.findOneBy({
       channel: channel,
-      user: user,
-      status: Not(ChannelUser.Status.BANNED)
+      user: user
     } as FindOptionsWhere<ChannelUser>);
+		if (!chanUser || !chanUser.isMember())
+			throw new NotFoundException("User is not a member of this channel.");
+		chanUser.status = ChannelUser.Status.BANNED;
+		chanUser.save();
+		return chanUser;
   }
 
   async unban(user: User) {
@@ -129,7 +125,7 @@ export class Channel extends BaseEntity {
     ChannelUser.delete({
       channel: channel,
       user: user,
-      status: Not(ChannelUser.Status.BANNED)
+      status: ChannelUser.Status.BANNED
     } as FindOptionsWhere<ChannelUser>);
   }
 
@@ -140,7 +136,7 @@ export class Channel extends BaseEntity {
       throw new ConflictException("Channel name already in use.")
     return await Channel.create({
       status: Channel.Status.PUBLIC,
-      bcrypthash: password ? await bcrypt.hash(password, this.bcryptSaltRounds) : undefined,
+      bcrypthash: password ? await bcrypt.hash(password, this.bcryptSaltRounds) : null,
       name: name,
       users: [
         {
@@ -166,10 +162,27 @@ export class Channel extends BaseEntity {
     }).save();
   }
 
+	static async createDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
+		return await Channel.save({
+			status: Channel.Status.DIRECT,
+			users: [
+				{
+					user: owner,
+					status: isSenderSide ? ChannelUser.Status.JOINED : ChannelUser.Status.INVITED
+				},
+				{
+					user: other,
+					status: ChannelUser.Status.MUTED_UNJOINED
+				}
+			]
+		});
+	}
+
   static async getDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
     if ((await User.countBy([owner, other] as FindOptionsWhere<User>)) < 2)
       throw new BadRequestException("wrong user parameters.")
     const channel = await Channel.createQueryBuilder()
+			.select("*", "channel")
       .innerJoin("channel.users","owner")
       .innerJoin("channel.users","other")
       .where("channel.status = :status", { status: Channel.Status.DIRECT })
@@ -179,19 +192,8 @@ export class Channel extends BaseEntity {
       .getOne();
     if (channel)
       return channel;
-    return await Channel.create({
-      status: Channel.Status.PRIVATE,
-      users: [
-        {
-          user: owner,
-          status: ChannelUser.Status.OWNER
-        },
-        {
-          user: owner,
-          status: ChannelUser.Status.OWNER
-        }
-      ]
-    }).save();
+		await this.createDirectChannel(other, owner, !isSenderSide);
+		return await this.createDirectChannel(owner, other, isSenderSide);
   }
 
   static async getPublicList(): Promise<Channel[]> {

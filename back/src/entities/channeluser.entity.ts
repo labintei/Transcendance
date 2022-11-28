@@ -7,7 +7,8 @@ enum ChannelUserStatus {
   ADMIN = "Admin",
   JOINED = "Joined",
   INVITED = "Invited",
-  MUTED = "Muted",
+  MUTED_JOINED = "Muted",
+	MUTED_UNJOINED = "Muted (not joined)",
   BANNED = "Banned"
 }
 
@@ -37,6 +38,25 @@ export class ChannelUser extends BaseEntity {
   @ManyToOne(() => User, (user) => (user.channels), { onDelete: "CASCADE" })
   @JoinColumn({ name: 'user' })
   user: User;
+
+	isOwner(): boolean {
+		return this.status == ChannelUser.Status.OWNER;
+  }
+
+  isAdmin(): boolean {
+		return this.isOwner()
+			|| this.status == ChannelUser.Status.ADMIN;
+  }
+
+  canSpeak(): boolean {
+		return this.isAdmin()
+		|| this.status == ChannelUser.Status.JOINED;
+  }
+
+	isMember(): boolean {
+		return this.canSpeak()
+		|| this.status == ChannelUser.Status.MUTED_JOINED;
+  }
 
 }
 

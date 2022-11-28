@@ -6,7 +6,7 @@ import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 import { GameModule } from './game/game.module';
 import { ChatModule } from './chat/chat.module';
-import { ScheduleModule } from '@nestjs/schedule';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -22,7 +22,7 @@ import { ScheduleModule } from '@nestjs/schedule';
       retryAttempts: 0,
       synchronize: true
     }),
-    ScheduleModule.forRoot(),
+		SocketModule,
     AuthModule,
     UserModule,
     GameModule,
