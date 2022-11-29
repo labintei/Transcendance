@@ -7,7 +7,8 @@ import { User } from 'src/entities/user.entity';
 const channelRoomPrefix = "channel_";
 const pingTimeout = 60000;
 
-@WebSocketGateway({ transports: ['websocket'] })
+// @WebSocketGateway({transports: [ "websocket" ]})
+@WebSocketGateway() 
 export class ChatGateway implements OnGatewayConnection, OnGatewayDisconnect {
 
   @WebSocketServer() private io: Server;

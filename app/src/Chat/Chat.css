@@ -72,3 +72,10 @@
     height: 100%;
     resize: none;
 }
+
+.popup {
+    /* position: absolute; */
+    z-index: 10;
+    /* display: flex; */
+    /* justify-content: center; */
+}

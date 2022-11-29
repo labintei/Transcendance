@@ -4,33 +4,29 @@ import ChannelMessage from './ChannelMessage';
 import ChannelSidebar from './ChannelSidebar';
 import MessageInput from './MessageInput';
 
-function Chat() {
-  const [socket, setSocket] = useState<Socket | null>(null);
+const backend_url = process.env.REACT_APP_BACKEND_URL || '';
+const socket = io(backend_url);
 
+export default function Chat() {
   const [channelKey, setChannelKey] = useState(0);
 
   useEffect(() => {
-    const socket = io('localhost:3000', {
-      auth: {
-        ft_login: "iromanova"
-      }
-    });
-    setSocket(socket);
-
-    socket.on('connect', () => {
-      console.log('connected');
-    });
-  
-    socket.on('disconnect', () => {
-      console.log('disconnected');
-    });
-  
-    socket.on('message', (data) => {
-      console.log('message', data);
-    });
+    socket.on('ping', () => { socket.emit('pong') });
+    socket.on('error', () => { console.log('error') });
+    socket.on('connect', () => { console.log('connected') });
+    socket.on('disconnect', () => { console.log('disconnected') });
+    socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
+    // socket.on('getChannels', (data) => { console.log('channels :', data)}); // move to ChannelSidebar
 
     // This code will run when component unmount
+    // need to remove
     return () => {
+      socket.off('ping');
+      socket.off('error');
+      socket.off('connect');
+      socket.off('disconnect');
+      socket.off('msg');
+      socket.off('getChannels');
       socket.disconnect();
     };
   }, []);
@@ -66,5 +62,3 @@ function Chat() {
     </div>
   );
 }
-
-export default Chat;

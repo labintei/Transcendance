@@ -19,7 +19,7 @@ function MessageInput(props: MessageInputProps) {
         if (!props.socket) return ;
         if (event.key === "Enter") { // enter key
             if (!props.channelKey) return ;
-            props.socket.emit("message",
+            props.socket.emit("msg",
                 {"channel":props.channelKey, "message": name});
             setName("");
         }

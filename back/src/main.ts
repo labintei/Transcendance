@@ -12,10 +12,15 @@ import * as cookie from 'cookie';
 const session_cookie_name = 'trans-cookie';
 const sessionSecret = pseudoRandomBytes(64).toString('base64');
 const sessionStore = new expressSession.MemoryStore();
+const corsOptions = {
+    origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
+    credentials: true
+};
 
 class SessionIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
-    const io: Server = super.createIOServer(port, options);
+    const io: Server = super.createIOServer(port, {cors: corsOptions, ...options});
+    
     io.use((socket, next) => {
       const req = socket.request as Request;
 
@@ -45,10 +50,7 @@ class SessionIOAdapter extends IoAdapter {
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors({
-    origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
-    credentials: true
-  });
+  app.enableCors(corsOptions);
   app.useWebSocketAdapter(new SessionIOAdapter(app));
   app.use(expressSession({
     store: sessionStore,
