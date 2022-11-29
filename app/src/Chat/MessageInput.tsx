@@ -8,20 +8,32 @@ interface MessageInputProps {
 }
 
 function MessageInput(props: MessageInputProps) {
-    const [name, setName] = useState("");
+    let input: HTMLTextAreaElement | null = null;
 
-    const onSubmit = (event : React.KeyboardEvent<HTMLElement> ) => {
-        event.preventDefault();
-        alert(`Message was: ${name}`);
-    }
+    // const onSubmit = (event : React.KeyboardEvent<HTMLElement> ) => {
+    //     event.preventDefault();
+    //     alert(`Message was: ${name}`);
+    // }
 
     const keyHandler = (event : React.KeyboardEvent<HTMLElement>) => {
-        if (!props.socket) return ;
+        if (!props.socket)
+            return ;
+
         if (event.key === "Enter") { // enter key
-            if (!props.channelKey) return ;
-            props.socket.emit("msg",
-                {"channel":props.channelKey, "message": name});
-            setName("");
+            event.preventDefault();
+            event.stopPropagation();
+
+            // if (!props.channelKey)
+                // return ;
+
+            if (!input || !input.value)
+                return ;
+
+            console.log("[DEBUG][msg]:", input.value);
+
+            props.socket.emit("msg_",
+                {"channel":props.channelKey, "message": input.value});
+            input.value = '';
         }
     }
 
@@ -31,13 +43,9 @@ function MessageInput(props: MessageInputProps) {
                 {/* <label>New Message */}
                     <textarea
                         className="inputBox"
-                        value={name}
-                        onChange={(e) => {
-                            if (e.target.value === "\n")
-                                return ;
-                            setName(e.target.value)
-                        }}
+                        placeholder="Enter message"
                         onKeyDown={keyHandler}
+                        ref={node => input = node}
                     />
                 {/* </label> */}
             </form>
