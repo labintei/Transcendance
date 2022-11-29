@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { Channel } from './Channel';
-import PopupJoin from './PopupJoin';
+import Popup, { popupType } from './Popup'
 import './Chat.css';
 
 interface ChannelSidebarProps {
@@ -11,7 +11,7 @@ interface ChannelSidebarProps {
 
 export default function ChannelSidebar(props: ChannelSidebarProps) {
   const [channels, setChannels] = useState([]);
-  const [isActive, setActive] = useState<boolean>(false);
+  const [popup, setPopup] = useState<popupType>(popupType.None);
 
   useEffect(() => {
     props.socket.on('getChannels', (data) => {
@@ -36,15 +36,27 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
         ))}
       </div>
       <div>
-        {isActive ? <PopupJoin/> : null}
         <button className="join"
           onClick={() => {
-            setActive(!isActive);
+            setPopup(popupType.JoinChannelPopup);
           }}
         >
           Join channel.</button>
-        <button className="add">Add friend.</button>
+        <button className="add"
+          onClick={() => {
+            setPopup(popupType.AddFriendPopup);
+          }}
+        >Add friend.</button>
       </div>
+      {
+        popup !== popupType.None
+        ? <Popup
+          popup={popup}
+          setPopup={setPopup}
+          socket={props.socket}
+          />
+        : null
+      }
     </>
   );
 }
