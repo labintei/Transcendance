@@ -14,13 +14,20 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
   const [popup, setPopup] = useState<popupType>(popupType.None);
 
   useEffect(() => {
-    props.socket.on('getChannels', (data) => {
-      console.log('getChannels', data);
-      setChannels(data);
+    props.socket.emit('joinedList', (answer: any) => {
+      setChannels(answer);
     });
 
-    props.socket.emit('getChannels');
-  }, [props.socket]);
+    props.socket.on('joinedList', (data) => {
+      // console.log('getChannels', data);
+      console.log("[DEBUG] : joinedList", data);
+
+      setChannels(data);
+    });
+    return (() => {
+      props.socket.off('joinedList');
+    });
+  }, []);
 
   return (
     <>

@@ -15,6 +15,17 @@ interface PopupProps {
     socket: Socket;
 }
 
+/*
+ *  create channel
+ *  emit('create')
+ *  ({
+ *      name : "name",
+ *      status : "public"
+ *      password : ""
+ *      id ?
+ *  })
+ * */
+
 export default function Popup(props: PopupProps) {
     let input: HTMLTextAreaElement | null = null;
     const [errorMsg, setError] = useState<string>();
@@ -47,7 +58,7 @@ export default function Popup(props: PopupProps) {
             if (props.popup === popupType.AddFriendPopup)
                 onSubmit(null, 'addFriend');
             if (props.popup === popupType.JoinChannelPopup)
-                onSubmit(null, 'createChan');
+                onSubmit(null, 'create');
         }
     }
 
@@ -63,7 +74,17 @@ export default function Popup(props: PopupProps) {
             return ;
         console.log(input.value);
         input.focus();
-        props.socket.emit(signal, input.value);
+        if (signal === 'create') {
+            const test = {
+                "name": input.value,
+                "password": "",
+                "status": "Public"
+            }
+            props.socket.emit(signal, test);
+            props.socket.emit('joinedList');
+        }
+        else
+            props.socket.emit(signal, input.value);
         input.value = '';
 
         // setError("success !");

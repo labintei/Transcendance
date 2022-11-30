@@ -202,6 +202,7 @@ export class ChatGateway {
 
   @SubscribeMessage('joinedList')
   async joinedList(client: Socket): Promise<Channel[]> {
+    console.log('joinedList');
     const list = await Channel.find({
       relations: {
         users: true
