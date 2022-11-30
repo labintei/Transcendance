@@ -125,24 +125,6 @@ export class Channel extends BaseEntity {
 		return chanUser;
   }
 
-  static async byId(id: number): Promise<Channel> {
-    return this.findOne({
-      select: this.defaultFilter,
-      where: {
-        id: id
-      }
-    });
-  }
-
-  static async byChannelname(channelname: string): Promise<Channel> {
-    return this.findOne({
-      select: this.defaultFilter,
-      where: {
-        name: channelname
-      }
-    });
-  }
-
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, bcryptSaltRounds);
   }
@@ -230,38 +212,18 @@ export class Channel extends BaseEntity {
   }
 
   static async getUnjoinedList(user: User): Promise<Channel[]> {
-    return Channel.find({
-      relations: {
-        users: true
-      },
-      select: {
-        // channel: Channel.defaultFilter
-      },
-      where: {
-        user: user,
-        joined: true
-      } as FindOptionsWhere<Channel>
-    });
-  }
-
-  static async getJoinedList(user: User): Promise<Channel[]> {
-    return Channel.find({
-      relations: {
-        users: true
-      },
-      select: Channel.defaultFilter,
-      // where: {
-      //   user: user,
-      //   joined: true
-      // } as FindOptionsWhere<Channel>
-    });
-  }
-
-  static async getInvitedList(user: User): Promise<Channel[]> {
-    return
-  }
-
-  static async getMsgs(howMany: number, offset?: number): Promise<Message[]> {
+    // return Channel.find({
+    //   relations: {
+    //     users: true
+    //   },
+    //   select: {
+    //     // channel: Channel.defaultFilter
+    //   },
+    //   where: {
+    //     user: user,
+    //     joined: true
+    //   } as FindOptionsWhere<Channel>
+    // });
     return
   }
 

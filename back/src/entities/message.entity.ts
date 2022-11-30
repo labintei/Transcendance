@@ -32,9 +32,12 @@ export class Message extends BaseEntity {
   @JoinColumn({ name: 'channel' })
   channel: Channel;
 
+	//	Virtual field to specify a direct message recipient.
+	recipient: User
+
 	async send(): Promise<Message> {
-		this.id = undefined;
-		this.time = undefined;
+		delete this.id;
+		delete this.time;
 		await this.save();
 		SocketGateway.channelEmit(this.channel, 'msg', this);
 		return this;

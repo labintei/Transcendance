@@ -5,7 +5,7 @@ import { Channel } from 'src/entities/channel.entity';
 import { ChannelUser } from 'src/entities/channeluser.entity';
 import { Message } from 'src/entities/message.entity';
 import { User } from 'src/entities/user.entity';
-import { FindOptionsWhere } from 'typeorm';
+import { FindOptionsWhere, Not } from 'typeorm';
 
 
 @WebSocketGateway()
@@ -23,14 +23,23 @@ export class ChatGateway {
   //
   //  For a direct message, omit channel and set the message <recipient> property as a partial User ( with a user login for example )
   //
-  @SubscribeMessage('msg')
-  async msg(client: Socket, data: any): Promise<Message> {
+  @SubscribeMessage('message')
+  async msg(client: Socket, data: Message): Promise<Message> {
     try {
       const user = await User.findOneBy({ft_login: client.data.login});
       let message = Message.create(data);
       message.sender = user;
-      if (data.channel) {
-        const channel = await Channel.findOneBy(data.channel);
+      if (data.recipient) {
+        const recipient = await User.findOneBy(data.recipient as FindOptionsWhere<User>);
+        if (!recipient)
+          throw new NotFoundException("Direct message recipient was not found !");
+        message.channel = await Channel.getDirectChannel(recipient, user, false);
+				await message.send();
+        message.channel = await Channel.getDirectChannel(user, recipient, true);
+				return message.send();
+      }
+      else if (data.channel) {
+        const channel = await Channel.findOneBy(data.channel as FindOptionsWhere<Channel>);
         if (!channel)
           throw new NotFoundException("Message channel was not found !");
         if (channel.status === Channel.Status.DIRECT)
@@ -41,29 +50,14 @@ export class ChatGateway {
         } as FindOptionsWhere<ChannelUser>);
         if (!chanUser || !chanUser.canSpeak())
           throw new ForbiddenException("You cannot speak in this channel !");
-				return message.send(data.channel);
-      }
-      else if (data.recipient) {
-        const recipient = await User.findOneBy(data.recipient);
-        if (!recipient) {
-          console.log('Message recipient was not found !');
-          return this.error(client, "Message Recipient was not found !");
-        }
-				await message.send(await Channel.getDirectChannel(recipient, user, false));
-				return message.send(await Channel.getDirectChannel(user, recipient, true));
-        // message.channel = await Channel.getDirectChannel(recipient, user, false);
-				// this.io.in(channelRoomPrefix + message.channel.id).emit('msg', JSON.stringify(await message.save()));
-        // message.channel = await Channel.getDirectChannel(user, recipient, true);
-				// message = await message.save();
-				// this.io.in(channelRoomPrefix + message.channel.id).emit('msg', JSON.stringify(message));
-				// return message;
+				return message.send();
       }
       else
         return this.error(client, "Invalid message submitted");
     }
     catch (e) {
       this.error(client, e.name + " : " + e.message);
-      console.error("[ERROR] " + e.stack)
+      console.error("[EVENT 'message'][ERROR] " + e.stack)
     }
   }
 
@@ -71,12 +65,18 @@ export class ChatGateway {
   async create(client: Socket, data: Channel): Promise<Channel> {
     if (data.status === Channel.Status.DIRECT)
       throw new WsException("You cannot create a direct channel.")
+    if (!data.name)
+      throw new WsException("A channel name is required.")
+    if (await Channel.findOneBy({ name: data.name }))
+      throw new WsException("this channel name is already taken.")
     if (data.status === Channel.Status.PROTECTED)
     {
       if (!data.password)
         throw new WsException("A password is required for creating a protected channel")
       data.password = await Channel.hashPassword(data.password);
     }
+    const channel = Channel.create(data);
+    delete channel.id;
 
 		return data;
   }
@@ -89,7 +89,12 @@ export class ChatGateway {
 
   @SubscribeMessage('publicList')
   async publiclist(client: Socket): Promise<Channel[]> {
-    const list = await Channel.getPublicList();
+    const list = await Channel.find({
+      select: Channel.defaultFilter,
+      where: {
+        status: Not(Channel.Status.DIRECT)
+      }
+    });
     client.emit('publicList', list);
     return list;
   }
@@ -104,16 +109,36 @@ export class ChatGateway {
 
   @SubscribeMessage('joinedList')
   async joinedList(client: Socket): Promise<Channel[]> {
-    const user = await User.findOneBy({ft_login: client.data.login});
-    const list = await Channel.getJoinedList(user);
+    const list = await Channel.find({
+      relations: {
+        users: true
+      },
+      select: Channel.defaultFilter,
+      where: {
+        users: {
+          userLogin: client.data.login,
+          joined: true
+        }
+      } as FindOptionsWhere<Channel>
+    });
     client.emit('joinedList', list);
     return list;
   }
 
   @SubscribeMessage('invitedList')
   async invitedList(client: Socket): Promise<Channel[]> {
-    const user = await User.findOneBy({ft_login: client.data.login});
-    const list = await Channel.getInvitedList(user);
+    const list = await Channel.find({
+      relations: {
+        users: true
+      },
+      select: Channel.defaultFilter,
+      where: {
+        users: {
+          userLogin: client.data.login,
+          status: ChannelUser.Status.INVITED
+        }
+      } as FindOptionsWhere<Channel>
+    });
     client.emit('invitedList', list);
     return list;
   }
@@ -124,7 +149,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('mode')
-  async mode(client: Socket, data: any) {
+  async mode(client: Socket, data: ChannelUser) {
     console.log(data);
   }
 

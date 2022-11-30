@@ -196,11 +196,6 @@ export class User extends BaseEntity {
     });
   }
 
-  static filter(user: User) {
-    for (let key in user)
-      if (!this.defaultFilter[key])
-        delete user[key];
-  }
 }
 
 export namespace User {
