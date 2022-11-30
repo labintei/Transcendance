@@ -1,27 +1,27 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, Not, CannotAttachTreeChildrenEntityError, In, BeforeRemove } from 'typeorm';
-import { ChannelUser } from './channeluser.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, Not, CannotAttachTreeChildrenEntityError, In, BeforeRemove, FindOptionsSelect } from 'typeorm';
 import { Message } from './message.entity';
 import { User } from './user.entity';
+import { ChannelUser } from './channeluser.entity';
 import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
 import bcrypt from 'bcrypt';
 
-const channelPublicFilter = {
+const bcryptSaltRounds = 10;
+
+const channelDefaultFilter: FindOptionsSelect<Channel> = {
   id: true,
   status: true,
-  bcrypthash: false,
-  name: true,
+  name: true
 };
 
 enum ChannelStatus {
   DIRECT = "Direct",
   PUBLIC = "Public",
+  PROTECTED = "Protected",
   PRIVATE = "Private"
 }
 
 @Entity('channel')
 export class Channel extends BaseEntity {
-
-  private static bcryptSaltRounds = 10;
 
   @PrimaryGeneratedColumn()
   id: number;
@@ -34,16 +34,13 @@ export class Channel extends BaseEntity {
   status: ChannelStatus;
 
   @Column({ type: 'varchar', length: 60, nullable: true })
-  bcrypthash: string; // For password-protected channels
+  password: string; // For password-protected channels
 
   @Column({ nullable: true, unique: true })
   name: string;
 
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.channel), { cascade: ["insert"] })
   users: ChannelUser[];
-
-  @OneToMany(() => Message, (msg) => (msg.channel))
-  messages: Message[];
 
 	async setPassword(user: User, password?: string): Promise<Channel> {
     const channel = this as Channel;
@@ -53,7 +50,7 @@ export class Channel extends BaseEntity {
     } as FindOptionsWhere<ChannelUser>);
 		if (!chanUser.isOwner())
 			throw new UnauthorizedException("Only the owner of the channel can set the password.");
-		this.bcrypthash = password ? await bcrypt.hash(password, Channel.bcryptSaltRounds) : null;
+		this.password = password ? await Channel.hashPassword(password) : null;
 		return this.save();
 	}
 
@@ -74,14 +71,14 @@ export class Channel extends BaseEntity {
 			chanUser.joined = true;
 			return chanUser.save();
 		}
-    if (this.status !== Channel.Status.PUBLIC)
-      throw new ForbiddenException("Channel is not public, you must be invited.");
-    if (this.bcrypthash) {
+    if (this.status === Channel.Status.PROTECTED) {
 			if (!password)
 				throw new ForbiddenException("Protected Channel, password is required.");
-			if (await !bcrypt.compare(password, this.bcrypthash))
+			if (!(await Channel.comparePassword(password, this.password)))
 				throw new ForbiddenException("Channel password does not match.");
 		}
+    if (this.status !== Channel.Status.PUBLIC)
+      throw new ForbiddenException("Channel is not public, you must be invited.");
     return ChannelUser.save({
       channel: channel,
       user: user,
@@ -128,14 +125,40 @@ export class Channel extends BaseEntity {
 		return chanUser;
   }
 
+  static async byId(id: number): Promise<Channel> {
+    return this.findOne({
+      select: this.defaultFilter,
+      where: {
+        id: id
+      }
+    });
+  }
+
+  static async byChannelname(channelname: string): Promise<Channel> {
+    return this.findOne({
+      select: this.defaultFilter,
+      where: {
+        name: channelname
+      }
+    });
+  }
+
+  static async hashPassword(password: string): Promise<string> {
+    return bcrypt.hash(password, bcryptSaltRounds);
+  }
+
+  static async comparePassword(password: string, hash: string) {
+    return bcrypt.compare(password, hash);
+  }
+
   static async createPublicChannel(owner: User, name: string, password?: string): Promise<Channel> {
     if (!name)
       throw new BadRequestException("Channel name is required.")
     if (!!Channel.findOneBy({ name: name }))
       throw new ConflictException("Channel name already in use.")
     return await Channel.create({
-      status: Channel.Status.PUBLIC,
-      bcrypthash: password ? await bcrypt.hash(password, this.bcryptSaltRounds) : null,
+      status: password ? Channel.Status.PROTECTED : Channel.Status.PUBLIC,
+      password: password ? await bcrypt.hash(password, bcryptSaltRounds) : null,
       name: name,
       users: [
         {
@@ -172,7 +195,7 @@ export class Channel extends BaseEntity {
 				},
 				{
 					user: other,
-					status: null,
+					status: ChannelUser.Status.DIRECT_ALTER,
 					joined: false
 				}
 			]
@@ -198,30 +221,47 @@ export class Channel extends BaseEntity {
 
   static async getPublicList(): Promise<Channel[]> {
     return Channel.find({
-      select: Channel.publicFilter,
-      where: {
-        status: Channel.Status.PUBLIC
-      } as FindOptionsWhere<Channel>
+      select: Channel.defaultFilter,
+      where: [
+        { status: Channel.Status.PUBLIC },
+        { status: Channel.Status.PROTECTED },
+      ]
     });
   }
 
-  static async getJoinedList(user: User): Promise<ChannelUser[]> {
-    return ChannelUser.find({
+  static async getUnjoinedList(user: User): Promise<Channel[]> {
+    return Channel.find({
       relations: {
-        channel: true
+        users: true
       },
       select: {
-        channel: Channel.publicFilter
+        // channel: Channel.defaultFilter
       },
       where: {
         user: user,
         joined: true
-      } as FindOptionsWhere<ChannelUser>
+      } as FindOptionsWhere<Channel>
     });
   }
 
-  static async getMsgs(howMany: number, offset?: number): Promise<Message[]> {
+  static async getJoinedList(user: User): Promise<Channel[]> {
+    return Channel.find({
+      relations: {
+        users: true
+      },
+      select: Channel.defaultFilter,
+      // where: {
+      //   user: user,
+      //   joined: true
+      // } as FindOptionsWhere<Channel>
+    });
+  }
 
+  static async getInvitedList(user: User): Promise<Channel[]> {
+    return
+  }
+
+  static async getMsgs(howMany: number, offset?: number): Promise<Message[]> {
     return
   }
 
@@ -229,5 +269,5 @@ export class Channel extends BaseEntity {
 
 export namespace Channel {
   export import Status = ChannelStatus;
-  export const publicFilter = channelPublicFilter;
+  export const defaultFilter = channelDefaultFilter;
 }

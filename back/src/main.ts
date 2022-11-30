@@ -8,6 +8,7 @@ import * as expressSession from 'express-session';
 import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
 import * as cookie from 'cookie';
+import { WsException } from '@nestjs/websockets';
 
 const session_cookie_name = 'trans-cookie';
 const sessionSecret = pseudoRandomBytes(64).toString('base64');
@@ -20,7 +21,7 @@ const corsOptions = {
 class SessionIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
     const io: Server = super.createIOServer(port, {cors: corsOptions, ...options});
-	
+
     io.use((socket, next) => {
       const req = socket.request as Request;
 
@@ -28,20 +29,20 @@ class SessionIOAdapter extends IoAdapter {
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
       //req.user = 'jraffin'; return next();
 
-      const cookies = cookie.parse(req.headers.cookie);
-      const sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret) as string;
+      let sessionID;
+      if (req.headers.cookie) {
+        const cookies = cookie.parse(req.headers.cookie);
+        sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret);
+      }
       sessionStore.get(sessionID, (err, session: any) => {
         if (err)
-          return next(new Error(err));
-        if (session?.passport?.user) {
-          req.user = session.passport.user;
-          if (!session.twoFASecret)
-            return next();
-          else
-            return next(new Error('Partially logged in : you need to validate a 2FA token.'));
-        }
-        else
+          return next(err);
+        if (!session?.passport?.user)
           return next(new Error('Not logged in : you need to get 42 API authorization.'));
+        req.user = session.passport.user;
+        if (session.twoFASecret)
+        return next(new Error('Partially logged in : you need to validate a 2FA token.'));
+        return next();
       });
     });
     return io;
