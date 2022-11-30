@@ -1,9 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, Not, CannotAttachTreeChildrenEntityError, In, BeforeRemove, FindOptionsSelect } from 'typeorm';
-import { Message } from './message.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect } from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
-import { BadRequestException, ConflictException, ForbiddenException, NotFoundException, UnauthorizedException } from '@nestjs/common';
-import bcrypt from 'bcrypt';
+import { BadRequestException, NotFoundException, UnauthorizedException } from '@nestjs/common';
+import * as bcrypt from 'bcrypt';
 
 const bcryptSaltRounds = 10;
 

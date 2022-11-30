@@ -1,6 +1,5 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { TypeOrmModule } from '@nestjs/typeorm';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere, Like, createQueryBuilder, Repository } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
