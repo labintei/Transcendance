@@ -4,7 +4,7 @@ import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
 
 const chanRoomPrefix = "channel_";
-const pingTimeout = 10000;
+const pingTimeout = 60000;//10000;
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -23,7 +23,19 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     user.status = User.Status.ONLINE;
     await user.save();
     console.log('Websocket Client Connected : ' + user.ft_login);
-    SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(await Channel.getJoinedList(user)));
+    const joinedList = await Channel.find({
+      relations: {
+        users: true
+      },
+      select: Channel.defaultFilter,
+      where: {
+        users: {
+          userLogin: user.ft_login,
+          joined: true
+        }
+      }
+    });
+    SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
   }
@@ -34,7 +46,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     user.status = User.Status.OFFLINE;
     await user.save();
     console.log('Websocket Client Disconnected : ' + user.ft_login);
-    SocketGateway.userLeaveRooms(user, SocketGateway.channelsToRooms(await Channel.getJoinedList(user)));
   }
 
   async ping(client: Socket) {

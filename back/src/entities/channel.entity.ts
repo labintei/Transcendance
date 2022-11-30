@@ -10,7 +10,23 @@ const bcryptSaltRounds = 10;
 const channelDefaultFilter: FindOptionsSelect<Channel> = {
   id: true,
   status: true,
-  name: true
+  name: true,
+  users: {
+    status: true,
+    joined: true,
+    statusEnd: true,
+    user: {
+      username: true,
+      status: true,
+      avatarURL: true,
+      level: true,
+      xp: true,
+      victories: true,
+      defeats: true,
+      draws: true,
+      rank: true
+    }
+  }
 };
 
 enum ChannelStatus {
@@ -54,53 +70,6 @@ export class Channel extends BaseEntity {
 		return this.save();
 	}
 
-  async join(user: User, password?: string): Promise<ChannelUser> {
-    const channel = this as Channel;
-		const chanUser = await ChannelUser.findOneBy({
-      channel: channel,
-      user: user
-    } as FindOptionsWhere<ChannelUser>);
-		if (chanUser) {
-			if (chanUser.joined)
-				return chanUser;
-			if (chanUser.status === ChannelUser.Status.BANNED)
-				throw new ForbiddenException("You are banned from this channel.");
-			if (chanUser.status === ChannelUser.Status.INVITED) {
-				chanUser.status = null;
-			}
-			chanUser.joined = true;
-			return chanUser.save();
-		}
-    if (this.status === Channel.Status.PROTECTED) {
-			if (!password)
-				throw new ForbiddenException("Protected Channel, password is required.");
-			if (!(await Channel.comparePassword(password, this.password)))
-				throw new ForbiddenException("Channel password does not match.");
-		}
-    if (this.status !== Channel.Status.PUBLIC)
-      throw new ForbiddenException("Channel is not public, you must be invited.");
-    return ChannelUser.save({
-      channel: channel,
-      user: user,
-      status: null,
-			joined: true
-    });
-  }
-
-  async leave(user: User): Promise<ChannelUser> {
-    const channel = this as Channel;
-		const chanUser = await ChannelUser.findOneBy({
-      channel: channel,
-      user: user
-    } as FindOptionsWhere<ChannelUser>);
-		if (!chanUser || !chanUser.joined)
-			throw new NotFoundException("User is not a member of this channel.");
-		chanUser.joined = false;
-		if (!chanUser.status)
-			return chanUser.remove();
-		return chanUser.save();
-  }
-
   async ban(user: User): Promise<ChannelUser> {
     const channel = this as Channel;
 		const chanUser = await ChannelUser.findOneBy({
@@ -129,41 +98,8 @@ export class Channel extends BaseEntity {
     return bcrypt.hash(password, bcryptSaltRounds);
   }
 
-  static async comparePassword(password: string, hash: string) {
+  static async comparePassword(password: string, hash: string): Promise<boolean> {
     return bcrypt.compare(password, hash);
-  }
-
-  static async createPublicChannel(owner: User, name: string, password?: string): Promise<Channel> {
-    if (!name)
-      throw new BadRequestException("Channel name is required.")
-    if (!!Channel.findOneBy({ name: name }))
-      throw new ConflictException("Channel name already in use.")
-    return await Channel.create({
-      status: password ? Channel.Status.PROTECTED : Channel.Status.PUBLIC,
-      password: password ? await bcrypt.hash(password, bcryptSaltRounds) : null,
-      name: name,
-      users: [
-        {
-          user: owner,
-          status: ChannelUser.Status.OWNER
-        }
-      ]
-    }).save();
-  }
-
-  static async createPrivateChannel(owner: User, name: string): Promise<Channel> {
-    if (name && !!Channel.findOneBy({ name: name }))
-      name = undefined;
-    return await Channel.create({
-      status: Channel.Status.PRIVATE,
-      name: name,
-      users: [
-        {
-        user: owner,
-        status: ChannelUser.Status.OWNER
-        }
-      ]
-    }).save();
   }
 
 	static async createDirectChannel(owner: User, other: User, join: boolean = false): Promise<Channel> {
@@ -199,32 +135,6 @@ export class Channel extends BaseEntity {
       return channel;
 		await this.createDirectChannel(other, owner, !isSenderSide);
 		return await this.createDirectChannel(owner, other, isSenderSide);
-  }
-
-  static async getPublicList(): Promise<Channel[]> {
-    return Channel.find({
-      select: Channel.defaultFilter,
-      where: [
-        { status: Channel.Status.PUBLIC },
-        { status: Channel.Status.PROTECTED },
-      ]
-    });
-  }
-
-  static async getUnjoinedList(user: User): Promise<Channel[]> {
-    // return Channel.find({
-    //   relations: {
-    //     users: true
-    //   },
-    //   select: {
-    //     // channel: Channel.defaultFilter
-    //   },
-    //   where: {
-    //     user: user,
-    //     joined: true
-    //   } as FindOptionsWhere<Channel>
-    // });
-    return
   }
 
 }

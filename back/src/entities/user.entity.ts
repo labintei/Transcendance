@@ -16,14 +16,12 @@ const userDefaultFilter: FindOptionsSelect<User> = {
   draws: true,
   rank: true,
   relationships: {
-    status: true,
     related: {
       username: true
-    }
+    },
+    status: true
   },
   relatedships: {
-
-    ownerLogin: true, //
     status: true
   }
 };

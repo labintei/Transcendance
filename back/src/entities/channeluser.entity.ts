@@ -1,8 +1,6 @@
 import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 import { Channel } from "./channel.entity";
-import { UserRelationship } from "./userrelationship.entity";
-
 
 const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
   channelId: true,
@@ -11,12 +9,10 @@ const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
   joined: true,
   statusEnd: true,
   channel: {
-    id: true,
     status: true,
     name: true
   },
   user: {
-    ft_login: true,
     username: true,
     status: true,
     avatarURL: true,
