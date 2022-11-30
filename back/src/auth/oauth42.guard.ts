@@ -1,4 +1,4 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/entities/user.entity';
 
@@ -10,24 +10,18 @@ export class Oauth42Guard extends AuthGuard('oauth42') {
     //  and we put it back if it exists to be still able to use it after
     //  several redirected requests.
     //  In case of authentication failure the session is destroyed anyway.
-    if (request.query.redirectURL !== undefined )
+    if (request.query.redirectURL !== undefined && request.session)
       request.session.redirectURL = request.query.redirectURL;
-    request.query.redirectURL = request.session.redirectURL;
-    let result;
+    request.query.redirectURL = request.session?.redirectURL;
+    let result = false;
     try {
       result = await super.canActivate(context) as boolean;
     }
-    catch (e) {
+    catch {
       result = false;
     }
     if (result)
-    {
       await super.logIn(request);
-      const me = await User.findOneBy({ft_login: request.user});
-      request.session.twoFASecret = me.twoFASecret;
-      if (me.status === User.Status.BANNED)
-        request.session.destroy();
-    }
     else
       request.session.destroy();
     return true;

@@ -1,5 +1,11 @@
-import { BaseEntity, Column, Entity, FindOptionsWhere, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, FindOptionsSelect, FindOptionsWhere, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
+
+const userRelationshipDefaultFilter: FindOptionsSelect<UserRelationship> = {
+  ownerLogin: true,
+  relatedLogin: true,
+  status: true
+};
 
 enum UserRelationshipStatus {
   FRIEND = "Friend",
@@ -30,40 +36,26 @@ export class UserRelationship extends BaseEntity {
   })
   status: UserRelationshipStatus;
 
-  static async relate(owner: User, related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    return UserRelationship.save({
-      owner: owner,
-      related: related,
-      status: status
-    });
-  }
-
-  static async unRelate(owner: User, related: User) {
-    return UserRelationship.delete({
-      owner: owner,
-      related: related
-    } as FindOptionsWhere<UserRelationship>);
-  }
-
-  static async getStatus(owner: User, related: User): Promise<UserRelationship.Status | null> {
-    const relationship = await UserRelationship.findOneBy({
-      owner: owner,
-      related: related
-    } as FindOptionsWhere<UserRelationship>);
-    if (!relationship)
-      return null;
-    return relationship.status;
-  }
-
   static async getList(owner: User, status: UserRelationship.Status): Promise<User[]> {
+    const list = await User.createQueryBuilder("user")
+      .innerJoinAndMapOne(
+        "user.relationshipStatus",
+        UserRelationship,
+        "relationship",
+        "relationship.related = user.ft_login AND relationship.owner = :ownerLogin AND relationship.status = :status",
+        { ownerLogin: owner.ft_login, status: status })
+      .getMany();
+    console.log(list);
     const relationships = await UserRelationship.find({
       relations: {
           related: true
       },
       where: {
-        owner : owner,
+        owner : {
+          ft_login: owner.ft_login
+        },
         status: status
-      } as FindOptionsWhere<UserRelationship>
+      }
     });
     const result = relationships.map((relationship) => relationship.related);
     return result;
@@ -73,4 +65,5 @@ export class UserRelationship extends BaseEntity {
 
 export namespace UserRelationship {
   export import Status = UserRelationshipStatus;
+  export const defaultFilter = userRelationshipDefaultFilter;
 }

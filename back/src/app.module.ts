@@ -2,12 +2,12 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { ChatModule } from './chat/chat.module';
 import { AuthModule } from './auth/auth.module';
 import { UserModule } from './user/user.module';
 // import { MatchModule } from './match/match.module';
 import { GameModule } from './game/game.module';
-import { ScheduleModule } from '@nestjs/schedule';
+import { ChatModule } from './chat/chat.module';
+import { SocketModule } from './socket/socket.module';
 
 @Module({
   imports: [
@@ -23,10 +23,10 @@ import { ScheduleModule } from '@nestjs/schedule';
       retryAttempts: 0,
       synchronize: true
     }),
-    ScheduleModule.forRoot(),
     AuthModule,
     ChatModule,
     UserModule,
+    SocketModule,
     GameModule,
     ChatModule
   ],

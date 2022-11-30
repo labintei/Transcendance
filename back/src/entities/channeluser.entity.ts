@@ -1,14 +1,41 @@
-import { AfterRemove, BaseEntity, BeforeRemove, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
-import { Channel } from "./channel.entity";
+import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Channel } from "./channel.entity";
+import { UserRelationship } from "./userrelationship.entity";
+
+
+const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
+  channelId: true,
+  userLogin: true,
+  status: true,
+  joined: true,
+  statusEnd: true,
+  channel: {
+    id: true,
+    status: true,
+    name: true
+  },
+  user: {
+    ft_login: true,
+    username: true,
+    status: true,
+    avatarURL: true,
+    level: true,
+    xp: true,
+    victories: true,
+    defeats: true,
+    draws: true,
+    rank: true
+  }
+};
 
 enum ChannelUserStatus {
   OWNER = "Owner",
   ADMIN = "Admin",
-  JOINED = "Joined",
   INVITED = "Invited",
   MUTED = "Muted",
-  BANNED = "Banned"
+  BANNED = "Banned",
+	DIRECT_ALTER = "Direct Message Alter"
 }
 
 @Entity('channel_user')
@@ -22,10 +49,14 @@ export class ChannelUser extends BaseEntity {
 
   @Column({
     type: 'enum',
+		nullable: true,
     enum: ChannelUserStatus,
-    default: ChannelUserStatus.INVITED
+    default: null
   })
   status: ChannelUserStatus;
+
+  @Column({ default: null })
+  joined: boolean;
 
   @Column({ nullable: true })
   statusEnd: Date;
@@ -38,9 +69,24 @@ export class ChannelUser extends BaseEntity {
   @JoinColumn({ name: 'user' })
   user: User;
 
+	isOwner(): boolean {
+		return this.status === ChannelUser.Status.OWNER;
+  }
+
+  isAdmin(): boolean {
+		return this.isOwner()
+			|| this.status === ChannelUser.Status.ADMIN;
+  }
+
+  canSpeak(): boolean {
+		return this.joined
+		&& this.status !== ChannelUser.Status.MUTED;
+  }
+
 }
 
 export namespace ChannelUser {
   export import Status = ChannelUserStatus;
+  export const defaultFilter = channelUserDefaultFilter;
 }
 
