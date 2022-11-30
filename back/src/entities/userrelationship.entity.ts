@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, FindOptionsSelect, FindOptionsWhere, Index, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
 
 const userRelationshipDefaultFilter: FindOptionsSelect<UserRelationship> = {

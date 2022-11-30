@@ -188,16 +188,16 @@ export class ChatGateway {
 
   @SubscribeMessage('unjoinedList')
   async unjoinedList(client: Socket): Promise<Channel[]> {
-    const list = await Channel.find({
+    const list = await Channel.createQueryBuilder()
       // MUST USE QUERY BUILDER
 
       // select: Channel.defaultFilter,
       // where: {
       //   status: Not(Channel.Status.DIRECT)
       // } as FindOptionsWhere<Channel>
-    });
+    // });
     client.emit('unjoinedList', list);
-    return list;
+    return //list;
   }
 
   @SubscribeMessage('joinedList')
