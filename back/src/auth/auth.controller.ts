@@ -3,8 +3,7 @@ import { Oauth42Guard } from './oauth42.guard';
 import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
-
-const loggedInMsg = "You are fully logged in.";
+import { User } from 'src/entities/user.entity';
 
 @Controller('auth')
 export class AuthController
@@ -25,7 +24,7 @@ export class AuthController
   @Get()
   @UseGuards(TransGuard)
   async authTest() {
-    return loggedInMsg;
+    return "You are fully logged in.";
   }
 
   /*
@@ -44,17 +43,25 @@ export class AuthController
   @UseGuards(Oauth42Guard)
   async loginWith42(@Request() req, @Response({ passthrough: true }) res) {
     const redir = req.query.redirectURL;
-    if (redir !== undefined)
-      res.redirect(redir);
-    else if (req.session === undefined)
-      throw new UnauthorizedException();
-    else
-      return loggedInMsg;
+    if (redir)
+      return res.redirect(redir);
+    if (req.session === undefined)
+      throw new UnauthorizedException("42 API refused connection.");
+    const me = await User.findOneBy({ft_login: req.user});
+    if (me.status === User.Status.BANNED) {
+      req.session.destroy();
+      throw new UnauthorizedException("You are banned from this server.");
+    }
+    req.session.twoFASecret = me.twoFASecret;
+    return "Success";
   }
 
   @Get('2FA')
   @UseGuards(SessionGuard)
   async validate2FA(@Request() req, @Response({ passthrough: true }) res) {
+    const redir = req.query.redirectURL;
+    if (redir)
+      return res.redirect(redir);
     if (!req.session.twoFASecret)
       return "2FA is either already validated or not activated on your profile."
     else {
@@ -64,11 +71,7 @@ export class AuthController
         throw new ForbiddenException("2FA token is invalid.");
       req.session.twoFASecret = null;
     }
-    const redir = req.query.redirectURL;
-    if (redir !== undefined)
-      res.redirect(redir);
-    else
-      return loggedInMsg;
+    return "Success";
   }
 
   @Get('logout')
@@ -76,10 +79,9 @@ export class AuthController
   async logout(@Request() req, @Response({ passthrough: true }) res): Promise<any> {
     req.session.destroy();
     const redir = req.query.redirectURL;
-    if (redir !== undefined)
-      res.redirect(redir);
-    else
-      return "You are now logged out.";
+    if (redir)
+      return res.redirect(redir);
+    return "You are now logged out.";
   }
 
 }

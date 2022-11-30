@@ -1,22 +1,29 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, Between, FindOptionsSelect, BeforeRemove, FindOptionsWhere, Like, createQueryBuilder } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
-const userPublicFilter = {
+const userDefaultFilter: FindOptionsSelect<User> = {
   ft_login: true,
   username: true,
   status: true,
   avatarURL: true,
-  twoFASecret: false,
   level: true,
   xp: true,
   victories: true,
   defeats: true,
   draws: true,
   rank: true,
-  socket: false
-} as FindOptionsSelect<User>;
+  relationships: {
+    related: {
+      username: true
+    },
+    status: true
+  },
+  relatedships: {
+    status: true
+  }
+};
 
 const usernamePattern = new RegExp('^$', );
 
@@ -77,11 +84,11 @@ export class User extends BaseEntity {
   @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
   relationships: UserRelationship[];
 
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.related))
+  relatedships: UserRelationship[];
+
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
-
-  // Virtual field to be able to store the relationship status to another user (or null if not related).
-  relatedToUser: UserRelationship | null;
 
   /** MEMBER METHODS */
 
@@ -97,26 +104,6 @@ export class User extends BaseEntity {
 
   async looseXP(amount: number): Promise<User> {
     return User.looseXP(this, amount);
-  }
-
-  async setRelationship(related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    return UserRelationship.relate(this, related, status);
-  }
-
-  async delRelationship(related: User) {
-    return UserRelationship.unRelate(this, related);
-  }
-
-  async getRelationship(related: User): Promise<UserRelationship | null> {
-   return UserRelationship.getStatus(this, related);
-  }
-
-  async getRelationshipList(status: UserRelationship.Status): Promise<User[]> {
-    return UserRelationship.getList(this, status);
-  }
-
-  async getRanksAround(howMany: number): Promise<User[]> {
-    return User.getRanksAround(this, howMany);
   }
 
   /** STATIC METHODS */
@@ -139,43 +126,6 @@ export class User extends BaseEntity {
       user.xp = 0;
     return user.save();
   }
-
-  static async getPodium(howMany: number): Promise<User[]> {
-    return User.find({
-      select : User.publicFilter,
-      order: {
-        rank: "ASC"
-      },
-      take: howMany
-    });
-  }
-
-  static async getRanksAround(user: User, howMany: number): Promise<User[]> {
-    return User.find({
-      select : User.publicFilter,
-      where: {
-        rank: Between(user.rank - howMany, user.rank + howMany)
-      },
-      order: {
-        rank: "ASC"
-      }
-    });
-  }
-
-	static async getSimilarWithRelashionship(partialUsername: string, user: User, howMany: number): Promise<User[]> {
-		const users = User.createQueryBuilder("user")
-			.leftJoinAndMapOne(
-				"user.relatedToUser",
-				UserRelationship,
-				"relationship",
-				"relationship.relatedLogin = user.ft_login AND relationship.ownerLogin = '"+user.ft_login+"'"
-			)
-			.where("user.username LIKE :partialUsername",
-			 	{ partialUsername: `${partialUsername}%` }
-			)
-
-		return await users.getMany();
-	}
 
   static async changeUsername(user: User, newUsername: string): Promise<User> {
     if (user.username === newUsername)
@@ -247,5 +197,5 @@ export class User extends BaseEntity {
 
 export namespace User {
   export import Status = UserStatus;
-  export const publicFilter = userPublicFilter;
+  export const defaultFilter = userDefaultFilter;
 }

@@ -22,9 +22,9 @@ import { SocketModule } from './socket/socket.module';
       retryAttempts: 0,
       synchronize: true
     }),
-		SocketModule,
     AuthModule,
     UserModule,
+    SocketModule,
     GameModule,
     ChatModule
   ],

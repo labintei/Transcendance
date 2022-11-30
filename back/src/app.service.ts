@@ -82,20 +82,19 @@ export class AppService implements OnModuleInit {
         status: UserRelationship.Status.BLOCKED
       } as UserRelationship
     ]);
-    let chan = (await Channel.findOneBy({name: "testChannel"}))//?.remove();
+    let chan = (await Channel.findOneBy({name: "testChannel"}))
     if (!chan)
-      chan = await Channel.save(
-      {
+      chan = await Channel.save({
         name: "testChannel",
         status: Channel.Status.PUBLIC,
         users: [
           {
             user: {ft_login:"jraffin"},
-            status: ChannelUser.Status.OWNER
+            status: ChannelUser.Status.OWNER,
+            joined: true
           }
         ]
-      }
-    );
+      });
     await User.refreshRanks();
   }
 }
