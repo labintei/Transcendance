@@ -1,12 +1,38 @@
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, ObjectLiteral, FindOptionsWhere, Between, UpdateResult } from 'typeorm';
+import { BadRequestException, ConflictException } from '@nestjs/common';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
+
+const userDefaultFilter: FindOptionsSelect<User> = {
+  ft_login: true,
+  username: true,
+  status: true,
+  avatarURL: true,
+  level: true,
+  xp: true,
+  victories: true,
+  defeats: true,
+  draws: true,
+  rank: true,
+  relationships: {
+    related: {
+      username: true
+    },
+    status: true
+  },
+  relatedships: {
+    status: true
+  }
+};
+
+const usernamePattern = new RegExp('^$', );
 
 enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
-  thisING = "thising",
-  PLAYING = "Playing"
+  MATCHING = "Matching",
+  PLAYING = "Playing",
+  BANNED = "Banned"
 }
 
 @Entity('user')
@@ -23,7 +49,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'enum',
     enum:  UserStatus,
-    default: UserStatus.ONLINE
+    default: UserStatus.OFFLINE
   })
   status: UserStatus;
 
@@ -34,7 +60,7 @@ export class User extends BaseEntity {
   twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })
-  level: number;
+  level: number;ionship
 
   @Column({ type: 'int', default: 0 })
   xp: number
@@ -52,14 +78,17 @@ export class User extends BaseEntity {
   @Index()
   rank: number;
 
-  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner), {cascade: true})
+  @Column({ nullable: true })
+  socket: string;
+
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
   relationships: UserRelationship[];
 
-  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user), {cascade: true})
-  channels: ChannelUser[];
+  @OneToMany(() => UserRelationship, (relationship) => (relationship.related))
+  relatedships: UserRelationship[];
 
-  // Virtual field to be able to return the relationship status (or null if not related) of a searched user.
-  relationshipStatus: UserRelationship.Status;
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
+  channels: ChannelUser[];
 
   /** MEMBER METHODS */
 
@@ -77,34 +106,36 @@ export class User extends BaseEntity {
     return User.looseXP(this, amount);
   }
 
-  async setRelationship(related: User, status: UserRelationship.Status): Promise<UserRelationship> {
-    return UserRelationship.relate(this, related, status);
-  }
-
-  async delRelationship(related: User) {
-    return UserRelationship.unRelate(this, related);
-  }
-
-  async getRelationship(related: User): Promise<UserRelationship.Status | null> {
-   return UserRelationship.getStatus(this, related);
-  }
-
-  async getRelationshipList(status: UserRelationship.Status): Promise<User[]> {
-    return UserRelationship.getList(this, status);
-  }
-
-  async getRanksAround(howMany: number): Promise<User[]> {
-    return User.getRanksAround(this, howMany);
-  }
-
   /** STATIC METHODS */
 
-  static async findByLogin( login: string ): Promise<User> {
-    return this.findOneBy({ ft_login : login });
+  static async gainXP(user: User, amount: number): Promise<User> {
+    const rest = user.xpAmountForNextLevel - user.xp;
+    if (rest <= amount) {
+      ++user.level;
+      user.xp = 0;
+      amount -= rest;
+    }
+    user.xp += amount;
+    return user.save();
   }
 
-  static async findByUsername( username: string ): Promise<User> {
-    return this.findOneBy({ username : username });
+  static async looseXP(user: User, amount: number): Promise<User> {
+    if (user.xp > amount)
+      user.xp -= amount;
+    else
+      user.xp = 0;
+    return user.save();
+  }
+
+  static async changeUsername(user: User, newUsername: string): Promise<User> {
+    if (user.username === newUsername)
+      return user;
+    if (!usernamePattern.test(newUsername))
+      throw new BadRequestException("Invalid username");
+    if (await User.findOneBy({username: newUsername}))
+      throw new ConflictException("Username " + newUsername + " already exists in database.");
+    user.username = newUsername;
+    return user.save();
   }
 
   /*
@@ -136,45 +167,6 @@ export class User extends BaseEntity {
     return user.save();
   }
 
-  static async gainXP(user: User, amount: number): Promise<User> {
-    const rest = user.xpAmountForNextLevel - user.xp;
-    if (rest <= amount) {
-      ++user.level;
-      user.xp = 0;
-      amount -= rest;
-    }
-    user.xp += amount;
-    return user.save();
-  }
-
-  static async looseXP(user: User, amount: number): Promise<User> {
-    if (user.xp > amount)
-      user.xp -= amount;
-    else
-      user.xp = 0;
-    return user.save();
-  }
-
-  static async getPodium(howMany: number): Promise<User[]> {
-    return User.find({
-      order: {
-        rank: "ASC"
-      },
-      take: howMany
-    });
-  }
-
-  static async getRanksAround(user: User, howMany: number): Promise<User[]> {
-    return User.find({
-      where: {
-        rank: Between(user.rank - howMany, user.rank + howMany)
-      },
-      order: {
-        rank: "ASC"
-      }
-    });
-  }
-
   static async refreshRanks() {
     await this.query(`
       UPDATE "user"
@@ -194,8 +186,16 @@ export class User extends BaseEntity {
     `);
   }
 
+  static async reinitSockets() {
+    User.update({}, {
+      status: User.Status.OFFLINE,
+      socket: null
+    });
+  }
+
 }
 
 export namespace User {
   export import Status = UserStatus;
+  export const defaultFilter = userDefaultFilter;
 }

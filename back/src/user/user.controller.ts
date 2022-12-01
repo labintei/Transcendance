@@ -4,6 +4,7 @@ import { diskStorage } from 'multer';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
+import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { UpdateResult } from 'typeorm';
 
 @Controller('user')
@@ -14,17 +15,18 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
-    const me = await User.findOne({
+    const me = await User.find({
+      select: User.defaultFilter,
       relations: {
         relationships: {
           related: true
         }
       },
       where: {
-        ft_login: req.user.login
+        ft_login: req.user
       }
     });
-    return me;
+    return me[0];
   }
 
   @Post()
@@ -41,33 +43,43 @@ export class UserController
   async updateMe(@Request() req): Promise<UpdateResult> {
     const toUpdate = {
       username: req.body.username,
-      status: req.body.status,
       twoFASecret: req.body.twoFASecret
     };
-    if (toUpdate.username === undefined && toUpdate.status === undefined && toUpdate.twoFASecret === undefined)
+    if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
     if (toUpdate.username.length > 24)
       throw new PreconditionFailedException("Username too long.")
-    return User.update(req.user.login, toUpdate);
+    return User.update(req.user, toUpdate);
   }
 
   @Get(':username')
-  async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<User> {
-    const me = await User.findByLogin(req.user.login);
-    const related = await User.findByUsername(username);
-    if (!related)
-      throw new NotFoundException('Username not found.');
-    related.relationshipStatus = await me.getRelationship(related);
+  async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<any> {
+    const related = await User.findOne({
+      select: User.defaultFilter,
+      relations: {
+        relatedships: true
+      },
+      where: {
+        username: username,
+        relatedships: {
+          ownerLogin: req.user
+        }
+      }
+    });
     return related;
   }
 
   @Delete(':username')
   async delRelationship(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
-    const related = await User.findByUsername(username);
-    if (!related)
-      throw new NotFoundException('Username not found.');
-    me.delRelationship(related);
+    const relationship = await UserRelationship.findOneBy({
+      ownerLogin: req.user,
+      related: {
+        username: username
+      }
+    });
+    if (!relationship)
+      throw new NotFoundException('No relationship found to this username.')
+    relationship.remove();
   }
 
 }

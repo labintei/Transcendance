@@ -2,6 +2,7 @@ import { Controller, Get, NotFoundException, Param, Query, Request, UseGuards } 
 import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
+import { Between } from "typeorm";
 
 @Controller('ranking')
 @UseGuards(TransGuard)
@@ -10,26 +11,54 @@ export class RankingController {
 
   @Get()
   async getPodium(@Query('count') count): Promise<User[]> {
-    if (!count)
-      count = "10";
-    return User.getPodium(parseInt(count));
+    let howMany = Number(count);
+    if (isNaN(howMany) || howMany > 50)
+      howMany = 10;
+    return User.find({
+      select : User.defaultFilter,
+      order: {
+        rank: "ASC"
+      },
+      take: howMany
+    });
   }
 
   @Get('user')
   async getMyRank(@Request() req, @Query('count') count): Promise<number | User[]> {
-    const me = await User.findByLogin(req.user.login);
-    if (!count)
-      count = "0";
-    return me.getRanksAround(parseInt(count));
+    const me = await User.findOneBy({ft_login: req.user});
+    if (count === undefined)
+      return me.rank;
+    let howMany = Number(count);
+    if (isNaN(howMany) || howMany > 20)
+      howMany = 0;
+    return User.find({
+      select : User.defaultFilter,
+      where: {
+        rank: Between(me.rank - howMany, me.rank + howMany)
+      },
+      order: {
+        rank: "ASC"
+      }
+    });
   }
 
   @Get('user/:username')
   async getUserRank(@Param('username') username, @Query('count') count): Promise<number | User[]> {
-    const user = await User.findByUsername(username);
-    if (!user)
-      throw new NotFoundException('Username ' + username + ' was not found.');
-    if (!count)
-      count = "0";
-    return user.getRanksAround(parseInt(count));
+    const user = await User.findOneBy({username: username});
+    if (count === undefined)
+      return user.rank;
+    let howMany = Number(count);
+    if (isNaN(howMany) || howMany > 20)
+      howMany = 0;
+    return User.find({
+      select : User.defaultFilter,
+      where: {
+        rank: Between(user.rank - howMany, user.rank + howMany)
+      },
+      order: {
+        rank: "ASC"
+      }
+    });
   }
+
 }

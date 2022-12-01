@@ -6,7 +6,7 @@
 #    By: jraffin <jraffin@student.42.fr>            +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2022/10/01 16:27:27 by jraffin           #+#    #+#              #
-#    Updated: 2022/11/07 12:37:47 by jraffin          ###   ########.fr        #
+#    Updated: 2022/11/21 08:52:42 by jraffin          ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -64,9 +64,10 @@ ip					:
 hostname			:	envcheck
 	@echo "REACT_APP_HOSTNAME=$(shell hostname)" > .hostname.env
 	@source .env && echo "REACT_APP_WEBSITE_PORT=$$WEBSITE_PORT" >> .hostname.env
+	@source .env && echo "REACT_APP_BACKEND_PORT=$$BACKEND_PORT" >> .hostname.env
 	@echo "REACT_APP_WEBSITE_URL=http://$(shell hostname)$(shell source .env && [ "$$WEBSITE_PORT" != "80" ] && echo ":$$WEBSITE_PORT")/" >> .hostname.env
-	@echo "REACT_APP_BACKEND_URL=http://$(shell hostname):3000/" >> .hostname.env
-	@source .hostname.env && echo "Website URL : $$REACT_APP_WEBSITE_URL"
+	@echo "REACT_APP_BACKEND_URL=http://$(shell hostname)$(shell source .env && [ "$$BACKEND_PORT" != "80" ] && echo ":$$BACKEND_PORT")/" >> .hostname.env
+	@source .hostname.env && echo -e "Backend URL : $$REACT_APP_BACKEND_URL\nWebsite URL : $$REACT_APP_WEBSITE_URL"
 
 #	cleans compilated dev data
 clean				:	stop

@@ -1,40 +1,88 @@
-import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { Channel } from "./channel.entity";
+import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
+import { Channel } from "./channel.entity";
+
+const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
+  channelId: true,
+  userLogin: true,
+  status: true,
+  joined: true,
+  statusEnd: true,
+  channel: {
+    status: true,
+    name: true
+  },
+  user: {
+    username: true,
+    status: true,
+    avatarURL: true,
+    level: true,
+    xp: true,
+    victories: true,
+    defeats: true,
+    draws: true,
+    rank: true
+  }
+};
 
 enum ChannelUserStatus {
   OWNER = "Owner",
-  JOINED = "Joined",
+  ADMIN = "Admin",
+  INVITED = "Invited",
   MUTED = "Muted",
-  BANNED = "Banned"
+  BANNED = "Banned",
+	DIRECT_ALTER = "Direct Message Alter"
 }
 
 @Entity('channel_user')
 export class ChannelUser extends BaseEntity {
 
   @PrimaryColumn({ type: 'int', name: 'channel' })
-  channelId: Channel;
+  channelId: number;
 
   @PrimaryColumn({ type: 'varchar', name: 'user' })
-  userFtLogin: User;
-
-  @ManyToOne(() => Channel, (chan) => (chan.users))
-  @JoinColumn({ name: 'channel' })
-  channel: Channel;
-
-  @ManyToOne(() => User, (user) => (user.channels))
-  @JoinColumn({ name: 'user' })
-  user: User;
+  userLogin: string;
 
   @Column({
     type: 'enum',
+		nullable: true,
     enum: ChannelUserStatus,
-    default: ChannelUserStatus.OWNER
+    default: null
   })
   status: ChannelUserStatus;
+
+  @Column({ default: null })
+  joined: boolean;
+
+  @Column({ nullable: true })
+  statusEnd: Date;
+
+  @ManyToOne(() => Channel, (chan) => (chan.users), { onDelete: "CASCADE" })
+  @JoinColumn({ name: 'channel' })
+  channel: Channel;
+
+  @ManyToOne(() => User, (user) => (user.channels), { onDelete: "CASCADE" })
+  @JoinColumn({ name: 'user' })
+  user: User;
+
+	isOwner(): boolean {
+		return this.status === ChannelUser.Status.OWNER;
+  }
+
+  isAdmin(): boolean {
+		return this.isOwner()
+			|| this.status === ChannelUser.Status.ADMIN;
+  }
+
+  canSpeak(): boolean {
+		return this.joined
+		&& this.status !== ChannelUser.Status.MUTED;
+  }
+
 }
 
 export namespace ChannelUser {
   export import Status = ChannelUserStatus;
+  export const defaultFilter = channelUserDefaultFilter;
 }
 

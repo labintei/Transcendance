@@ -1,36 +1,29 @@
-import { ExecutionContext, Injectable } from '@nestjs/common';
-import { AuthGuard, IAuthModuleOptions } from '@nestjs/passport';
+import { ExecutionContext, Injectable, UnauthorizedException } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
 import { User } from 'src/entities/user.entity';
 
 @Injectable()
 export class Oauth42Guard extends AuthGuard('oauth42') {
-
-  getAuthenticateOptions(context: ExecutionContext): IAuthModuleOptions<any> {
-    return {
-      ...super.getAuthenticateOptions(context),
-      state: { redirectURL: context.switchToHttp().getRequest().query.redirectURL }
-    };
-  }
-
   async canActivate(context: ExecutionContext) {
-    let result;
+    const request = context.switchToHttp().getRequest();
+    //  Here we save the redirectURL query parameter into the session
+    //  and we put it back if it exists to be still able to use it after
+    //  several redirected requests.
+    //  In case of authentication failure the session is destroyed anyway.
+    if (request.query.redirectURL !== undefined && request.session)
+      request.session.redirectURL = request.query.redirectURL;
+    request.query.redirectURL = request.session?.redirectURL;
+    let result = false;
     try {
       result = await super.canActivate(context) as boolean;
     }
     catch {
       result = false;
     }
-    finally {
-      const request = context.switchToHttp().getRequest();
-      if (result)
-      {
-        await super.logIn(request);
-        const me = await User.findByLogin(request.user.login);
-        request.session.twoFASecret = me.twoFASecret;
-      }
-      else
-        request.session.destroy();
-      return true;
-    }
+    if (result)
+      await super.logIn(request);
+    else
+      request.session.destroy();
+    return true;
   }
 }

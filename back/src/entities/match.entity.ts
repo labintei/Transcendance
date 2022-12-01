@@ -1,5 +1,35 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { User } from './user.entity';
+
+const matchDefaultFilter: FindOptionsSelect<Match> = {
+  id: true,
+  time: true,
+  status: true,
+  score1: true,
+  score2: true,
+  user1: {
+    username: true,
+    status: true,
+    avatarURL: true,
+    level: true,
+    xp: true,
+    victories: true,
+    defeats: true,
+    draws: true,
+    rank: true
+  },
+  user2: {
+    username: true,
+    status: true,
+    avatarURL: true,
+    level: true,
+    xp: true,
+    victories: true,
+    defeats: true,
+    draws: true,
+    rank: true
+  }
+}
 
 enum MatchStatus {
   MATCHED = "Matched",
@@ -29,11 +59,11 @@ export class Match extends BaseEntity {
   @Column('smallint')
   score2: number;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user1' })
   user1: User;
 
-  @ManyToOne(() => User)
+  @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user2' })
   user2: User;
 
@@ -90,4 +120,5 @@ export class Match extends BaseEntity {
 
 export namespace Match {
   export import Status = MatchStatus;
+  export const defaultFilter = matchDefaultFilter;
 }

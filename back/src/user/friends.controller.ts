@@ -12,8 +12,18 @@ export class FriendsController
 
   @Get()
   async getFriends(@Request() req): Promise<User[]> {
-    const me = await User.findByLogin(req.user.login);
-    return me.getRelationshipList(UserRelationship.Status.FRIEND);
+    return User.find({
+      relations: {
+        relatedships: true
+      },
+      select: User.defaultFilter,
+      where: {
+        relatedships: {
+          ownerLogin: req.user,
+          status: UserRelationship.Status.FRIEND
+        }
+      }
+    });
   }
 
   @Get("andNotFriends")
@@ -29,22 +39,29 @@ export class FriendsController
   }
 
   @Put(':username')
-  async setAsFriend(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
-    const related = await User.findByUsername(username);
-    console.log("Patch test");
+  async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
+    const related = await User.findOneBy({username: username});
     if (!related)
       throw new NotFoundException('Username not found.');
-    me.setRelationship(related, UserRelationship.Status.FRIEND);
+    return UserRelationship.create({
+      ownerLogin: req.user,
+      relatedLogin: related.ft_login,
+      status: UserRelationship.Status.FRIEND
+    }).save();
   }
 
   @Delete(':username')
   async delAsFriend(@Request() req, @Param('username') username) {
-    const me = await User.findByLogin(req.user.login);
-    const related = await User.findByUsername(username);
-    if (!related || await me.getRelationship(related) !== UserRelationship.Status.FRIEND)
-      throw new NotFoundException('Username not found.');
-    me.delRelationship(related);
+    const relationship = await UserRelationship.findOneBy({
+      ownerLogin: req.user,
+      related: {
+        username: username
+      },
+      status: UserRelationship.Status.FRIEND
+    });
+    if (!relationship)
+      throw new NotFoundException('No friend found with this username.')
+    relationship.remove();
   }
 
 }

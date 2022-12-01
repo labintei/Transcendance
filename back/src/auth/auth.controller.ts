@@ -1,8 +1,9 @@
-import { Controller, ForbiddenException, Get, Request, Response, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Request, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Oauth42Guard } from './oauth42.guard';
 import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
+import { User } from 'src/entities/user.entity';
 
 @Controller('auth')
 export class AuthController
@@ -29,7 +30,7 @@ export class AuthController
   /*
   **  On these routes, you can use the "redirectURL" query parameter to
   **  specify an urlencoded callback URL to redirect to after authentication
-  **  process ends. If you don't, it redirects to the test route /auth.
+  **  process ends. If you don't, it just gives you the status code and message.
   **
   **  You can also, for example, make an all-in-one authentication call by
   **  urlencoding each redirection and puting it in the redirectURL param
@@ -38,45 +39,49 @@ export class AuthController
   **  http://backend:3000/auth/42?redirectURL=2FA%3FtwoFAToken%3D000000%26redirectURL%3Dhttp%253A%252F%252Ffrontend%253A3080%252FProfile
   **
   */
-
   @Get('42')
   @UseGuards(Oauth42Guard)
-  async loginWith42(@Request() req, @Response() res) {
-    if (!req.authInfo.state)
-      res.redirect(process.env.REACT_APP_WEBSITE_URL);  //redirectURL not accessible in case of 42API refusal.
-    const redir = req.authInfo.state.redirectURL;
+  async loginWith42(@Request() req, @Response({ passthrough: true }) res) {
+    const redir = req.query.redirectURL;
     if (redir)
-      res.redirect(redir);
-    else
-      res.redirect('/auth');
+      return res.redirect(redir);
+    if (req.session === undefined)
+      throw new UnauthorizedException("42 API refused connection.");
+    const me = await User.findOneBy({ft_login: req.user});
+    if (me.status === User.Status.BANNED) {
+      req.session.destroy();
+      throw new UnauthorizedException("You are banned from this server.");
+    }
+    req.session.twoFASecret = me.twoFASecret;
+    return "Success";
   }
 
   @Get('2FA')
   @UseGuards(SessionGuard)
   async validate2FA(@Request() req, @Response({ passthrough: true }) res) {
-    console.log(req.session.twoFASecret);
-    if (!req.session.twoFASecret)
-      return "2FA is either already validated or not activated on your profile."
-    if (!req.query.twoFAToken)
-      throw new ForbiddenException('missing query parameter : "twoFAToken"');
-    if (!authenticator.check(req.query.twoFAToken, req.session.twoFASecret))
-      throw new ForbiddenException("2FA token is invalid.");
-    req.session.twoFASecret = null;
     const redir = req.query.redirectURL;
     if (redir)
-      res.redirect(redir);
-    else
-      res.redirect('/auth');
+      return res.redirect(redir);
+    if (!req.session.twoFASecret)
+      return "2FA is either already validated or not activated on your profile."
+    else {
+      if (req.query.twoFAToken === undefined)
+        throw new ForbiddenException('missing query parameter : <twoFAToken>');
+      if (!authenticator.check(req.query.twoFAToken, req.session.twoFASecret))
+        throw new ForbiddenException("2FA token is invalid.");
+      req.session.twoFASecret = null;
+    }
+    return "Success";
   }
 
   @Get('logout')
-  async logout(@Request() req, @Response() res): Promise<any> {
+  @UseGuards(SessionGuard)
+  async logout(@Request() req, @Response({ passthrough: true }) res): Promise<any> {
     req.session.destroy();
     const redir = req.query.redirectURL;
     if (redir)
-      res.redirect(redir);
-    else
-      res.redirect('/auth');
+      return res.redirect(redir);
+    return "You are now logged out.";
   }
 
 }

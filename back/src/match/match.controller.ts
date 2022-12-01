@@ -9,7 +9,7 @@ import { FindOptionsWhere } from 'typeorm';
 export class MatchController {
     @Get("history")
     async gethistory(@Request() req): Promise<Match[]> {
-        const me = await User.findByLogin(req.user.login);
+        const me = await User.findOneBy({ft_login:req.user.login});
         return await Match.find({
             relations:{
                 user1:true,
