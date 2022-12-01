@@ -3,7 +3,10 @@ import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
 
+import { socket } from '../../PongGame'
+import { SetMove } from '../../SetMove'
 export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
+
 
   // This reference will give us direct access to the THREE.Mesh object
   // const ref = useRef<any>(null!)
