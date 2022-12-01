@@ -4,7 +4,21 @@ import Timer from './Timer/timer';
 import World from './World/World';
 import {useStore} from './State/state'
 import Menu from './Menu/menu';
+import { io, Socket } from "socket.io-client";
 
+
+
+export interface Game_data {
+  id: number;
+  nb_player: number;
+  player1: Socket;
+  player2: Socket;
+  player1_x: number;
+  player2_x: number;
+}
+
+const secu_url = process.env.REACT_APP_BACKEND_URL || '';
+export const socket = io(secu_url);
 
 export default function PongGame(props: any) {
 
@@ -13,14 +27,18 @@ export default function PongGame(props: any) {
   console.log(props)
 
   useEffect(() => {
+    socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
+    socket.on('error', () => { console.log('error')});
     console.log(ready)
   }, [ready])
+
+  socket.emit('pong');
 
   return (
     <div className="App" tabIndex={0} >
 
-      {/* <div className='info'>THE 3D 42 PONG GAME</div> */}
-     <World />
+      {}
+      {/*<World/>*/}
     <div className='score'>
       <div className='elem'>
       Score: 
@@ -28,7 +46,7 @@ export default function PongGame(props: any) {
       </div>
     </div>
 
-{  ready === false &&   <Timer nb={3}/>}
+    {/*ready === false &&   <Timer nb={3}/>*/}
       <Menu/>
     </div>
   );
