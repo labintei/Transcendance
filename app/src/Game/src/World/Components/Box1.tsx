@@ -4,7 +4,7 @@ import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
 
 import { socket } from '../../PongGame'
-import { SetMove } from '../../SetMove'
+
 export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
 
@@ -29,7 +29,7 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
       
     }
     if (getDirection.right === true)
-    box.current.position.x += 0.2
+      box.current.position.x += 0.2
 
   })
 

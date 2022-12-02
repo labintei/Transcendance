@@ -168,7 +168,8 @@ export default function World(props: any) {
   const map = useStore((s: any) => s.bgdChoice)
   // console.log(getDirection)
   return (
-
+    <KeyboardControls />
+/*
     <Canvas
     camera={{ position: [0, 3, 7] }}>
    <CameraControls />
@@ -200,8 +201,8 @@ export default function World(props: any) {
    </>
    }
    <Box2 position={[0, 0, -5]} />
-   <Plane position={[0, -0.5, 0]} />
- </Canvas>
+   <Plane position={[0, -0.5, 0]} />*///
+ //</Canvas>
 
 
 
