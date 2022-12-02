@@ -5,7 +5,7 @@ import { Match } from 'src/entities/match.entity';
 
 @Controller('match')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class GameController {
 
 	@Get('history')

@@ -144,22 +144,17 @@ export class ChatGateway {
   @SubscribeMessage('leave')
   async leave(client: Socket, data: Channel) {
     try {
+      const channel = await Channel.findOneBy({ id: data.id, name: data.name });
+      if (!channel)
+        throw new NotFoundException("Channel was not found.");
       const chanUser = await ChannelUser.findOne({
         relations: {
           channel: true
         },
-        where: [
-          {
-            channel: {
-              name: data.name
-            },
-            userLogin: client.data.login
-          },
-          {
-            channelId: data.id,
-            userLogin: client.data.login
-          }
-        ]
+        where: {
+          channel: channel,
+          userLogin: client.data.login
+        } as FindOptionsWhere<ChannelUser>
       });
       if (!chanUser || !chanUser.joined)
         throw new NotFoundException("User is not a member of this channel.");
@@ -188,7 +183,11 @@ export class ChatGateway {
 
   @SubscribeMessage('unjoinedList')
   async unjoinedList(client: Socket): Promise<Channel[]> {
-    const list = await Channel.createQueryBuilder()
+    const list = await Channel.createQueryBuilder("channel")
+      .leftJoin(
+        "channel.users",
+        "users",
+        "users.id IS NULL")
       // MUST USE QUERY BUILDER
 
       // select: Channel.defaultFilter,

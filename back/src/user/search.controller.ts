@@ -3,11 +3,11 @@ import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
 import { UserRelationship } from "src/entities/userrelationship.entity";
-import { ILike } from "typeorm";
+import { ILike, IsNull, Not } from "typeorm";
 
 @Controller('search')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class SearchController {
 
   @Get(':username')
@@ -19,7 +19,7 @@ export class SearchController {
     //  Typeorm way doesnt permit to return selected
     //  and also empty relationship, so we are forced
     //  to use the QueryBuilder.
-    //
+    
     // return User.find({
     //   select: User.defaultFilter,
     //   relations: {
@@ -28,7 +28,9 @@ export class SearchController {
     //   where: {
     //     username: ILike(partialUsername+"%"),
     //     relatedships: [
-    //       null,
+    //       {
+    //         ownerLogin: IsNull()
+    //       },
     //       {
     //         ownerLogin: req.user
     //       }
