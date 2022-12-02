@@ -2,8 +2,12 @@ import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, P
 import { User } from "./user.entity";
 
 const userRelationshipDefaultFilter: FindOptionsSelect<UserRelationship> = {
-  ownerLogin: true,
-  relatedLogin: true,
+  owner: {
+		username: true
+	},
+  related: {
+		username: true
+	},
   status: true
 };
 

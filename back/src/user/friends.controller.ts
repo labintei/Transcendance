@@ -13,10 +13,10 @@ export class FriendsController
   @Get()
   async getFriends(@Request() req): Promise<User[]> {
     return User.find({
+      select: User.defaultFilter,
       relations: {
         relatedships: true
       },
-      select: User.defaultFilter,
       where: {
         relatedships: {
           ownerLogin: req.user,
@@ -28,9 +28,20 @@ export class FriendsController
 
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
-    const related = await User.findOneBy({username: username});
+    const related = await User.findOne({
+			relations: {
+				relatedships: true
+			},
+			where: { 
+				username: username,
+				relatedships: {
+					ownerLogin: req.user
+				}
+			}
+		});
     if (!related)
       throw new NotFoundException('Username not found.');
+		if (related)
     return UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,

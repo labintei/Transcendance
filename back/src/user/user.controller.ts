@@ -42,16 +42,21 @@ export class UserController
   async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<any> {
     const related = await User.findOne({
       select: User.defaultFilter,
-      relations: {
-        relatedships: true
-      },
       where: {
-        username: username,
-        relatedships: {
-          ownerLogin: req.user
-        }
+        username: username
       }
     });
+		if (!related)
+			throw new NotFoundException('Username not found.')
+		related.relatedships = await UserRelationship.find({
+			select : {
+				status: true
+			},
+			where: {
+				ownerLogin: req.user,
+				relatedLogin: related.ft_login
+			}
+		});
     return related;
   }
 

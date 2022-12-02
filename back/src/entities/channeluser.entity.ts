@@ -3,26 +3,22 @@ import { User } from "./user.entity";
 import { Channel } from "./channel.entity";
 
 const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
-  channelId: true,
-  userLogin: true,
   status: true,
   joined: true,
   statusEnd: true,
   channel: {
+		id: true,
     status: true,
     name: true
   },
   user: {
-    username: true,
-    status: true,
-    avatarURL: true,
-    level: true,
-    xp: true,
-    victories: true,
-    defeats: true,
-    draws: true,
-    rank: true
-  }
+		ft_login: true,
+		username: true,
+		status: true,
+		level: true,
+		xp: true
+	}
+
 };
 
 enum ChannelUserStatus {
