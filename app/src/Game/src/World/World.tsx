@@ -22,7 +22,11 @@ import Box2 from "./Components/Box2";
 import { Cloud, Sky, Sparkles } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
+
+
 import KeyBoardControls from "../Keyboard/KeyboardControl";
+//import SocketControl from "../ChangeState/ChangeState";
+
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -168,7 +172,9 @@ export default function World(props: any) {
   const map = useStore((s: any) => s.bgdChoice)
   // console.log(getDirection)
   return (
+    <>
     <KeyboardControls />
+    </>
 /*
     <Canvas
     camera={{ position: [0, 3, 7] }}>

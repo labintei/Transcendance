@@ -56,6 +56,7 @@ export const useStore = create((set,get) => {
     player1_x : 0,
     player2_x : 0,
   },
+  player1_x: 44,
   bgdChoice: 0,
   padColor: "#ffffff",
   ballColor: "#ffffff",
@@ -72,12 +73,13 @@ export const useStore = create((set,get) => {
   }
 */
 
-  //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})), 
+  //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})),
+  // marche pas 
   player1Move: (num:number) => set((state:any)=>({data : [state.data.player1_x = num]})),
   player2Move: (num:number) => set((state:any)=>({data : [state.data.player2_x = num]})),
 
 
-
+  Player1: (num:number) => set((s:any)=>({player1_x:num})),
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),

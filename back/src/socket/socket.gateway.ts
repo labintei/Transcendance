@@ -59,18 +59,29 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }, pingTimeout);
     }
   }
+/*
+  @SubscribeMessage('game')
+	async game(client: Socket) {
+		// client.data.pingOK = true;
+    const user = await User.findOneBy({ft_login: (client.request as any).user});
+    console.log('recu');
+    return SocketGateway.getIO().in(user.socket).emit('game_mess')
+  }*/
 
-
-  //socket.on('player1_move', (data) => { useStore((state:any) => state.player1Move(data))});
 
   @SubscribeMessage('left')
   async left(client: Socket, data: number)//: Promise<number>
   {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log(data);
-    await (data -= 0.2);
+    await console.log("data recu : ");
+    await console.log(data);
+    await(data -= 0.2);
     await client.emit('player1_move', data);
-    return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
+    //await console.log("data renvoyer : ");
+    //await console.log(data);
+    //await client.emit('player1_move', data);
+    
+    //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
     //return data;
   }
 
@@ -84,31 +95,13 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async right(client: Socket, data: number)//: Promise<number>
   {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log(data);
-    await (data += 0.2);
+    await console.log(data);
+    await(data += 0.2);
     //return data;
-    return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
+    // a voir
+    await client.emit('player1_move', data);
+    //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
     //await client.emit('player1_move', data);
-  }
-
-
-  @SubscribeMessage('end_right')
-  async end_right(client: Socket)
-  {
-    //console.log('endright');
-  }
-
-	@SubscribeMessage('pong')
-	async pong(client: Socket) {
-		client.data.pingOK = true;
-	}
-
-  @SubscribeMessage('game')
-	async game(client: Socket) {
-		// client.data.pingOK = true;
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log('recu');
-    return SocketGateway.getIO().in(user.socket).emit('game_mess')
   }
 
 	public static getIO(): Server {

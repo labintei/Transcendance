@@ -12,7 +12,6 @@ function useKeys(target:any, event:any, up = true) {
         const isRepeating = !!pressed[e.keyCode]
         pressed[e.keyCode] = true
         if (up || !isRepeating) event(true)
-          //socket.emit('press');
       }
     }
 
@@ -20,7 +19,6 @@ function useKeys(target:any, event:any, up = true) {
       if (target.indexOf(e.key) !== -1) {
         pressed[e.keyCode] = false
         if (up) event(false)
-          //socket.emit('unpress');
       }
     }
 
@@ -36,7 +34,7 @@ function useKeys(target:any, event:any, up = true) {
 export default function KeyBoardControls() 
 {
 
-  const data = useStore((s:any) => s.data.player1_x);
+  const data = useStore((s:any) => s.player1_x);
   //const box = useStore((s: any) => s.box2)
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
