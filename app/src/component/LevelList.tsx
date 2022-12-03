@@ -2,6 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import './LevelList.css';
 import { Navigate } from 'react-router-dom';
+import {defaultavatar, acceptedimg} from './const';
 
 type PRank = {
     id: number
@@ -10,8 +11,6 @@ type PRank = {
     status: number;
     avatar_location: string;
 }
-
-const defaultavatar = "https://cdn1.iconfinder.com/data/icons/ui-essential-17/32/UI_Essential_Outline_1_essential-app-ui-avatar-profile-user-account-512.png";
 
 type State = {
   listl:Array<PRank>,
@@ -44,7 +43,7 @@ export default class LevelList extends React.Component {
     axios.get(process.env.REACT_APP_BACKEND_URL + str, {
       withCredentials: true,
       params: {count:10}
-    }).then(res => {
+    }).then(async res => {
         const pranks = res.data;
         console.log(res);
         let listtmp: Array<PRank> = [];
@@ -56,6 +55,21 @@ export default class LevelList extends React.Component {
                 one.name = prank.username;
                 one.rank = i++;
                 one.status = prank.id % 3;
+                if (prank.avatarURL !== undefined && '' !== prank.avatarURL)
+                {
+                  if (acceptedimg.includes(prank.avatarURL))
+                    await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
+                        withCredentials: true,
+                        responseType:'blob'
+                      }).then(res => {
+                        one.avatar_location = URL.createObjectURL(res.data);
+                      }).catch(error => {
+                        if (error.response.status === 401)
+                          this.setState({logged:false});
+                      });
+                  else
+                    one.avatar_location = prank.avatarURL;
+                }
                 listtmp.push(one);
             }
         }

@@ -14,7 +14,7 @@ export class AppService implements OnModuleInit {
   async onModuleInit() {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
-    await this.generateExamples();
+    //await this.generateExamples();
 
     await User.reinitSockets();
   }
@@ -24,35 +24,35 @@ export class AppService implements OnModuleInit {
       {
         ft_login: 'iromanova',
         username: 'aroma',
-        avatarURL: 'no_image.jpg',
+        avatarURL: '',
         level:  3,
         xp: 657
       },
       {
         ft_login: 'lbintein',
         username: 'labintei',
-        avatarURL: 'no_image.jpg',
+        avatarURL: 'jpg',
         level:  5,
         xp: 628
       },
       {
         ft_login: 'omarecha',
         username: 'bmarechafaux',
-        avatarURL: 'no_image.jpg',
+        avatarURL: 'png',
         level:  2,
         xp: 0
       },
       {
         ft_login: 'edjubert',
         username: 'edjavid',
-        avatarURL: 'no_image.jpg',
+        avatarURL: '',
         level:  3,
         xp: 231
       },
       {
         ft_login: 'lraffin',
         username: 'jraffin',
-        avatarURL: 'no_image.jpg',
+        avatarURL: 'png',
         level:  1,
         xp: 630
       },
@@ -88,54 +88,30 @@ export class AppService implements OnModuleInit {
         score1: 4,
         score2: 7,
         user1: {
-          ft_login: 'lraffin',
-          username: 'jraffin',
-          avatarURL: 'no_image.jpg',
-          level:  1,
-          xp: 630
+          ft_login: 'lraffin'
         },
         user2: {
-          ft_login: 'bmarecha',
-          username: 'bmarecha',
-          avatarURL: 'no_image.jpg',
-          level:  2,
-          xp: 0
+          ft_login: 'bmarecha'
         }
       },
       {
         score1: 4,
         score2: 4,
         user1: {
-          ft_login: 'bmarecha',
-          username: 'bmarecha',
-          avatarURL: 'no_image.jpg',
-          level:  2,
-          xp: 0
+          ft_login: 'bmarecha'
         },
         user2: {
-          ft_login: 'lraffin',
-          username: 'jraffin',
-          avatarURL: 'no_image.jpg',
-          level:  1,
-          xp: 630
+          ft_login: 'lraffin'
         }
       },
       {
         score1: 2,
         score2: 5,
         user1: {
-          ft_login: 'lraffin',
-          username: 'jraffin',
-          avatarURL: 'no_image.jpg',
-          level:  1,
-          xp: 630
+          ft_login: 'lraffin'
         },
         user2: {
-          ft_login: 'bmarecha',
-          username: 'bmarecha',
-          avatarURL: 'no_image.jpg',
-          level:  2,
-          xp: 0
+          ft_login: 'bmarecha'
         }
       }
     ]);

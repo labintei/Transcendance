@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerList.css';
-import {defaultavatar} from "./const";
+import {acceptedimg, defaultavatar} from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Person = {
@@ -48,7 +48,8 @@ export default class PersonList extends React.Component {
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
-        console.log(error)
+        console.log(error);
+        console.log(this.state);
       });
     } else {
       axios.put(process.env.REACT_APP_BACKEND_URL + "friends/" + person.name, {}, {
@@ -68,7 +69,7 @@ export default class PersonList extends React.Component {
   friendsUpdate() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "friends", {
       withCredentials: true
-    }).then(res => {
+    }).then(async res => {
         const friends = res.data;
         let listftmp: Array<Person> = [];
         let id = 0;
@@ -79,6 +80,21 @@ export default class PersonList extends React.Component {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
+                if (person.avatarURL !== undefined && '' !== person.avatarURL)
+                {
+                  if (acceptedimg.includes(person.avatarURL))
+                    await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
+                        withCredentials: true,
+                        responseType:'blob'
+                      }).then(res => {
+                        one.avatar_location = URL.createObjectURL(res.data);
+                      }).catch(error => {
+                        if (error.response.status === 401)
+                          this.setState({logged:false});
+                      });
+                    else
+                      one.avatar_location = person.avatarURL;
+                }
                 listftmp.push(one);
             }
             id++;
@@ -88,6 +104,57 @@ export default class PersonList extends React.Component {
         if (error.response.status === 401)
           this.setState({logged:false});
         console.log(error)
+      });
+  }
+
+
+  doSearch() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "search/" + this.state.query, {
+      withCredentials: true
+    }).then(async res => {
+        console.log(res);
+        const others = res.data;
+        let listtmp: Array<Person> = [];
+        let id = 0;
+        for (var person of others) {
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            console.log(person);
+            if (person.level !== undefined && person.username !== undefined) {
+                one.rank = person.level;
+                one.name = person.username;
+                if (person.relatedships !== undefined && person.relatedships[0] !== undefined)
+                {
+                  let ships:Array<{status:string}> = person.relatedships;
+                  one.friend = ships[0].status === "Friend";
+                  console.log(one.friend);
+                }
+                else
+                  one.friend = false;
+                  if (person.avatarURL !== undefined && '' !== person.avatarURL)
+                  {
+                    if (acceptedimg.includes(person.avatarURL))
+                      await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
+                          withCredentials: true,
+                          responseType:'blob'
+                        }).then(res => {
+                          one.avatar_location = URL.createObjectURL(res.data);
+                        }).catch(error => {
+                          if (error.response.status === 401)
+                            this.setState({logged:false});
+                        });
+                    else
+                        one.avatar_location = person.avatarURL;
+                  }
+                  listtmp.push(one);
+            }
+            id++;
+        }
+        this.setState({listp: listtmp, logged:true});
+        console.log(this.state);
+      }).catch(error => {
+        console.log(error);
+        if (error.response.status === 401)
+          this.setState({logged:false});
       });
   }
 
@@ -156,37 +223,6 @@ export default class PersonList extends React.Component {
       console.log("Stop Matching")
     }
 
-  }
-
-  doSearch() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "friends/andNotFriends", {
-      withCredentials: true
-    }).then(res => {
-        console.log(res);
-        const others = res.data;
-        let listtmp: Array<Person> = [];
-        let id = 0;
-        for (var person of others) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
-            console.log(person);
-            if (person.level !== undefined && person.username !== undefined) {
-                one.rank = person.level;
-                one.name = person.username;
-                if (person.relationshipStatus !== undefined)
-                  one.friend = person.relationshipStatus;
-                else
-                  one.friend = false;
-                listtmp.push(one);
-            }
-            id++;
-        }
-        this.setState({listp: listtmp, logged:true});
-        console.log(this.state);
-      }).catch(error => {
-        console.log(error);
-        if (error.response.status === 401)
-          this.setState({logged:false});
-      });
   }
 
   render() {

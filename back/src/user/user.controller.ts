@@ -29,16 +29,6 @@ export class UserController
     return me[0];
   }
 
-  @Post()
-  @UseInterceptors(FileInterceptor('file', {
-    storage: diskStorage({
-      destination:'./img'
-    })
-  }))
-  async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Res() res) {
-    return res.sendFile(file.filename, {root: file.destination});
-  }
-
   @Patch()
   async updateMe(@Request() req): Promise<UpdateResult> {
     const toUpdate = {

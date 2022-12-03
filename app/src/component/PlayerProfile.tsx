@@ -84,9 +84,22 @@ export default class PlayerProfile extends React.Component {
           player.victories = data.victories;
           player.draws = data.draws;
         }
+        if (data.avatarURL !== undefined){
+          axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
+            withCredentials: true,
+            responseType:'blob'
+          }).then(res => {
+            player.avatar_location = URL.createObjectURL(res.data);
+            this.setState({player:player});
+          }).catch(error => {
+            if (error.response.status === 401)
+              this.setState({logged:false});
+            else if (player !== this.state.player)
+              this.setState({player:player});
+          });
+        } else if (player !== this.state.player)
+          this.setState({player:player});
       }
-      if (player !== this.state.player)
-        this.setState({player:player});
     }).catch(error => {
       this.setState({logged:false});
     });
@@ -151,18 +164,12 @@ export default class PlayerProfile extends React.Component {
     }
     let formData = new FormData();
     formData.set('file', this.state.query2);
-    axios.post(process.env.REACT_APP_BACKEND_URL + "user", formData, {
+    axios.post(process.env.REACT_APP_BACKEND_URL + "avatar", formData, {
       withCredentials:true,
-      onUploadProgress: progressEvent => {
-        const percentCompleted = Math.round(
-          (progressEvent.loaded * 100) / progressEvent.total
-        );
-        console.log(`upload process: ${percentCompleted}%`);
-      }
+      responseType: 'blob'
     }).then(res => {
       console.log(res);
-      let avatar:File = res.data;
-      temp.avatar_location = URL.createObjectURL(avatar); 
+      temp.avatar_location = URL.createObjectURL(res.data); 
       this.setState({player:temp, avatarEdit:false});
     }).catch(error => {
       if (error.response === undefined)
