@@ -26,34 +26,12 @@ export class FriendsController
     });
   }
 
-  @Get("andNotFriends")
-  async getAll(@Request() req): Promise<User[]> {
-    const users = await User.find();
-    const friends = await User.find({
-      relations: {
-        relatedships: true
-      },
-      select: User.defaultFilter,
-      where: {
-        relatedships: {
-          ownerLogin: req.user,
-          status: UserRelationship.Status.FRIEND
-        }
-      }
-    })
-   /* users.forEach((user) => {
-      if (friends.includes(user))
-        user.relationshipStatus = UserRelationship.Status.FRIEND;
-    });*/
-    return users;
-  }
-
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
     const related = await User.findOneBy({username: username});
     if (!related)
       throw new NotFoundException('Username not found.');
-    return UserRelationship.create({
+    return await UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,
       status: UserRelationship.Status.FRIEND
@@ -71,7 +49,7 @@ export class FriendsController
     });
     if (!relationship)
       throw new NotFoundException('No friend found with this username.')
-    relationship.remove();
+    await relationship.remove();
   }
 
 }

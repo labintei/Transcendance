@@ -82,7 +82,8 @@ export default class MatchList extends React.Component {
                 }
                 one.score1 = (isOne ? match.score1 : match.score2);
                 one.score2 = (isOne ? match.score2 : match.score1);
-                if ('' !== (isOne ? match.user2.avatarURL : match.user1.avatarURL))
+                if ('' !== (isOne ? match.user2.avatarURL : match.user1.avatarURL) && 
+                null !== (isOne ? match.user2.avatarURL : match.user1.avatarURL))
                 {
                   let already = this.state.avatars.get(one.name);
                   if (already === undefined)
@@ -92,17 +93,14 @@ export default class MatchList extends React.Component {
                     }).then(res => {
                       one.avatar_loc = URL.createObjectURL(res.data);
                       this.state.avatars.set(one.name, one.avatar_loc);
-                      listtmp.push(one);
                     }).catch(error => {
                       if (error.response.status === 401)
                         this.setState({logged:false});
                     });
-                  else {
+                  else
                     one.avatar_loc = already;
-                    listtmp.push(one);
-                  }
-                } else
-                  listtmp.push(one);
+                }
+                listtmp.push(one);
             }
             i++;
         }

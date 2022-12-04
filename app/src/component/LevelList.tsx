@@ -55,7 +55,7 @@ export default class LevelList extends React.Component {
                 one.name = prank.username;
                 one.rank = i++;
                 one.status = prank.id % 3;
-                if (prank.avatarURL !== undefined && '' !== prank.avatarURL)
+                if (prank.avatarURL !== undefined && prank.avatarURL !== null && '' !== prank.avatarURL)
                 {
                   if (acceptedimg.includes(prank.avatarURL))
                     await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {

@@ -55,7 +55,6 @@ export default class PersonList extends React.Component {
       axios.put(process.env.REACT_APP_BACKEND_URL + "friends/" + person.name, {}, {
         withCredentials: true
       }).then(() => {
-        console.log("test")
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
@@ -75,12 +74,11 @@ export default class PersonList extends React.Component {
         let id = 0;
         for (var person of friends) {
             let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
-            console.log(person);
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
-                if (person.avatarURL !== undefined && '' !== person.avatarURL)
+                if (person.avatarURL !== undefined && person.avatarURL !== null && '' !== person.avatarURL)
                 {
                   if (acceptedimg.includes(person.avatarURL))
                     await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
@@ -112,13 +110,11 @@ export default class PersonList extends React.Component {
     axios.get(process.env.REACT_APP_BACKEND_URL + "search/" + this.state.query, {
       withCredentials: true
     }).then(async res => {
-        console.log(res);
         const others = res.data;
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
             let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
-            console.log(person);
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
