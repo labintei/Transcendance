@@ -56,7 +56,10 @@ export const useStore = create((set,get) => {
     player1_x : 0,
     player2_x : 0,
   },
-  player1_x: 44,
+  sphere_x: 0,// initalisatio
+  sphere_z: 0,
+  player2_x: 0,
+  player1_x: 0,
   bgdChoice: 0,
   padColor: "#ffffff",
   ballColor: "#ffffff",
@@ -80,6 +83,8 @@ export const useStore = create((set,get) => {
 
 
   Player1: (num:number) => set((s:any)=>({player1_x:num})),
+  Player2: (num:number) => set((s:any)=>({player2_x:num})),
+  Sphere: (numx:number, numy:number) => set((s:any)=>({sphere1_x:numx,sphere1_z:numy})),
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),

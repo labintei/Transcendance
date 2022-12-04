@@ -1,20 +1,40 @@
-import React, { useRef } from "react";
+import React, { useRef , useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useStore } from "../../State/state";
+import { socket } from "Game/src/PongGame";
 
+//interface 
+/*export interface Sphere {
+  x:number;
+  y:numb
+}*/
 
 // Geometry
 export default function Sphere() {
+  
   const ref = useRef<any>(null!)
   const box1:any = useStore((s:any) => s.box1)
   const box2:any = useStore((s:any) => s.box2)
   const gameNotReady:any = useStore((state:any) => state.setNotReady);
   const ballcolor:any = useStore((state:any) => state.ballColor);
 
+  const x = useStore((s:any) => s.sphere_x);
+  const z = useStore((s:any) => s.sphere_z);
   const ready = useStore((s:any) => s.gameReady)
   const addPoint1:any = useStore((state:any) => state.addPoint1);
   const addPoint2:any = useStore((state:any) => state.addPoint2);
   
+  useEffect(() => {
+    //socket.on('rendering', () => {console.log('changes les var')});
+    //socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
+    //socket.on('game_mess', () => { console.log('recu');});
+    //socket.on('player1_move', (data) => {console.log(data);B(data); console.log(c)});
+
+    return () => {
+    }
+  }, [])
+
+
   var zdirection = 0.05;
   var l = Math.random();
   console.log(l)
@@ -28,6 +48,10 @@ export default function Sphere() {
 
     if (!ready)
       return;
+    // box1, box2, x, y , z
+    // la voir pour la sphere (techniquement seule x et z se deplace)
+    socket.emit('sphere', box1 , box2, x , z);
+    
     const width = box1.current.geometry.parameters.width;
     var sphereZ = Math.floor( ref.current.position.z );
     var sphereX = Math.round(ref.current.position.x * 10) / 100;
@@ -64,7 +88,7 @@ export default function Sphere() {
       zdirection = +0.3;
       // xangle = generateRandomFloatInRange(0, 0.05)
     }
-    //! Collision with border
+    //! Collision with border probleme deplacement pas necessairement precis
     if ( sphereXInt === -5 || sphereXInt === 5)
     {
       console.log("collision!")

@@ -1,4 +1,6 @@
 import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, SubscribeMessage, WsException } from '@nestjs/websockets';
+import { SocketAddress } from 'net';
+import { identity } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
@@ -102,6 +104,55 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     await client.emit('player1_move', data);
     //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
     //await client.emit('player1_move', data);
+  }
+
+  
+  @SubscribeMessage('sphere')
+  async sphere(client: Socket, Box1:any, Box2:any, x:number, z:number)
+  {
+    var zdir = 0.05;
+    var l = Math.random();
+    if (l < 0.5)
+      zdir = -0.05;
+    console.log(zdir);
+    var xangle = l * 0.1;
+    var width = 2;//constante
+    // correspond a une constante mais bref
+    var sz = Math.floor(z);
+    var sx = Math.round(x*10) / 100;
+    var b1x = Math.round(Box1.current.position.x * 10) /100;
+    var b2x = Math.round(Box2.current.position.x * 10) / 100;
+    // good widht ?? 2
+    
+    z += zdir;
+    x += xangle;
+    var sxint = Math.round(x);
+
+    if (zdir > 0.1)
+      zdir -= 0.005
+    else (zdir < (-0.1))
+      zdir += 0.005;
+    
+    // coll
+    if(sz === (Box1.current.position.z - 1) &&
+      sx >= (b1x - width) && 
+      sx <= (b1x + width))
+      zdir = -0.3;
+    else(sz === Box2.current.position.z && 
+      sx >= (b2x - width) &&
+      sx <= (b2x + width))
+      zdir = +0.3;
+
+    if(sx === -5 || sx === 5)// sort du cotee gauche
+    {
+      console.log("colision");
+      xangle = -xangle;
+    }
+    if (sz > 7)
+      client.emit('add1_reset'); 
+    else if(sz < -7)
+      client.emit('add2_reset');
+    client.emit('notreaadygame');
   }
 
 	public static getIO(): Server {

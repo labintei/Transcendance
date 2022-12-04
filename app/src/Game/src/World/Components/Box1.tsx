@@ -21,16 +21,11 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
   const myMesh = React.useRef() as RefObject<any>;
 
-  const getDirection: any = useStore((state: any) => state.controls);
   
+  const getDirection: any = useStore((state: any) => state.controls);
+  const data = useStore((s:any) => s.player1_x);
   useFrame((state, delta) => {
-    if (getDirection.left === true) {
-      box.current.position.x -= 0.2
-      
-    }
-    if (getDirection.right === true)
-      box.current.position.x += 0.2
-
+    box.current.position.x = data;
   })
 
   const { scale } = useSpring({

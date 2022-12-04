@@ -172,10 +172,11 @@ export default function World(props: any) {
   const map = useStore((s: any) => s.bgdChoice)
   // console.log(getDirection)
   return (
-    <>
+    /*<>
+    <Canvas
     <KeyboardControls />
-    </>
-/*
+    </>*/
+
     <Canvas
     camera={{ position: [0, 3, 7] }}>
    <CameraControls />
