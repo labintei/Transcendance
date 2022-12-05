@@ -126,6 +126,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     
     z += zdir;
     x += xangle;
+    client.emit('newpos', z , x);
     var sxint = Math.round(x);
 
     if (zdir > 0.1)
@@ -142,17 +143,24 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       sx >= (b2x - width) &&
       sx <= (b2x + width))
       zdir = +0.3;
-
+    client.emit('updatez_dir', zdir);
+    client.emit('updatex_angle', xangle);
     if(sx === -5 || sx === 5)// sort du cotee gauche
     {
       console.log("colision");
       xangle = -xangle;
     }
     if (sz > 7)
-      client.emit('add1_reset'); 
+    {
+      client.emit('add1'); 
+      client.emit('reset');
+    }
     else if(sz < -7)
-      client.emit('add2_reset');
-    client.emit('notreaadygame');
+    {
+      client.emit('add2');
+      client.emit('reset');
+    }
+    client.emit('notreadygame');
   }
 
 	public static getIO(): Server {

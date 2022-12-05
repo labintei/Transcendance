@@ -2,6 +2,7 @@ import React, { useRef , useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useStore } from "../../State/state";
 import { socket } from "Game/src/PongGame";
+import { StaticReadUsage } from "three";
 
 //interface 
 /*export interface Sphere {
@@ -23,18 +24,26 @@ export default function Sphere() {
   const ready = useStore((s:any) => s.gameReady)
   const addPoint1:any = useStore((state:any) => state.addPoint1);
   const addPoint2:any = useStore((state:any) => state.addPoint2);
+  const Spherenew:any = useStore((state:any) => state.Spherenew);
+  const Spherex:any = useStore((s:any) => s.Spherex);
+  const Spherez:any = useStore((s:any) => s.Spherez);
+  const Updatez_dir:any = useStore((s:any) => s.Updatez_dir);
+  const Updatex_angle:any = useStore((s:any) => s.Updatex_angle);
   
+  var c =0;
   useEffect(() => {
-    //socket.on('rendering', () => {console.log('changes les var')});
-    //socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
-    //socket.on('game_mess', () => { console.log('recu');});
-    //socket.on('player1_move', (data) => {console.log(data);B(data); console.log(c)});
-
+    socket.on('notreadygame', () => {gameNotReady()});
+    socket.on('add1', () => {addPoint1()});
+    socket.on('add2', () => {addPoint2()});
+    socket.on('reset', () => {Spherenew(0,0)});
+    socket.on('updatez_dir', (data) => {Updatez_dir(data)});
+    socket.on('updatex_angle', (data) => {Updatex_angle(data)});
+    socket.on('newpos', (newx, newz)  => {Spherenew(newx,newz)});
     return () => {
     }
-  }, [])
+  }, [Spherenew])
 
-
+  /*
   var zdirection = 0.05;
   var l = Math.random();
   console.log(l)
@@ -42,16 +51,19 @@ export default function Sphere() {
     zdirection = -0.05;
   console.log(zdirection)
   var xangle = l *0.1;
+  */
+
   // delta = temps de chargement d'une frame par l'OS
   useFrame((state, delta) => { 
     // todo: randomize angles and increase fast when touched
 
     if (!ready)
       return;
+    
     // box1, box2, x, y , z
     // la voir pour la sphere (techniquement seule x et z se deplace)
     socket.emit('sphere', box1 , box2, x , z);
-    
+    /*
     const width = box1.current.geometry.parameters.width;
     var sphereZ = Math.floor( ref.current.position.z );
     var sphereX = Math.round(ref.current.position.x * 10) / 100;
@@ -105,8 +117,9 @@ export default function Sphere() {
         addPoint1()
       else
         addPoint2()
-      gameNotReady();  
-    }
+      gameNotReady();
+        
+    }*/
     })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow
