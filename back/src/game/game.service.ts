@@ -7,6 +7,11 @@ import session from "express-session";
 // public io: Server = null
 //    this.
 
+export class Box {
+
+}
+
+
 export interface Game  {
     id: number;
     nb_player: number;
@@ -14,6 +19,8 @@ export interface Game  {
     player2: Socket;
     player1_x: number;
     player2_x: number;
+    Box1: Box;
+    Box2: Box
     // mettre toutes les donnees necessaire
 }
 

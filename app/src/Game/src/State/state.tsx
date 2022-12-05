@@ -11,28 +11,6 @@ type Profile = {
   inMatch:boolean
 }
 
-/*
-export interface Game_data {
-  id: number;
-  nb_player: number;
-  player1: Socket;
-  player2: Socket;
-  player1_x: number;
-  player2_x: number;
-}
-*/
-
-/*
-const room: Game = {
-  id: id,
-  nb_player: 1,
-  player1: client,
-  player2: null,
-  player1_x: 1,
-  player2_x: 2,
-}
-*/
-
 // define the store
 export const useStore = create((set,get) => {
 
@@ -41,7 +19,8 @@ export const useStore = create((set,get) => {
   get,
   //interface: Game_Data = {},
   map: "space",
-  gameReady:false,
+  //gameReady:false,
+  gameReady:true,
   votes: 0,
   score: [0,0],
   controls: {
@@ -103,8 +82,10 @@ export const useStore = create((set,get) => {
   addPoint2: () => set((state:any) => ({ score: [state.score[0], state.score[1] + 1]})),
   subtractVotes: () => set((state:any) => ({ votes: state.votes - 1 })),
   addBox: (box:any) => set((state:any) => ({ box1: [state.box[0] + box, state.box[1], state.box[2]] })),
+  
   setReady: () => set((state:any) => ({ gameReady: true })),
   setNotReady: () => set((state:any) => ({ gameReady: false })),
+  
   setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]})),
   setMap: (name:any) => set((state:any) => ({map: name}))
  }

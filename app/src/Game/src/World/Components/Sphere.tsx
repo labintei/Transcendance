@@ -21,7 +21,11 @@ export default function Sphere() {
 
   const x = useStore((s:any) => s.sphere_x);
   const z = useStore((s:any) => s.sphere_z);
-  const ready = useStore((s:any) => s.gameReady)
+  const ready = useStore((s:any) => s.gameReady);
+
+  const setReady:any = useStore((s:any) => s.setReady);
+  const setNotReady:any = useStore((s:any) => s.setNotReady);
+  
   const addPoint1:any = useStore((state:any) => state.addPoint1);
   const addPoint2:any = useStore((state:any) => state.addPoint2);
   const Spherenew:any = useStore((state:any) => state.Spherenew);
@@ -29,98 +33,65 @@ export default function Sphere() {
   const Spherez:any = useStore((s:any) => s.Spherez);
   const Updatez_dir:any = useStore((s:any) => s.Updatez_dir);
   const Updatex_angle:any = useStore((s:any) => s.Updatex_angle);
-  
-  var c =0;
+
   useEffect(() => {
-    socket.on('notreadygame', () => {gameNotReady()});
-    socket.on('add1', () => {addPoint1()});
-    socket.on('add2', () => {addPoint2()});
-    socket.on('reset', () => {Spherenew(0,0)});
-    socket.on('updatez_dir', (data) => {Updatez_dir(data)});
-    socket.on('updatex_angle', (data) => {Updatex_angle(data)});
-    socket.on('newpos', (newx, newz)  => {Spherenew(newx,newz)});
+    socket.on('ready', () => {
+      console.log('ready');
+      setReady()
+    });
+    socket.on('notready', () => 
+    {
+      console.log('notReady');
+      setNotReady()
+    });
+    socket.on('add1', () => 
+    {
+      console.log("add1");
+      addPoint1();
+    });
+    socket.on('add2', () => 
+    {
+      console.log("add2");
+      addPoint2();
+    });
+    socket.on('reset', () => 
+    {
+      console.log('reset');
+      Spherenew(0,0);
+    });
+    socket.on('updatez_dir', (data) => {
+      console.log('z_dir');
+      console.log(data);
+      Updatez_dir(data)
+    });
+    socket.on('updatex_angle', (data) => {
+      console.log('x_angle');
+      console.log(data);
+      Updatex_angle(data)
+    });
+    socket.on('newpos', (newx, newz)  => {
+      console.log('newx ');
+      console.log(newx);
+      console.log(' newy ');
+      console.log(newz);
+      Spherenew(newx,newz)
+    });
     return () => {
     }
-  }, [Spherenew])
+  }, [Updatez_dir, Updatex_angle ,Spherenew, addPoint1, addPoint2, setReady, setNotReady])
 
-  /*
-  var zdirection = 0.05;
-  var l = Math.random();
-  console.log(l)
-  if (l < 0.5)
-    zdirection = -0.05;
-  console.log(zdirection)
-  var xangle = l *0.1;
-  */
-
-  // delta = temps de chargement d'une frame par l'OS
   useFrame((state, delta) => { 
-    // todo: randomize angles and increase fast when touched
 
     if (!ready)
       return;
     
-    // box1, box2, x, y , z
-    // la voir pour la sphere (techniquement seule x et z se deplace)
-    socket.emit('sphere', box1 , box2, x , z);
-    /*
-    const width = box1.current.geometry.parameters.width;
-    var sphereZ = Math.floor( ref.current.position.z );
-    var sphereX = Math.round(ref.current.position.x * 10) / 100;
-    var box2X = Math.round(box2.current.position.x * 10) / 100;
-    var box1X = Math.round(box1.current.position.x * 10) / 100;
-    var good_width = Math.round((width / 2) * 10) / 100;
-     
-    ref.current.position.z += zdirection;
-    ref.current.position.x += xangle
-    var sphereXInt = Math.round(ref.current.position.x)
-    
-    // ? DESCELERATION
-    if (zdirection > 0.1)
-      zdirection -= 0.005
-    if (zdirection < (-0.1))
-      zdirection += 0.005;
-
-    //! Collision with a box
-    // console.log(sphereZ)
-    // console.log(sphereX)
-    // console.log(box1.current.position.z)
-    // console.log(box1X)
-      
-    if ((sphereZ === (box1.current.position.z - 1)) &&
-      ((sphereX >= (box1X - good_width)) && 
-      (sphereX <= (box1X + good_width))))
-    {
-      zdirection = -0.3;
-    }
-    if (sphereZ === box2.current.position.z &&
-      ((sphereX >= (box2X - good_width)) && 
-      (sphereX <= (box2X + good_width))))
-    {
-      zdirection = +0.3;
-      // xangle = generateRandomFloatInRange(0, 0.05)
-    }
-    //! Collision with border probleme deplacement pas necessairement precis
-    if ( sphereXInt === -5 || sphereXInt === 5)
-    {
-      console.log("collision!")
-      // todo: animation uppon collision
-      xangle = -xangle;
-    } 
-
-    if (sphereZ > 7 || sphereZ < -7)
-    {
-      console.log("ball lost!!")
-      ref.current.position.z = 0;
-      ref.current.position.x = 0;
-      if (sphereZ > 7)
-        addPoint1()
-      else
-        addPoint2()
-      gameNotReady();
-        
-    }*/
-    })
+    //console.log(box1.current.position);
+    //socket.emit('sphere', box1 , box2, x , z);
+    var c = box1.current.position;
+    var d = box2.current.position;
+    socket.emit('sphere', {box1:c, box2:d, x, z});
+    //socket.emit('sphere', {box1, box2, x, z});
+  })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow
     ref={ref}>

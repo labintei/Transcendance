@@ -1,6 +1,4 @@
 import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, SubscribeMessage, WsException } from '@nestjs/websockets';
-import { SocketAddress } from 'net';
-import { identity } from 'rxjs';
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
@@ -74,11 +72,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @SubscribeMessage('left')
   async left(client: Socket, data: number)//: Promise<number>
   {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    await console.log("data recu : ");
-    await console.log(data);
-    await(data -= 0.2);
-    await client.emit('player1_move', data);
+    //const user = await User.findOneBy({ft_login: (client.request as any).user});
+    console.log("data recu : ");
+    console.log(data);
+    data -= 0.2;
+    client.emit('player1_move', data);
     //await console.log("data renvoyer : ");
     //await console.log(data);
     //await client.emit('player1_move', data);
@@ -97,37 +95,52 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async right(client: Socket, data: number)//: Promise<number>
   {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    await console.log(data);
-    await(data += 0.2);
+    console.log(data);
+    data += 0.2;
     //return data;
     // a voir
-    await client.emit('player1_move', data);
+    client.emit('player1_move', data);
     //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
     //await client.emit('player1_move', data);
   }
 
+  @SubscribeMessage('newGame')
+  async newgame(client: Socket)
+  {
+
+
+  }
+
+
   
   @SubscribeMessage('sphere')
-  async sphere(client: Socket, Box1:any, Box2:any, x:number, z:number)
+  async sphere(client: Socket, datas:any)
   {
+    console.log(datas);
+    console.log(datas.box1);
+
+    console.log("Start the game");
+    client.emit('notready');
     var zdir = 0.05;
     var l = Math.random();
     if (l < 0.5)
       zdir = -0.05;
-    console.log(zdir);
+    //console.log(zdir);
     var xangle = l * 0.1;
     var width = 2;//constante
     // correspond a une constante mais bref
-    var sz = Math.floor(z);
-    var sx = Math.round(x*10) / 100;
-    var b1x = Math.round(Box1.current.position.x * 10) /100;
-    var b2x = Math.round(Box2.current.position.x * 10) / 100;
+    var sz = Math.floor(datas.z);
+    var sx = Math.round(datas.x*10) / 100;
+    console.log(1);
+    // Ne peut pas lire les positions de cette facon
+    var b1x = Math.round(datas.box1.x * 10) / 100;
+     var b2x = Math.round(datas.box2.x * 10) / 100;
     // good widht ?? 2
     
-    z += zdir;
-    x += xangle;
-    client.emit('newpos', z , x);
-    var sxint = Math.round(x);
+    datas.z += zdir;
+    datas.x += xangle;
+    client.emit('newpos', datas.x, datas.z);
+    var sxint = Math.round(datas.x);
 
     if (zdir > 0.1)
       zdir -= 0.005
@@ -135,21 +148,21 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       zdir += 0.005;
     
     // coll
-    if(sz === (Box1.current.position.z - 1) &&
+    if(sz === (datas.box1.z - 1) &&
       sx >= (b1x - width) && 
       sx <= (b1x + width))
       zdir = -0.3;
-    else(sz === Box2.current.position.z && 
+    else(sz === datas.box2.z && 
       sx >= (b2x - width) &&
       sx <= (b2x + width))
       zdir = +0.3;
     client.emit('updatez_dir', zdir);
-    client.emit('updatex_angle', xangle);
     if(sx === -5 || sx === 5)// sort du cotee gauche
     {
       console.log("colision");
       xangle = -xangle;
     }
+    client.emit('updatex_angle', xangle);
     if (sz > 7)
     {
       client.emit('add1'); 
@@ -160,8 +173,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       client.emit('add2');
       client.emit('reset');
     }
-    client.emit('notreadygame');
+    client.emit('ready');
   }
+
 
 	public static getIO(): Server {
 		if (!this.io)
