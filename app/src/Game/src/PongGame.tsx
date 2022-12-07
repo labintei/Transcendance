@@ -59,7 +59,7 @@ export default function PongGame(props: any) {
   let test = useStore((s:any) => s.data.player1_x);
 
 
-  //socket.emit('start_game');
+  socket.emit('start_game');
   socket.emit('testlaulau');
   
   const getData:any = useStore((state:any) => state.data);
@@ -74,7 +74,7 @@ export default function PongGame(props: any) {
 
   let box1_x = useStore((s:any) => s.data);
 
-  const B:any = useStore((s:any)=> s.Player1);
+  const B:any = useStore((s:any)=> s.Player1);// MovePlayer1
   
   let c:number = useStore((s:any)=> s.player1_x);
   
@@ -86,14 +86,15 @@ export default function PongGame(props: any) {
   //console.log(B);
   useEffect(() => {
     
-    /*
-    socket.on('start', (data) => {console.log(data);setRole(data.role);setId(data.id)})
-    socket.on('rendering', () => {console.log('changes les var')});
+    
+    socket.on('start', (data) => {setRole(data[1]);setId(data[0])})
+    /*socket.on('rendering', () => {console.log('changes les var')});
     socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
-    socket.on('game_mess', () => { console.log('recu');});;
-    socket.on('box1_x', (data) => {console.log(data);B(data); console.log(c)});*/
-    console.log(ready);
+    socket.on('game_mess', () => { console.log('recu');});;*/
+    socket.on('box1_x', (data) => {/*console.log(data);*/B(data)});//recoit des 1 ...
+    //console.log(ready);
     return () => {
+      socket.off('start');
       //socket.off('wait_game');
       //socket.off('error');
       //socket.off('disconnect_game');

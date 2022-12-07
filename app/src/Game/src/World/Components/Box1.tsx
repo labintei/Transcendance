@@ -23,7 +23,18 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
   
   const getDirection: any = useStore((state: any) => state.controls);
+
+  const player1move:any = useStore((s:any) => s.Player1)
   const data = useStore((s:any) => s.player1_x);
+
+  /*
+  useEffect(() => { 
+    socket.on('box1_x', (data) => {console.log('box1' + String(data));player1move(data)});
+    return () => {
+    }
+  }, [player1move])
+  */
+
   useFrame((state, delta) => {
     box.current.position.x = data;
   })

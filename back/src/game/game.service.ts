@@ -17,28 +17,31 @@ import { getManager } from "typeorm";
 
 
 export interface Game  {
-    id: number;
-    nb_player: number;
-    score1: number;
-    score2: number;
-    player1: Socket;
-    player2: Socket;
-    player1_x: number;
-    player2_x: number;
-    Box1x: number;
-    Box2x: number;
+    id: number,
+    nb_player: number,
+    score1: number,
+    score2: number,
+    player1: Socket,
+    player2: Socket,
+    player1_x: number,
+    player2_x: number,
+    Box1x: number,
+    Box2x: number,
+    //Setbox1x(num: number): void;
+
+    //setBox1x(num:number): number{return (this.Box1x + 0,2);}
     // mettre toutes les donnees necessaire
 }
 
 @Injectable()
 export class GameService {
  
-    constructor(){this.s = new Map();}
+    constructor(){this.s = new Map();this.dispo = new Set()}
 
     // Liste de Game
     public s: Map<number, Game>;
     // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
-    public dispo: Set<number>;
+    public dispo:  Set<number>;
     //public dispo: Map<number, number>;
     
 
@@ -55,16 +58,20 @@ export class GameService {
 
     // les questions que je me pose c est qu il faudrait pas que
     // partie soit deja prise alors que la fonction est en cour
-    async newGame(client:Socket): Promise<{id:number,role:number}>
-    {/*
+    async newGame(client:Socket)
+    {
+        console.log('START');
+        /*
         if(this.dispo.size === 0)// aucune room dispo
         {*/
             //const us = User.findOneBy({ft_login: (client.request as any).user});
             const m = new Match();
+            
             m.score1 = 0;
             m.score2 = 0;
             m.user1 = await User.findOneBy({ft_login: (client.request as any).user});
-            const room: Game = {
+            await m.save();
+            var room: Game = {
             id: m.id,
             nb_player: 1,
             score1: 0,
@@ -73,12 +80,20 @@ export class GameService {
             player2: null,
             player1_x: 1,
             player2_x: 2,
-            Box1x:0,
-            Box2x:0,
+            Box1x:0.0,
+            Box2x:0.0,
             }
+            console.log('Box1');
+            console.log(room.Box1x);
+            console.log('Room');
+            console.log(String(m.id));// est undefined
+            console.log(m.id);
+            console.log(String(room.id));
             this.s.set(room.id , room);// permet de reconnaitre la room a l id
             this.dispo.add(room.id);
-            return {id: room.id, role: 1};// renvoit le role et l id de la room
+            const s = [room.id , 1];
+            client.emit('start', s);
+            // renvoit le role et l id de la room
         //}
         /*else
         {
@@ -93,30 +108,40 @@ export class GameService {
 
     
 
-    player1x_right(id:number): number
+    async player1x_right(id:number): Promise<number>
     {
-        // techniquement je devrais retourner egalement l autre client
-        /*
-            const g = s.get(id);
-            g.Box1_x += 0.2;
-            return {g.Box1_x, g.user1, g.user2}
-        */
-        return this.s.get(id).Box1x += 0,2;
+        var c = await this.s.get(id);
+        var box = await c.Box1x;
+        var t = await (c.Box1x + 0.2);
+        box = t;
+        //console.log(' Box1_x : ' + String(c.Box1x));
+        return box;
     }
 
-    player1x_left(id:number): number
+    async player1x_left(id:number): Promise<number>
     {
-        return this.s.get(id).Box1x -= 0,2;
+        var d = await this.s.get(id);
+        var box = await d.Box1x;
+        var t = await (box - 0.2);
+        box = t;
+        return box;
     }
 
     player2x_right(id:number) : number
     {
-        return this.s.get(id).Box2x += 0,2;
+        //return this.s.get(id).Box2x += 0.2;
+        return 0;
     }
 
     player2x_left(id:number) : number
     {
-        return this.s.get(id).Box2x -= 0,2;
+        //return this.s.get(id).Box2x -= 0.2;
+        return 0;
+    }
+
+    test()
+    {
+        console.log('ok');
     }
 
     

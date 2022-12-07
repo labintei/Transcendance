@@ -40,10 +40,11 @@ export const useStore = create((set,get) => {
   // Variable socket
   role : 1,//par default
   id : 0,//pardefault
-
+  //room : [0,0],
 
   sphere_x: 0,// initalisatio
   sphere_z: 0,
+  
   player2_x: 0,
   player1_x: 0,
 
@@ -68,16 +69,20 @@ export const useStore = create((set,get) => {
 
   SetId: (num:number) => set((state:any)=>({ id : num})),
   SetRole: (num:number) => set((state:any)=>({ role : num})),
+  //SetRoom: (num:number, num1:number) => set ((s:any) => ({room: [s.room[0]:num]; room: [s.room[0]:num]}))
 
   //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})),
   // marche pas 
   player1Move: (num:number) => set((state:any)=>({data : [state.data.player1_x = num]})),
   player2Move: (num:number) => set((state:any)=>({data : [state.data.player2_x = num]})),
 
+  // mes fonctions
 
   Updatex_angle: (num:number) => set((s:any)=>({x_angle:num})),
   Updatez_dir: (num:number) => set((s:any)=>({z_dir:num})),
+
   Player1: (num:number) => set((s:any)=>({player1_x:num})),
+
   Player2: (num:number) => set((s:any)=>({player2_x:num})),
   Spherex: (numx:number) => set((s:any) => ({sphere_x:numx})),
   Spherey: (numy:number) => set((s:any) => ({spherez:numy})),
