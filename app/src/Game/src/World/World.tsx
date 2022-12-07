@@ -171,13 +171,13 @@ export default function World(props: any) {
   // const getDirection:any = useStore((state:any) => state.controls);
   const map = useStore((s: any) => s.bgdChoice)
   // console.log(getDirection)
-  return (
+  return (<></>)
     /*<>
     <Canvas
     <KeyboardControls />
     </>*/
 
-    <Canvas
+  /*  <Canvas
     camera={{ position: [0, 3, 7] }}>
    <CameraControls />
    <KeyboardControls />
@@ -206,13 +206,13 @@ export default function World(props: any) {
      {...props}
    />
    </>
-   }
-   <Box2 position={[0, 0, -5]} />
-   <Plane position={[0, -0.5, 0]} />*///
+   }*/
+   //<Box2 position={[0, 0, -5]} />
+   //<Plane position={[0, -0.5, 0]} />*///
  //</Canvas>
 
 
 
     //  <KeyBoardControls />
-  )
+  //)
 }

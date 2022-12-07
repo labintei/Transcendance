@@ -2,6 +2,13 @@ import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconne
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
+import { Game } from 'src/game/game.interfaces';
+import { Inject } from '@nestjs/common';
+
+/*
+  A suppr
+*/
+import { GameService } from 'src/game/game.service';
 
 const chanRoomPrefix = "channel_";
 const pingTimeout = 60000;//10000;
@@ -10,6 +17,10 @@ const pingTimeout = 60000;//10000;
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   private static io: Server = null;
+  // je l ai mit en public (doit peut etre utiliser un private et @Inject)
+ // public game: GameService;
+  //constructor(@Inject(GameService) private gameservice: GameService) {}
+  private gameservice : GameService
 
   afterInit(server: Server) {
     SocketGateway.io = server;
@@ -68,21 +79,24 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     return SocketGateway.getIO().in(user.socket).emit('game_mess')
   }*/
 
+  @SubscribeMessage('start_game')
+  async new_game(client:Socket, data:number)
+  {
+    client.emit('start', this.gameservice.newGame(client));// renvoit  une Promise
+  }
+
 
   @SubscribeMessage('left')
-  async left(client: Socket, data: number)//: Promise<number>
-  {
-    //const user = await User.findOneBy({ft_login: (client.request as any).user});
+  async left(client: Socket, c:any)//: Promise<number>
+  {/*
     console.log("data recu : ");
     console.log(data);
     data -= 0.2;
-    client.emit('player1_move', data);
-    //await console.log("data renvoyer : ");
-    //await console.log(data);
-    //await client.emit('player1_move', data);
-    
-    //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
-    //return data;
+    client.emit('player1_move', data);*/
+    if(c.role === 1)
+      client.emit('box1_x', this.gameservice.player1x_left(c.id));
+    else
+      client.emit('box2_x', this.gameservice.player2x_left(c.id));
   }
 
   @SubscribeMessage('end_left')
@@ -92,16 +106,20 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   @SubscribeMessage('right')
-  async right(client: Socket, data: number)//: Promise<number>
+  async right(client: Socket, c:any)//: Promise<number>
   {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log(data);
-    data += 0.2;
+    //const user = await User.findOneBy({ft_login: (client.request as any).user});
+    //console.log(data);
+    //data += 0.2;
     //return data;
     // a voir
-    client.emit('player1_move', data);
+    //client.emit('player1_move', data);
     //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
     //await client.emit('player1_move', data);
+    if(c.role === 1)
+      client.emit('box1_x', this.gameservice.player1x_left(c.id));
+    else
+      client.emit('box_2', this.gameservice.player2x_left(c.id));
   }
 
   @SubscribeMessage('newGame')

@@ -59,8 +59,9 @@ export default function PongGame(props: any) {
   let test = useStore((s:any) => s.data.player1_x);
 
 
-  socket.emit('game');
-
+  //socket.emit('start_game');
+  socket.emit('testlaulau');
+  
   const getData:any = useStore((state:any) => state.data);
   const getScore:any = useStore((state:any) => state.score);
   const ready = useStore((s:any) => s.gameReady)
@@ -77,22 +78,20 @@ export default function PongGame(props: any) {
   
   let c:number = useStore((s:any)=> s.player1_x);
   
-  console.log(B);
-  console.log(useStore);
+  const setRole:any = useStore((s:any)=> s.SetRole);
+  const setId:any = useStore((s:any)=> s.SetId);
 
+  //console.log(B);
+  //console.log(useStore);
+  //console.log(B);
   useEffect(() => {
+    
+    /*
+    socket.on('start', (data) => {console.log(data);setRole(data.role);setId(data.id)})
     socket.on('rendering', () => {console.log('changes les var')});
     socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
-    socket.on('game_mess', () => { console.log('recu');});
-    //socket.on('player1_move', (d) => {console.log(d); box1_x.player1_x = d});
-    socket.on('player1_move', (data) => {console.log(data);B(data); console.log(c)});
-    
-    //socket.on('player1_move', (d) => {console.log(d); so((state:any) => ({ ...state , data : { ...state.dataplayer1_x}}))});//essayer de cette facon
-
-    //socket.on('player1_move', (data) => {test = data;console.log(data);/*useStore((state:any) => state.player1Move(data))*/});
-
-    //socket.on('player1_move', (data) => {console.log(data); player1Move(data));
-    //socket.on('error', (data) => {useStore((s:any).player1Move(data));console.log('error')})
+    socket.on('game_mess', () => { console.log('recu');});;
+    socket.on('box1_x', (data) => {console.log(data);B(data); console.log(c)});*/
     console.log(ready);
     return () => {
       //socket.off('wait_game');
@@ -100,7 +99,7 @@ export default function PongGame(props: any) {
       //socket.off('disconnect_game');
       //socket.disconnect();
     }
-  }, [box1_x, B, c])
+  }, [box1_x, B, c, setId, setRole])
 
   // envoit un socket pour l initialisation
   socket.emit('game');

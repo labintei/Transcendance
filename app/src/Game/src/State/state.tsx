@@ -36,6 +36,12 @@ export const useStore = create((set,get) => {
     player2_x : 0,
   },
 
+
+  // Variable socket
+  role : 1,//par default
+  id : 0,//pardefault
+
+
   sphere_x: 0,// initalisatio
   sphere_z: 0,
   player2_x: 0,
@@ -59,6 +65,9 @@ export const useStore = create((set,get) => {
     return null
   }
 */
+
+  SetId: (num:number) => set((state:any)=>({ id : num})),
+  SetRole: (num:number) => set((state:any)=>({ role : num})),
 
   //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})),
   // marche pas 

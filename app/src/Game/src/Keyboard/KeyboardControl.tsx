@@ -37,17 +37,18 @@ export default function KeyBoardControls()
   const data = useStore((s:any) => s.player1_x);
   //const box = useStore((s: any) => s.box2)
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
-  {
+  {/*
     if(left)
-      socket.emit('left', data);
+      socket.emit('left', data);*/
     //else
       //socket.emit('end_left', useStore((s:any) => s.data.player1_x));
   })
 
   useKeys(['ArrowRight', 'd', 'D'], (right:boolean) =>
   { 
-    if(right)
+    /*if(right)
       socket.emit('right', data)
+    */
     //else
       //socket.emit('end_right')
 
@@ -55,8 +56,8 @@ export default function KeyBoardControls()
 
   useKeys(['Escape'], (escape:boolean) =>
   {
-      if(escape)
-        socket.emit('escape')
+      /*if(escape)
+        socket.emit('escape')*/
   })
 
   return null;

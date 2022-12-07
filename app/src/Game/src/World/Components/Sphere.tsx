@@ -35,6 +35,7 @@ export default function Sphere() {
   const Updatex_angle:any = useStore((s:any) => s.Updatex_angle);
 
   useEffect(() => {
+    /*
     socket.on('ready', () => {
       console.log('ready');
       setReady()
@@ -76,6 +77,7 @@ export default function Sphere() {
       console.log(newz);
       Spherenew(newx,newz)
     });
+    */
     return () => {
     }
   }, [Updatez_dir, Updatex_angle ,Spherenew, addPoint1, addPoint2, setReady, setNotReady])
@@ -89,7 +91,7 @@ export default function Sphere() {
     //socket.emit('sphere', box1 , box2, x , z);
     var c = box1.current.position;
     var d = box2.current.position;
-    socket.emit('sphere', {box1:c, box2:d, x, z});
+    //socket.emit('sphere', {box1:c, box2:d, x, z});
     //socket.emit('sphere', {box1, box2, x, z});
   })
   return (

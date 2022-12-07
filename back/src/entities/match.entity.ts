@@ -67,6 +67,15 @@ export class Match extends BaseEntity {
   @JoinColumn({ name: 'user2' })
   user2: User;
 
+  // a rajouter dans Master
+
+  async delete(id : number)
+  {
+
+    
+  }
+
+
   async resolve() {
     this.status = Match.Status.ENDED;
     const max_score = Math.max(this.score1, this.score2);

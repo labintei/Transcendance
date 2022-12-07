@@ -9,11 +9,17 @@ import { Inject } from '@nestjs/common';
 import { async } from 'rxjs';
 
 
-
 WebSocketGateway()
-export class GameGateway {
+export class GameGateway{
 
   @WebSocketServer() private io: Server;
+  
+  //constructor(@Inject(GameService) private gameService: GameService) {}
+
+  async handleDisconnect(client:Socket)
+  {
+
+  }
 
   async error(client: Socket, msg: string = ''): Promise<any> {
     await client.emit('error', msg);
@@ -21,64 +27,15 @@ export class GameGateway {
   }
 
 
+  @SubscribeMessage('testlaulau')
+  async marchepo(client:Socket)
+  {
+    console.log('Bien Implementer');
+  }
   //socket.on('player1_move', (data) => { useStore((state:any) => state.player1Move(data))});
 
-  @SubscribeMessage('left')
-  async left(client: Socket, data: number)//: Promise<number>
-  {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log("data recu : ");
-    console.log(data);
-    await (data -= 0.2);
-    await client.emit('player1_move', data);
-    await console.log("data renvoyer : ");
-    await console.log(data);
-    client.emit('player1_move', data);
-    
-    //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
-    //return data;
-  }
-
-  @SubscribeMessage('end_left')
-  async end_left(client: Socket)
-  {
-    //console.log('endleft')
-  }
-
-  @SubscribeMessage('right')
-  async right(client: Socket, data: number)//: Promise<number>
-  {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log(data);
-    await (data += 0.2);
-    //return data;
-    // a voir
-    return client.emit('player1_move', data);
-    //return SocketGateway.getIO().in(user.socket).emit('player1_move', data);
-    //await client.emit('player1_move', data);
-  }
-
-
-  @SubscribeMessage('end_right')
-  async end_right(client: Socket)
-  {
-    //console.log('endright');
-  }
-
-	@SubscribeMessage('pong')
-	async pong(client: Socket) {
-		client.data.pingOK = true;
-	}
-
-  @SubscribeMessage('game')
-  async game(client: Socket){
   
-
-  console.log("recu back'");
-  this.io.emit('wait_game');
-  
-  } 
-}
+} 
 
 
 
