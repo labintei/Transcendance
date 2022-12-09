@@ -33,7 +33,7 @@ export class GameGateway{
     return null;
   }
 
-/*
+
   @SubscribeMessage('testlaulau')
   async marchepo(client:Socket)
   {
@@ -44,7 +44,11 @@ export class GameGateway{
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
-    client.emit('start', this.gameservice.newGame(client));// renvoit  une Promise
+    var l = await this.gameservice.newGame(client);// renvoit  une Promise
+    console.log(l);
+    console.log(l[0]);
+    console.log(l[1]);
+    client.emit('start', l);
   }
 
 
@@ -52,12 +56,9 @@ export class GameGateway{
   async left(client: Socket, c:any)//: Promise<number>
   {
     //if(await(c[0] === 1))
-    console.log('Before ' + String(this.gameservice.getBox1(c[1])))
-    var num = await this.gameservice.player1x_left(c[1]);
+    var num = this.gameservice.player1x_left(c[1]);
     var numbis = await (num/10);
-    console.log('Renvoye L' + String(num))
-    console.log('Numbis ' + String(numbis));
-    client.emit('box1_x', numbis);
+    client.emit('box1_x', num);
     //else
       //client.emit('box2_x', this.gameservice.player2x_left(c[1]));
   }
@@ -67,12 +68,11 @@ export class GameGateway{
   {
     //if(await(c[0] === 1))
     //{
-      console.log('Before ' + String(this.gameservice.getBox1(c[1])))
-      var num = await this.gameservice.player1x_right(c[1]);
+      var num = this.gameservice.player1x_right(c[1]);
       var numbis = await (num/10);
       console.log('Renvoye  R' + String(num));
       console.log('Numbis ' + String(numbis));
-      client.emit('box1_x', numbis);
+      client.emit('box1_x', num);
     //}
     //else
       //client.emit('box_2', this.gameservice.player2x_right(c[1]));
@@ -135,5 +135,5 @@ export class GameGateway{
     }
     client.emit('ready');
   }
-*/ 
+
 }

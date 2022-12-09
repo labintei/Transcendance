@@ -64,7 +64,7 @@ export class GameService {
 
     // les questions que je me pose c est qu il faudrait pas que
     // partie soit deja prise alors que la fonction est en cour
-    async newGame(client:Socket)
+    async newGame(client:Socket): Promise<number[]>
     {
         console.log('START');
         /*
@@ -90,20 +90,13 @@ export class GameService {
             Box1x:0,
             Box2x:0,
             }
-            console.log('Box1');
-            console.log(room.Box1x);
-            console.log('Room');
-            console.log(String(m.id));// est undefined
-            console.log(m.id);
-            console.log(String(room.id));
-
             var l = this.s.size;
             this.s.set(l , room);// permet de reconnaitre la room a l id
             
             this.dispo.add(room.id);
-            //const s = [room.id , 1];
             const s = [l, 1];
-            client.emit('start', s);
+            return s;
+            //client.emit('start', s);
             // renvoit le role et l id de la room
         //}
         /*else
@@ -120,11 +113,7 @@ export class GameService {
     
 
     player1x_right(id:number): number
-    {/*
-        var c = this.s.get(id);
-        console.log(c.Box1x);
-        c.Box1x = (c.Box1x + 0.2);
-        return c.Box1x;*/
+    {
         this.s.get(id).Box1x -= 0.2;
         return this.s.get(id).Box1x;
     }

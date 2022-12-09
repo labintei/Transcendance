@@ -48,12 +48,13 @@ export default function PongGame(props: any) {
     socket.emit('start_game');
   }
 
+  //init();
+
+
   useEffect(() => {
     console.log('START');
     
-    socket.on('start', (data) => {setRole(data[1]);setId(data[0])})
-    
-    //console.log(ready);
+    socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0])})
     return () => {
       socket.off('start_game');
     }
