@@ -3,15 +3,15 @@ import { Socket } from 'socket.io-client';
 import { Channel } from './Channel';
 import './Chat.css';
 
-export enum popupType {
-    JoinChannelPopup,
-    AddFriendPopup,
-    None
+export interface PopupChildProps {
+    socket: Socket;
+    setPopup: React.Dispatch<React.SetStateAction<boolean>>;
 }
 
+// interface takes in a function to render
 interface PopupProps {
-    popup: popupType;
-    setPopup: React.Dispatch<React.SetStateAction<popupType>>
+    functionToRender: (props: PopupChildProps) => JSX.Element;
+    setPopup: React.Dispatch<React.SetStateAction<boolean>>
     socket: Socket;
 }
 
@@ -27,119 +27,15 @@ interface PopupProps {
  * */
 
 export default function Popup(props: PopupProps) {
-    let input: HTMLTextAreaElement | null = null;
-    const [errorMsg, setError] = useState<string>();
-    const [publiclist, setList] = useState([]);
-
-    useEffect(() => {
-        props.socket.on('publiclist', (data) => { setList(data) });
-        props.socket.on('error', (data) => console.log(data) );
-
-        props.socket.emit('publiclist');
-
-        setError("bobby bob");
-    }, [])
-
-    function handleClickOutside() {
-        props.setPopup(popupType.None);
+    function handleClickOutside(e : React.MouseEvent<HTMLElement>) {
+        console.log("click outside");
+        e.stopPropagation();
+        props.setPopup(false);
     }
 
     function handleClickInside(e : React.MouseEvent<HTMLElement>) {
+        console.log("click inside");
         e.stopPropagation();
-    }
-
-    function onKeyDown(e: any) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            e.stopPropagation();
-
-            console.log("submit form");
-
-            if (props.popup === popupType.AddFriendPopup)
-                onSubmit(null, 'addFriend');
-            if (props.popup === popupType.JoinChannelPopup)
-                onSubmit(null, 'create');
-        }
-    }
-
-    const sleep = (ms : number) => new Promise(
-        resolve => setTimeout(resolve, ms)
-      );
-
-    async function onSubmit(e: React.MouseEvent<HTMLElement> | null, signal: string) {
-        if (e !== null)
-            e.preventDefault();
-
-        if (input === null)
-            return ;
-        console.log(input.value);
-        input.focus();
-        if (signal === 'create') {
-            const test = {
-                "name": input.value,
-                "password": "",
-                "status": "Public"
-            }
-            props.socket.emit(signal, test);
-            props.socket.emit('joinedList');
-        }
-        else
-            props.socket.emit(signal, input.value);
-        input.value = '';
-
-        // setError("success !");
-
-        // await sleep(2000);
-
-        // // close popup
-        props.setPopup(popupType.None);
-    }
-
-    function renderJoinChannel() {
-        return (
-        <>
-            <h1>Public channel list : </h1>
-            <div>{publiclist.map((chan: Channel) => (
-                <span>
-                    {chan.name}
-                </span>
-            ))}</div>
-            <form>
-                <button
-                    onClick={(e) => { onSubmit(e, 'createChan') }}>
-                    Create channel
-                </button>
-                <textarea
-                    rows={1}
-                    placeholder="test"
-                    onKeyDown={onKeyDown}
-                    ref={node => input = node}>
-                </textarea>
-            </form>
-            </>);
-    }
-
-    function renderAddFriend() {
-        return (
-        <>
-            <h1>Add friend : </h1>
-            <form>
-                <button
-                    onClick={(e) => { onSubmit(e, 'addFriend') }}>
-                    Add friend
-                </button>
-                <textarea
-                    rows={1}
-                    placeholder="Enter username"
-                    onKeyDown={onKeyDown}
-                    ref={node => input = node}>
-                </textarea>
-            </form>
-            <p className="error">
-                { errorMsg }
-            </p>
-        </>
-        );
     }
 
     return (
@@ -150,13 +46,13 @@ export default function Popup(props: PopupProps) {
                 className="popup"
                 onClick={handleClickInside}>
                 {
-                    props.popup === popupType.JoinChannelPopup
-                    ? renderJoinChannel()
-                    : renderAddFriend()
+                    props.functionToRender(
+                    {
+                      socket: props.socket,
+                      setPopup: props.setPopup
+                    })
                 }
             </div>
         </div>
     );
 }
-// componentWillMount()
-// { document.addEventListener("click", this.handleClickOutside, false); }

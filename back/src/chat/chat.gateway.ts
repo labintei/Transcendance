@@ -63,6 +63,7 @@ export class ChatGateway {
 
   @SubscribeMessage('create')
   async create(client: Socket, data: Channel): Promise<Channel> {
+    console.log("test");
     try {
       if (data.status === Channel.Status.DIRECT)
         throw new WsException("You cannot create a direct channel.")

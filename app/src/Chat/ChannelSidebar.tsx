@@ -1,8 +1,11 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
 import { Channel } from './Channel';
-import Popup, { popupType } from './Popup'
+import Popup from './Popup'
 import './Chat.css';
+import JoinChannel from './JoinChannel';
+import AddFriend from './AddFriend';
+import { PopupChildProps } from './Popup';
 
 interface ChannelSidebarProps {
   socket: Socket;
@@ -11,23 +14,18 @@ interface ChannelSidebarProps {
 
 export default function ChannelSidebar(props: ChannelSidebarProps) {
   const [channels, setChannels] = useState([]);
-  const [popup, setPopup] = useState<popupType>(popupType.None);
+  const [popup, setPopup] = useState<boolean>(false);
+  const [functionPopup, setFunctionPopup] = 
+    useState<(props: PopupChildProps) => JSX.Element>(() => <></>);
 
   useEffect(() => {
-    props.socket.emit('joinedList', (answer: any) => {
-      setChannels(answer);
-    });
-
     props.socket.on('joinedList', (data) => {
-      // console.log('getChannels', data);
-      console.log("[DEBUG] : joinedList", data);
-
+      console.log('joinedList', data);
       setChannels(data);
     });
-    return (() => {
-      props.socket.off('joinedList');
-    });
-  }, []);
+
+    props.socket.emit('joinedList');
+  }, [props.socket]);
 
   return (
     <>
@@ -45,24 +43,25 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
       <div>
         <button className="join"
           onClick={() => {
-            setPopup(popupType.JoinChannelPopup);
+            setPopup(true);
+            setFunctionPopup(() => JoinChannel);
           }}
         >
           Join channel.</button>
         <button className="add"
           onClick={() => {
-            setPopup(popupType.AddFriendPopup);
+            setPopup(true);
+            setFunctionPopup(() => AddFriend);
           }}
         >Add friend.</button>
       </div>
       {
-        popup !== popupType.None
-        ? <Popup
-          popup={popup}
+        popup &&
+        <Popup
+          functionToRender={functionPopup}
           setPopup={setPopup}
           socket={props.socket}
-          />
-        : null
+        />
       }
     </>
   );
