@@ -16,17 +16,21 @@ import { getManager } from "typeorm";
 //    this.
 
 
-export interface Game  {
-    id: number,
-    nb_player: number,
-    score1: number,
-    score2: number,
-    player1: Socket,
-    player2: Socket,
-    player1_x: number,
-    player2_x: number,
-    Box1x: number,
-    Box2x: number,
+export class Game {
+    public id: number;
+    public room_id: number;
+    public nb_player: number;
+    public score1: number;
+    public score2: number;
+    public player1: Socket;
+    public player2: Socket;
+    public player1_x: number;
+    public player2_x: number;
+    public Box1x: number;
+    public Box2x: number;
+
+    //Box1_left: () => number;
+    //Box1_right: () => number;
     //Setbox1x(num: number): void;
 
     //setBox1x(num:number): number{return (this.Box1x + 0,2);}
@@ -36,13 +40,16 @@ export interface Game  {
 @Injectable()
 export class GameService {
  
-    constructor(){this.s = new Map();this.dispo = new Set()}
 
     // Liste de Game
     public s: Map<number, Game>;
     // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
     public dispo:  Set<number>;
     //public dispo: Map<number, number>;
+    constructor(){
+        this.s = new Map();
+        this.dispo = new Set()
+    }
     
 
 
@@ -54,7 +61,6 @@ export class GameService {
 
     // set(ajoute)get(find)has(bool)size(nombre:game)delete(key)clear()
     // fait une liste des joueurs en jeu (est ce vraiment necessaire)
-    
 
     // les questions que je me pose c est qu il faudrait pas que
     // partie soit deja prise alors que la fonction est en cour
@@ -73,6 +79,7 @@ export class GameService {
             await m.save();
             var room: Game = {
             id: m.id,
+            room_id: this.s.size,
             nb_player: 1,
             score1: 0,
             score2: 0,
@@ -80,8 +87,8 @@ export class GameService {
             player2: null,
             player1_x: 1,
             player2_x: 2,
-            Box1x:0.0,
-            Box2x:0.0,
+            Box1x:0,
+            Box2x:0,
             }
             console.log('Box1');
             console.log(room.Box1x);
@@ -89,9 +96,13 @@ export class GameService {
             console.log(String(m.id));// est undefined
             console.log(m.id);
             console.log(String(room.id));
-            this.s.set(room.id , room);// permet de reconnaitre la room a l id
+
+            var l = this.s.size;
+            this.s.set(l , room);// permet de reconnaitre la room a l id
+            
             this.dispo.add(room.id);
-            const s = [room.id , 1];
+            //const s = [room.id , 1];
+            const s = [l, 1];
             client.emit('start', s);
             // renvoit le role et l id de la room
         //}
@@ -108,35 +119,40 @@ export class GameService {
 
     
 
-    async player1x_right(id:number): Promise<number>
-    {
-        var c = await this.s.get(id);
-        var box = await c.Box1x;
-        var t = await (c.Box1x + 0.2);
-        box = t;
-        //console.log(' Box1_x : ' + String(c.Box1x));
-        return box;
+    player1x_right(id:number): number
+    {/*
+        var c = this.s.get(id);
+        console.log(c.Box1x);
+        c.Box1x = (c.Box1x + 0.2);
+        return c.Box1x;*/
+        this.s.get(id).Box1x -= 0.2;
+        return this.s.get(id).Box1x;
     }
 
-    async player1x_left(id:number): Promise<number>
+    player1x_left(id:number): number
     {
-        var d = await this.s.get(id);
-        var box = await d.Box1x;
-        var t = await (box - 0.2);
-        box = t;
-        return box;
+        this.s.get(id).Box1x += 0.2;
+        return this.s.get(id).Box1x;
     }
 
-    player2x_right(id:number) : number
+
+    getBox1(id:number): number
     {
-        //return this.s.get(id).Box2x += 0.2;
-        return 0;
+        var d = this.s.get(id)
+        var num = d.Box1x;
+        return num;
     }
 
-    player2x_left(id:number) : number
+    async player2x_right(id:number) : Promise<number>
     {
-        //return this.s.get(id).Box2x -= 0.2;
-        return 0;
+        return this.s.get(id).Box2x += 0.2;
+        //return 0;
+    }
+
+    async player2x_left(id:number) : Promise<number>
+    {
+        return this.s.get(id).Box2x -= 0.2;
+        //return 0;
     }
 
     test()

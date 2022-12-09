@@ -121,56 +121,9 @@ function SkyBox() {
   return null;
 }
 
-/*
 export default function World(props: any) {
 
-  // const getDirection:any = useStore((state:any) => state.controls);
   const map = useStore((s: any) => s.bgdChoice)
-  // console.log(getDirection)
-  return (
-    <Canvas
-       camera={{ position: [0, 3, 7] }}>
-      <CameraControls />
-      <KeyboardControls />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[0, 0, 5]} color="red" />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />
-      <Box1 position={[0, 0, 5]} />
-      <Sphere />
-
-      { map === 0 && 
-      <SkyBox /> 
-      }
-      { map === 1 &&
-      <>
-      <Ocean />
-       <Sky
-        sunPosition={[0, 1, 8]}
-        inclination={10}
-        azimuth={125}
-        rayleigh={60}
-        turbidity={100}
-        mieCoefficient={0.1}
-        mieDirectionalG={0.8}
-        distance={3000}
-        {...props}
-      />
-      </>
-
-      }
-
-      <Box2 position={[0, 0, -5]} />
-      <Plane position={[0, -0.5, 0]} />
-    </Canvas>
-  )
-}*/
-
-export default function World(props: any) {
-
-  // const getDirection:any = useStore((state:any) => state.controls);
-  const map = useStore((s: any) => s.bgdChoice)
-  // console.log(getDirection)
   return (
     <Canvas
     camera={{ position: [0, 3, 7] }}>
@@ -208,44 +161,5 @@ export default function World(props: any) {
     <Plane position={[0, -0.5, 0]} />
   </Canvas>
   )
-
-   /* 
-    <>
-  <Canvas
-    camera={{ position: [0, 3, 7] }}>
-    <CameraControls />
-    <KeyboardControls />
-   <ambientLight intensity={0.5} />
-   <directionalLight position={[0, 0, 5]} color="red" />
-   <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-   <pointLight position={[-10, -10, -10]} />
-   <Box1 position={[0, 0, 5]} />
-   <Sphere />
-
-   { map === 0 && 
-   <SkyBox /> 
-   }
-   { map === 1 &&
-   <>
-   <Ocean />
-    <Sky
-     sunPosition={[0, 1, 8]}
-     inclination={10}
-     azimuth={125}
-     rayleigh={60}
-     turbidity={100}
-     mieCoefficient={0.1}
-     mieDirectionalG={0.8}
-     distance={3000}
-     {...props}
-   />
-   </>
-   }
-   <Box2 position={[0, 0, -5]} />
-   <Plane position={[0, -0.5, 0]} />//
-    </Canvas>
-
-<KeyBoardControls />
- */
 
 }

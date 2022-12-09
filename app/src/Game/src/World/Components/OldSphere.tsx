@@ -76,7 +76,7 @@ export default function Sphere() {
     
     // box1, box2, x, y , z
     // la voir pour la sphere (techniquement seule x et z se deplace)
-    socket.emit('sphere', box1 , box2, x , z);
+    //socket.emit('sphere', box1 , box2, x , z);
     /*
     const width = box1.current.geometry.parameters.width;
     var sphereZ = Math.floor( ref.current.position.z );

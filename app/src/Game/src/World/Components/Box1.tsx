@@ -27,13 +27,15 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   const player1move:any = useStore((s:any) => s.Player1)
   const data = useStore((s:any) => s.player1_x);
 
-  /*
+  
   useEffect(() => { 
-    socket.on('box1_x', (data) => {console.log('box1' + String(data));player1move(data)});
+    //socket.on('box1_x', (data) => {console.log('box1' + String(data));player1move(data)});
+    
+    socket.on('box1_x', (data) => {console.log(String(data));player1move(data)});//recoit des 1 ...
     return () => {
     }
   }, [player1move])
-  */
+  
 
   useFrame((state, delta) => {
     box.current.position.x = data;
