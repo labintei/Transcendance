@@ -1,4 +1,4 @@
-import { Controller, Get, NotFoundException, Param, Query, Request, UseGuards } from "@nestjs/common";
+import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/common";
 import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
@@ -6,7 +6,7 @@ import { Between } from "typeorm";
 
 @Controller('ranking')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class RankingController {
 
   @Get()

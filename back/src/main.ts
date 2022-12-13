@@ -8,14 +8,13 @@ import * as expressSession from 'express-session';
 import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
 import * as cookie from 'cookie';
-import { WsException } from '@nestjs/websockets';
 
 const session_cookie_name = 'trans-cookie';
 const sessionSecret = pseudoRandomBytes(64).toString('base64');
 const sessionStore = new expressSession.MemoryStore();
 const corsOptions = {
-    origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
-    credentials: true
+  origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
+  credentials: true
 };
 
 class SessionIOAdapter extends IoAdapter {
@@ -26,7 +25,7 @@ class SessionIOAdapter extends IoAdapter {
 
       //  ********** FOR DEVELOPMENT ONLY **********
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      req.user = 'jraffin'; return next();
+      //req.user = 'jraffin'; return next();
 
       let sessionID;
       if (req.headers.cookie) {
