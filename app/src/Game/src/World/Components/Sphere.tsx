@@ -34,50 +34,25 @@ export default function Sphere() {
   const Updatez_dir:any = useStore((s:any) => s.Updatez_dir);
   const Updatex_angle:any = useStore((s:any) => s.Updatex_angle);
 
+  const GetID = useStore((state:any) => state.id);
+
+  const A = useStore((state:any) => state.sphere_x);
+  const B = useStore((state:any) => state.sphere_z);
+
+    
+  var zdirection = 0.05;
+  var l = Math.random();
+  console.log(l)
+  if (l < 0.5)
+    zdirection = -0.05;
+  console.log(zdirection)
+  var xangle = l *0.1;
+
+
   useEffect(() => {
-    /*
-    socket.on('ready', () => {
-      console.log('ready');
-      setReady()
-    });
-    socket.on('notready', () => 
-    {
-      console.log('notReady');
-      setNotReady()
-    });
-    socket.on('add1', () => 
-    {
-      console.log("add1");
-      addPoint1();
-    });
-    socket.on('add2', () => 
-    {
-      console.log("add2");
-      addPoint2();
-    });
-    socket.on('reset', () => 
-    {
-      console.log('reset');
-      Spherenew(0,0);
-    });
-    socket.on('updatez_dir', (data) => {
-      console.log('z_dir');
-      console.log(data);
-      Updatez_dir(data)
-    });
-    socket.on('updatex_angle', (data) => {
-      console.log('x_angle');
-      console.log(data);
-      Updatex_angle(data)
-    });
-    socket.on('newpos', (newx, newz)  => {
-      console.log('newx ');
-      console.log(newx);
-      console.log(' newy ');
-      console.log(newz);
-      Spherenew(newx,newz)
-    });
-    */
+      socket.emit('ball', [GetID, zdirection, l, xangle]);
+      ref.current.position.z = A;
+      ref.current.position.z = B;
     return () => {
     }
   }, [Updatez_dir, Updatex_angle ,Spherenew, addPoint1, addPoint2, setReady, setNotReady])

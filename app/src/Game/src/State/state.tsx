@@ -67,6 +67,9 @@ export const useStore = create((set,get) => {
   }
 */
 
+  Setx: (num:number) => set((state:any)=>({sphere_x : num})),
+  Setz: (num:number) => set((state:any)=>({sphere_z : num})),
+
   SetId: (num:number) => set((state:any)=>({ id : num})),
   SetRole: (num:number) => set((state:any)=>({ role : num})),
   //SetRoom: (num:number, num1:number) => set ((s:any) => ({room: [s.room[0]:num]; room: [s.room[0]:num]}))

@@ -17,13 +17,13 @@ import { SocketGateway } from 'src/socket/socket.gateway';
   credentials: true,
 })
 export class GameGateway{
-
+/*
   @WebSocketServer() private io: Server;
 
   constructor(
     //private gameservice: GameService,
     //private appGateway: SocketGateway,
-    /*@Inject(GameService) */private gameservice: GameService
+    private gameservice: GameService
     ) {}
 
   //constructor(@Inject(GameService) private gameService: GameService) {}
@@ -135,5 +135,5 @@ export class GameGateway{
     }
     client.emit('ready');
   }
-
+*/
 }

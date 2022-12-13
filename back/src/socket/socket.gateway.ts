@@ -2,12 +2,13 @@ import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconne
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
-import { Game } from 'src/game/game.interfaces';
+import { Game } from 'src/game/game.service';
 import { Inject } from '@nestjs/common';
 
 /*
   A suppr
 */
+
 import { GameService } from 'src/game/game.service';
 
 const chanRoomPrefix = "channel_";
@@ -19,7 +20,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   private static io: Server = null;
 
   constructor(
-    @Inject(GameService) private gameservice: GameService
+    private gameservice: GameService
     ) {}
 
   afterInit(server: Server) {
@@ -102,5 +103,60 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 	public static channelsToRooms(channels: Channel[]): string[] {
 		return channels.map<string>((chan) => { return chanRoomPrefix + chan.id; });
 	}
+
+  @SubscribeMessage('testlaulau')
+  async marchepo(client:Socket)
+  {
+    this.gameservice.test();
+    console.log('Bien Implementer');
+  }
+
+  @SubscribeMessage('start_game')
+  async new_game(client:Socket, data:number)
+  {
+    var l = await this.gameservice.newGame(client);// renvoit  une Promise
+    console.log(l);
+    console.log(l[0]);
+    console.log(l[1]);
+    client.emit('start', l);
+  }
+
+
+  @SubscribeMessage('left')
+  async left(client: Socket, c:any)//: Promise<number>
+  {
+    //if(await(c[0] === 1))
+    var num = this.gameservice.player1x_left(c[1]);
+    var numbis = await (num/10);
+    client.emit('box1_x', num);
+    //else
+      //client.emit('box2_x', this.gameservice.player2x_left(c[1]));
+  }
+
+  @SubscribeMessage('right')
+  async right(client: Socket, c:any)//: Promise<number>
+  {
+    //if(await(c[0] === 1))
+    //{
+      var num = this.gameservice.player1x_right(c[1]);
+      var numbis = await (num/10);
+      console.log('Renvoye  R' + String(num));
+      console.log('Numbis ' + String(numbis));
+      client.emit('box1_x', num);
+    //}
+    //else
+      //client.emit('box_2', this.gameservice.player2x_right(c[1]));
+  }
+
+  @SubscribeMessage('ball')
+  async sphere(client: Socket, data:number)
+  {
+    // socket.emit('ball', [GetID, zdirection, l, xangle]);
+    let a = this.gameservice.sphere(await this.gameservice.getroom(data));
+    client.emit('newpos', a);
+  }
+
+
+
 }
 

@@ -6,7 +6,7 @@ import {useStore} from './State/state';
 import Menu from './Menu/menu';
 import { io, Socket } from "socket.io-client";
 import { StaticReadUsage } from 'three';
-import { isConstructorDeclaration } from 'typescript';
+import { convertTypeAcquisitionFromJson, isConstructorDeclaration, setSyntheticLeadingComments } from 'typescript';
 import { off } from 'process';
 
 
@@ -40,25 +40,28 @@ export default function PongGame(props: any) {
   const setId:any = useStore((s:any)=> s.SetId);
   //}
 
+  const getId:any = useStore((s:any)=> s.id);
 
-  function init()
-  {
-    if(!socket)
-      return ;
-    socket.emit('start_game');
-  }
 
-  //init();
-
+  const Setx:any = useStore((s:any)=> s.Setx);
+  const Setz:any = useStore((s:any) => s.Setz);
 
   useEffect(() => {
     console.log('START');
-    
+    socket.emit('start_game');
     socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0])})
     return () => {
       socket.off('start_game');
     }
   }, [setId, setRole])
+
+  
+  useEffect(() => {
+    socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
+    //socket.on('')
+    //
+    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]);Setz(data[1]);});
+  },[])
 
   // envoit un socket pour l initialisation
 

@@ -29,6 +29,12 @@ export class Game {
     public Box1x: number;
     public Box2x: number;
 
+    // ne veut pas utiliser cette chose 
+    public sx: number;
+    public sz: number;
+    public zdir: number;
+    public xangle: number;
+
     //Box1_left: () => number;
     //Box1_right: () => number;
     //Setbox1x(num: number): void;
@@ -49,6 +55,74 @@ export class GameService {
     constructor(){
         this.s = new Map();
         this.dispo = new Set()
+    }
+
+    // probleme peut pas faire les emit ici
+
+
+    async getroom(id:number): Promise<Game>
+    {return this.s.get(id);}
+
+    async sphere(room:Game): Promise<Number[]>
+    {
+        console.log("SPHERE")
+      var width = 2;
+
+      var sz = room.sz;
+      var sx = room.sx;
+
+      var b1x = room.Box1x  / 10;
+      var b2x = room.Box2x / 10;
+      
+      room.sz += room.zdir;
+      room.sx += room.xangle;
+
+      var x = room.sx;
+      var y = room.sz;
+      //client.emit('newpos', [x, this.s.get(id).sz]);
+
+
+        // deceleration
+      if (room.zdir > 0.1)
+        room.zdir -= 0.005
+      else (room.zdir < (-0.1))
+        room.zdir += 0.005;
+  
+      if(sz === (5 - 1) &&
+        sx >= (b1x - width) && 
+        sx <= (b1x + width))
+        room.zdir = -0.3;
+      else(sz === -5 && 
+        sx >= (b2x - width) &&
+        sx <= (b2x + width))
+        room.zdir = +0.3;
+        // ne doit pas update dir ici
+      //client.emit('updatez_dir', tzdir);
+      
+      // colision avec les bords
+      if(sx === -5 || sx === 5)
+      {
+        console.log("colision");
+        room.xangle *= -1;
+      }
+      if (sz > 7)
+      {
+        console.log("RESET");
+        //client.emit('add1'); 
+        //client.emit('reset');
+        return [0,0];
+        //client.emit('newpos', [0,0]);
+      }
+      else if(sz < -7)
+      {
+        console.log("RESET");
+        //client.emit('add2');
+        //client.emit('newpos', [0,0]);
+        return [0,0];
+        }
+        return [x,y];
+
+      //client.emit('ready');
     }
     
 
@@ -71,6 +145,9 @@ export class GameService {
         if(this.dispo.size === 0)// aucune room dispo
         {*/
             //const us = User.findOneBy({ft_login: (client.request as any).user});
+            
+            
+            
             const m = new Match();
             
             m.score1 = 0;
@@ -89,10 +166,19 @@ export class GameService {
             player2_x: 2,
             Box1x:0,
             Box2x:0,
+            
+            sx: 0,
+            sz: 0,
+            zdir: 0.05,
+            xangle: 0,
             }
+            var l = Math.random();
+            if (l < 0.5)
+              room.zdir = -0.05;
+            room.xangle = l *0.1;
+
             var l = this.s.size;
             this.s.set(l , room);// permet de reconnaitre la room a l id
-            
             this.dispo.add(room.id);
             const s = [l, 1];
             return s;
@@ -110,17 +196,21 @@ export class GameService {
 
     }
 
-    
+/*
+    get(id): Game
+    {
+        return this.s.find(id);
+    }*/
 
     player1x_right(id:number): number
     {
-        this.s.get(id).Box1x -= 0.2;
+        this.s.get(id).Box1x -= 2;
         return this.s.get(id).Box1x;
     }
 
     player1x_left(id:number): number
     {
-        this.s.get(id).Box1x += 0.2;
+        this.s.get(id).Box1x += 2;
         return this.s.get(id).Box1x;
     }
 
