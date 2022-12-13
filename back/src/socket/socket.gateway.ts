@@ -152,7 +152,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async sphere(client: Socket, data:number)
   {
     // socket.emit('ball', [GetID, zdirection, l, xangle]);
-    let a = this.gameservice.sphere(await this.gameservice.getroom(data));
+    let a = this.gameservice.sphereroom(data);
     client.emit('newpos', a);
   }
 

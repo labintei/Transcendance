@@ -20,7 +20,7 @@ export const useStore = create((set,get) => {
   //interface: Game_Data = {},
   map: "space",
   //gameReady:false,
-  gameReady:true,
+  gameReady:false,
   votes: 0,
   score: [0,0],
   controls: {
@@ -66,6 +66,7 @@ export const useStore = create((set,get) => {
     return null
   }
 */
+  SetReady: (num:number) => set((s:any)=>({gameReady: true})),
 
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
   Setz: (num:number) => set((state:any)=>({sphere_z : num})),

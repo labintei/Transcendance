@@ -39,18 +39,8 @@ export default function Sphere() {
   const A = useStore((state:any) => state.sphere_x);
   const B = useStore((state:any) => state.sphere_z);
 
-    
-  var zdirection = 0.05;
-  var l = Math.random();
-  console.log(l)
-  if (l < 0.5)
-    zdirection = -0.05;
-  console.log(zdirection)
-  var xangle = l *0.1;
-
-
   useEffect(() => {
-      socket.emit('ball', [GetID, zdirection, l, xangle]);
+      socket.emit('ball', GetID);
       ref.current.position.z = A;
       ref.current.position.z = B;
     return () => {

@@ -45,11 +45,12 @@ export default function PongGame(props: any) {
 
   const Setx:any = useStore((s:any)=> s.Setx);
   const Setz:any = useStore((s:any) => s.Setz);
+  const SetReady:any = useStore((s:any) => s.SetReady);
 
   useEffect(() => {
     console.log('START');
     socket.emit('start_game');
-    socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0])})
+    socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0]);SetReady()})
     return () => {
       socket.off('start_game');
     }
@@ -62,6 +63,12 @@ export default function PongGame(props: any) {
     //
     socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]);Setz(data[1]);});
   },[])
+
+  // je dois creer une infinite loop ici
+  useEffect(() => {
+    if(ready)
+      socket.emit('ball', getId);
+  },[getId])
 
   // envoit un socket pour l initialisation
 

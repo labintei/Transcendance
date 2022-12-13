@@ -29,7 +29,8 @@ export class Game {
     public Box1x: number;
     public Box2x: number;
 
-    // ne veut pas utiliser cette chose 
+    // ???
+    
     public sx: number;
     public sz: number;
     public zdir: number;
@@ -60,10 +61,15 @@ export class GameService {
     // probleme peut pas faire les emit ici
 
 
-    async getroom(id:number): Promise<Game>
-    {return this.s.get(id);}
+    async sphereroom(id:number): Promise<number[]>
+    {
+        if(!this.s.get(id))
+            console.log('N EXISTE PAS');
+        var g = await this.sphere( await this.s.get(id));
+        return g;
+    }
 
-    async sphere(room:Game): Promise<Number[]>
+    async sphere(room:Game): Promise<number[]>
     {
         console.log("SPHERE")
       var width = 2;
@@ -171,7 +177,9 @@ export class GameService {
             sz: 0,
             zdir: 0.05,
             xangle: 0,
+
             }
+
             var l = Math.random();
             if (l < 0.5)
               room.zdir = -0.05;
