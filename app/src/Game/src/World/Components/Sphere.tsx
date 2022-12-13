@@ -39,25 +39,14 @@ export default function Sphere() {
   const A = useStore((state:any) => state.sphere_x);
   const B = useStore((state:any) => state.sphere_z);
 
-  useEffect(() => {
-      socket.emit('ball', GetID);
-      ref.current.position.z = A;
-      ref.current.position.z = B;
-    return () => {
-    }
-  }, [Updatez_dir, Updatex_angle ,Spherenew, addPoint1, addPoint2, setReady, setNotReady])
-
   useFrame((state, delta) => { 
 
-    if (!ready)
-      return;
-    
-    //console.log(box1.current.position);
-    //socket.emit('sphere', box1 , box2, x , z);
-    var c = box1.current.position;
-    var d = box2.current.position;
-    //socket.emit('sphere', {box1:c, box2:d, x, z});
-    //socket.emit('sphere', {box1, box2, x, z});
+    if (ready)
+    {
+      ref.current.position.z = A;
+      ref.current.position.z = B;
+      socket.emit('ball', GetID);
+    }
   })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow

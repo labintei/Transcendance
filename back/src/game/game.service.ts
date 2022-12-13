@@ -111,6 +111,7 @@ export class GameService {
         console.log("colision");
         room.xangle *= -1;
       }
+      /*
       if (sz > 7)
       {
         console.log("RESET");
@@ -125,7 +126,8 @@ export class GameService {
         //client.emit('add2');
         //client.emit('newpos', [0,0]);
         return [0,0];
-        }
+        }*/
+        console.log('gameservice send ' + String(x) + " " + String(y));
         return [x,y];
 
       //client.emit('ready');
