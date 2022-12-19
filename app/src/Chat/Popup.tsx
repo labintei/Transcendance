@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 import { Socket } from 'socket.io-client';
 import { Channel } from './Channel';
 import './Chat.css';
@@ -6,13 +6,15 @@ import './Chat.css';
 export interface PopupChildProps {
     socket: Socket;
     setPopup: React.Dispatch<React.SetStateAction<boolean>>;
+    chanName: string | null;
 }
 
 // interface takes in a function to render
 interface PopupProps {
     functionToRender: (props: PopupChildProps) => JSX.Element;
-    setPopup: React.Dispatch<React.SetStateAction<boolean>>
+    setPopup: React.Dispatch<React.SetStateAction<boolean>>;
     socket: Socket;
+    chanName: string | null;
 }
 
 /*
@@ -48,8 +50,9 @@ export default function Popup(props: PopupProps) {
                 {
                     props.functionToRender(
                     {
-                      socket: props.socket,
-                      setPopup: props.setPopup
+                        socket: props.socket,
+                        setPopup: props.setPopup,
+                        chanName: null
                     })
                 }
             </div>

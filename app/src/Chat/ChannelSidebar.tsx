@@ -6,6 +6,7 @@ import './Chat.css';
 import JoinChannel from './JoinChannel';
 import AddFriend from './AddFriend';
 import { PopupChildProps } from './Popup';
+import InviteChannel from './InviteChannel';
 
 interface ChannelSidebarProps {
   socket: Socket;
@@ -13,7 +14,9 @@ interface ChannelSidebarProps {
 }
 
 export default function ChannelSidebar(props: ChannelSidebarProps) {
+  const [chanName, setName] = useState<string | null>(null);
   const [channels, setChannels] = useState([]);
+  const [invitedChannels, setInvitedChannels] = useState([]);
   const [popup, setPopup] = useState<boolean>(false);
   const [functionPopup, setFunctionPopup] = 
     useState<(props: PopupChildProps) => JSX.Element>(() => <></>);
@@ -24,8 +27,18 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
       setChannels(data);
     });
 
+    props.socket.on('invitedList', (data) => {
+      setInvitedChannels(data);
+    });
+
     props.socket.emit('joinedList');
-  }, [props.socket]);
+    props.socket.emit('invitedList');
+
+    return (() => {
+      props.socket.off('joinedList');
+      props.socket.off('invitedList');
+    });
+  }, []);
 
   return (
     <>
@@ -37,8 +50,31 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
             className="channel"
             onClick={props.onChannelClick(channel.id)}>
             {channel.name}
+            <button onClick={() => {
+              setPopup(true);
+              setFunctionPopup(() => InviteChannel);
+              setName(channel.name);
+            }}>invite</button>
           </div>
         ))}
+
+        {
+          invitedChannels.length <= 0 ? null :
+          <>
+          <p>Invited Channel</p>
+          {invitedChannels.map((channel: Channel) => (
+            <div
+              key={channel.id}
+              className="channel"
+              onClick={() => {
+                props.socket.emit('join', {
+                  "name": channel.name
+                })}}>
+              {channel.name}
+            </div>
+          ))}
+          </>
+        }
       </div>
       <div>
         <button className="join"
@@ -61,6 +97,7 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
           functionToRender={functionPopup}
           setPopup={setPopup}
           socket={props.socket}
+          chanName={chanName}
         />
       }
     </>

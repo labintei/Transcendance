@@ -29,10 +29,13 @@ function MessageInput(props: MessageInputProps) {
             if (!input || !input.value)
                 return ;
 
-            console.log("[DEBUG][", input.value);
+            console.log("[DEBUG][%s]", input.value);
 
-            props.socket.emit("msg_",
-                {"channel":props.channelKey, "message": input.value});
+            props.socket.emit("message", {
+                content: input.value,
+                channel: props.channelKey,
+            },
+            (data: any) => {console.log(data)});
             input.value = '';
         }
     }

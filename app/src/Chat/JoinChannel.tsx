@@ -111,7 +111,7 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
           required>
         </textarea>
         <input type="input"
-          placeholder="key"
+          placeholder="key (optional)"
           ref={node => keyInputCreate = node}
         >
         </input>
