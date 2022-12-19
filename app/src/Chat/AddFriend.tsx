@@ -1,38 +1,28 @@
 import React, { useEffect, useState } from 'react';
-import Popup, { PopupChildProps } from './Popup';
+import { PopupChildProps } from './Popup';
 
 export default function AddFriend(props: PopupChildProps) : JSX.Element {
-  let input: HTMLTextAreaElement | null = null;
-  const [errorMsg, setError] = useState<string>();
-  const [popup, setPopup] = useState<boolean>(false);
+  let input: HTMLInputElement | null = null;
+  const [errorMsg, setError] = useState<string | null>();
 
   useEffect(() => {
     props.socket.on('error', (data) => setError(data) );
-    setPopup(false);
+
+    return (() => {
+      props.socket.off('error');
+    });
   }, [])
 
-  function onSubmit(e: React.MouseEvent<HTMLElement> | null) {
-    if (e !== null)
-      e.preventDefault();
-    if (input === null)
-      return ;
-    input.focus();
-    props.socket.emit('addFriend', input.value);
-    console.log("add friend");
-    console.log(input?.value);
-
-    props.setPopup(false);
-  }
-
-  function onKeyDown(e: any) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
-
-      console.log("add friend");
-
-      onSubmit(null);
-    }
+  function onSubmit(e : React.FormEvent<HTMLElement>) {
+    e.preventDefault();
+    e.stopPropagation();
+    input?.focus();
+    props.socket.emit('addFriend', {
+      ft_login: input?.value,
+      name: input?.value
+    }, () => {
+      props.setPopup(false);
+    });
   }
 
   return (
@@ -40,16 +30,24 @@ export default function AddFriend(props: PopupChildProps) : JSX.Element {
       <h1>Add friend : </h1>
       <form>
         <button
-          onClick={onSubmit}>
+          onClick={onSubmit}
+        >
           Add friend
         </button>
-        <textarea
-          rows={1}
+        <input
+          type="input"
           placeholder="Enter username"
-          onKeyDown={onKeyDown}
-          ref={node => input = node}>
-        </textarea>
+          ref={node => input = node}
+          required
+        >
+        </input>
       </form>
+      {
+        errorMsg === null ? null :
+        <p>
+          {errorMsg}
+        </p>
+      }
     </>
   );
 }

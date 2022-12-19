@@ -2,8 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { PopupChildProps } from './Popup';
 
 export default function JoinChannel(props: PopupChildProps) : JSX.Element {
-  let input: HTMLTextAreaElement | null = null;
-  let keyInput: HTMLInputElement | null = null;
+  let input: HTMLInputElement | null = null;
   let keyInputCreate: HTMLInputElement | null = null;
   const [publiclist, setList] = useState([]);
   const [errorMsg, setError] = useState<string>();
@@ -12,29 +11,31 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
     props.socket.on('publicList', (data) => { console.log(data); setList(data) });
     props.socket.on('error', (data) => {
       setError(data);
-      console.log(data);
     });
 
     props.socket.emit('publicList');
+
+    return (() => {
+      props.socket.off('publicList');
+      props.socket.off('error');
+    })
   }, [])
 
-  function onSubmitCreate(e: React.MouseEvent<HTMLElement> | null) {
+  function onSubmitCreate(e: React.MouseEvent<HTMLElement>) {
     let password = null;
     let status = "Public";
 
-    if (e !== null)
-      e.preventDefault();
-    if (input === null)
-      return ;
-    input.focus();
+    e.preventDefault();
+    e.stopPropagation();
+    input?.focus();
 
-    if (keyInputCreate !== null) {
-      password = keyInputCreate.value;
+    if (keyInputCreate?.value !== "") {
+      password = keyInputCreate?.value;
       status = "Protected"
     }
 
     props.socket.emit('create', {
-      name: input.value,
+      name: input?.value,
       password: password,
       status: status,
     }, () => {
@@ -45,24 +46,7 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
     console.log(input?.value);
   }
 
-  function onKeyDown(e: any) {
-    if (e.key === 'Enter') {
-      e.preventDefault();
-      e.stopPropagation();
 
-      console.log("submit form");
-
-      onSubmitCreate(null);
-    }
-  }
-
-  const onSubmitJoinProtected =  (chan: any) => (e: any) => {
-    e.preventDefault();
-    if (keyInput === null)
-      return ;
-    let key = keyInput.value;
-    join(chan, key);
-  }
 
   const onChanClick =  (chan: any) => (e: any) => {
     console.log("click on chan");
@@ -79,42 +63,76 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
     });
   }
 
+  function listChannel() {
+    let keyInput: HTMLInputElement | null = null;
+
+    const onSubmitJoinProtected =  (chan: any) => (e: any) => {
+      e.preventDefault();
+      if (keyInput === null)
+        return ;
+      let key = keyInput.value;
+      join(chan, key);
+    }
+
+    return (
+      <>
+        {publiclist.map((channel: any) => (
+          <div
+            key={channel.id}
+          >
+            { channel.status !== "Protected" ?
+              <>
+                <>{channel.name}</>
+                <button
+                  onClick={onChanClick(channel.name)}
+                >
+                  Join Channel
+                </button>
+              </>
+            : // Protected Channels
+              <form
+                onSubmit={onSubmitJoinProtected(channel.name)}
+              >
+                <>{channel.name}</>
+                <input
+                  type="input"
+                  placeholder="channel password"
+                  ref={node => keyInput = node}
+                  required
+                />
+                <button
+                  type="submit"
+                >
+                  Join Channel
+                </button>
+              </form>
+            }
+          </div>
+        ))}
+      </>
+    );
+  }
+
   return (
     <>
       <h1>Public channel list : </h1>
-      <div>{publiclist.map((chan: any) => (
-        <div key={chan.id}>
-          { chan.status === "Protected" ?
-            <form onSubmit={onSubmitJoinProtected(chan.name)}>
-              {chan.name}
-              <input type="input" placeholder="key" required={true} ref={node => keyInput = node}/>
-              <button type="submit">Join</button>
-            </form>
-            :
-            <>
-              {chan.name}
-              <button onClick={onChanClick(chan.name)}>Join</button>
-            </>
-          }
-        </div>
-      ))}</div>
+      {listChannel()}
       <form>
         <button
           onClick={onSubmitCreate}>
           Create channel
         </button>
-        <textarea
-          rows={1}
-          placeholder="test"
-          onKeyDown={onKeyDown}
+        <input
+          type="input"
+          placeholder="Channel Name"
           ref={node => input = node}
-          required>
-        </textarea>
-        <input type="input"
-          placeholder="key (optional)"
+          required
+        />
+        <input
+          type="input"
+          placeholder="Password (optional)"
           ref={node => keyInputCreate = node}
-        >
-        </input>
+        />
       </form>
     </>
   );
