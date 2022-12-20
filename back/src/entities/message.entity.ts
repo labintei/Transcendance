@@ -38,12 +38,12 @@ export class Message extends BaseEntity {
   //  Virtual field to specify a direct message recipient.
   recipient: User
 
-  async send(): Promise<Message> {
+  async send(): Promise<Message[]> {
     delete this.id;
     delete this.time;
     await this.save();
-    SocketGateway.channelEmit(this.channel, 'msg', this);
-    return this;
+    SocketGateway.channelEmit(this.channel, 'msgs', [this]);
+    return [this];
   }
 }
 

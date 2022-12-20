@@ -16,36 +16,49 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleConnection(client: Socket) {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
+    const user = await User.findOne(
+      {
+        select: User.defaultFilter,
+        where: {
+          ft_login: (client.request as any).user
+        }
+      }
+    );
     client.data.login = user.ft_login;
 		await SocketGateway.userDisconnect(user);
     user.socket = client.id;
     user.status = User.Status.ONLINE;
     await user.save();
     console.log('Websocket Client Connected : ' + user.ft_login);
-    const joinedList = await Channel.find({
-      relations: {
-        users: true
-      },
-      select: Channel.defaultFilter,
-      where: {
-        users: {
-          userLogin: user.ft_login,
-          joined: true
-        }
-      }
-    });
+    const joinedList = await Channel.joinedList(client.data.login);
+    for (let channel of joinedList)
+      SocketGateway.channelEmit(channel, 'updateUser', user);
+    console.log('Joining rooms : ');
+    console.log(joinedList);
     SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
   }
 
   async handleDisconnect(client: Socket) {
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
+    const user = await User.findOne(
+      {
+        select: User.defaultFilter,
+        where: {
+          ft_login: client.data.login
+        }
+      }
+    );
     user.socket = null;
     user.status = User.Status.OFFLINE;
     await user.save();
     console.log('Websocket Client Disconnected : ' + user.ft_login);
+    const joinedList = await Channel.joinedList(client.data.login);
+    console.log('Leaving rooms : ');
+    console.log(joinedList);
+    SocketGateway.userLeaveRooms(user, SocketGateway.channelsToRooms(joinedList));
+    for (let channel of joinedList)
+      SocketGateway.channelEmit(channel, 'updateUser', user);
   }
 
   async ping(client: Socket) {
@@ -65,7 +78,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 		client.data.pingOK = true;
 	}
 
-	public static getIO(): Server {
+  public static getIO(): Server {
 		if (!this.io)
 			throw new WsException("Uninitialized socket.io instance.")
 		return this.io;

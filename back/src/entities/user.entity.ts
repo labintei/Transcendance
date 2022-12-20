@@ -1,5 +1,7 @@
 import { BadRequestException, ConflictException } from '@nestjs/common';
+import { SocketGateway } from 'src/socket/socket.gateway';
 import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
+import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
 import { UserRelationship } from './userrelationship.entity';
 
@@ -27,8 +29,8 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     status: true
   },
 	channels: {
+    rights: true,
 		status: true,
-		joined: true,
 		statusEnd: true,
 		channel: {
 			status: true,
@@ -116,6 +118,12 @@ export class User extends BaseEntity {
 
   async looseXP(amount: number): Promise<User> {
     return User.looseXP(this, amount);
+  }
+
+  async emitUpdate() {
+    const joinedList = await Channel.joinedList(this.ft_login);
+    for (let channel of joinedList)
+      SocketGateway.channelEmit(channel, 'updateUser', this);
   }
 
   /** STATIC METHODS */
