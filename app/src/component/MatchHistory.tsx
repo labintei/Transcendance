@@ -65,13 +65,11 @@ export default class MatchList extends React.Component {
     }).then(async res => {
         const matchs = res.data;
         console.log(matchs);
-        let listtmp: Array<Match> = [];   
-        let i = 0;
+        let listtmp: Array<Match> = [];
         for (var match of matchs) {
             let one: Match = {
               id: 0, statusopp: 1, name: '', score1:0, score2:0, avatar_loc:defaultavatar
             };
-            let avatar;
             let isOne:boolean = true;
             if (match.id !== undefined && match.score1 !== undefined && match.score2 !== undefined) {
                 one.id = match.id;
@@ -102,7 +100,6 @@ export default class MatchList extends React.Component {
                 }
                 listtmp.push(one);
             }
-            i++;
         }
         this.setState({listp: listtmp});
         console.log(this.state);

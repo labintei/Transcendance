@@ -14,7 +14,7 @@ export class AppService implements OnModuleInit {
   async onModuleInit() {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
-    //await this.generateExamples();
+    await this.generateExamples();
 
     await User.reinitSockets();
   }
@@ -91,14 +91,14 @@ export class AppService implements OnModuleInit {
           ft_login: 'lraffin'
         },
         user2: {
-          ft_login: 'bmarecha'
+          ft_login: 'omarecha'
         }
       },
       {
         score1: 4,
         score2: 4,
         user1: {
-          ft_login: 'bmarecha'
+          ft_login: 'omarecha'
         },
         user2: {
           ft_login: 'lraffin'
@@ -111,7 +111,7 @@ export class AppService implements OnModuleInit {
           ft_login: 'lraffin'
         },
         user2: {
-          ft_login: 'bmarecha'
+          ft_login: 'omarecha'
         }
       }
     ]);

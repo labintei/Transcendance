@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import './LoginPage.css';
-import { Link } from 'react-router-dom';
 
 enum LogStatus {
   NotLogged,
