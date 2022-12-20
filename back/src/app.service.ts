@@ -8,7 +8,7 @@ export class AppService implements OnModuleInit {
   async onModuleInit() {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
-    //await this.generateExamples();
+    await this.generateExamples();
 
     await User.reinitSockets();
   }
