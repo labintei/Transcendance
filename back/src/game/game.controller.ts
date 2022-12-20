@@ -8,14 +8,14 @@ import { Match } from 'src/entities/match.entity';
 //@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class GameController {
 
-	@Get("history")
+	@Get('history')
 	async gethistory(@Request() req): Promise<Match[]> {
 		return Match.find({
+			select: Match.defaultFilter,
 			relations: {
 				user1:true,
 				user2:true
 			},
-			select: Match.defaultFilter,
 			where: [
 				{
 					user1: {

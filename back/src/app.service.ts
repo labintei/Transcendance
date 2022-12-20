@@ -1,9 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { identity } from 'rxjs';
-import { FindOptionsWhere } from 'typeorm';
 import { Channel } from './entities/channel.entity';
 import { ChannelUser } from './entities/channeluser.entity';
-import { Message } from './entities/message.entity';
 import { User } from './entities/user.entity';
 import { Match } from './entities/match.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
@@ -14,7 +11,7 @@ export class AppService implements OnModuleInit {
   async onModuleInit() {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
-    await this.generateExamples();
+    //await this.generateExamples();
 
     await User.reinitSockets();
   }

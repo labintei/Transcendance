@@ -7,6 +7,12 @@ import { SearchController } from './search.controller';
 import { AvatarController } from './avatar.controller';
 
 @Module({
-  controllers: [UserController, SearchController, FriendsController, BlockedsController, RankingController, AvatarController]
+  controllers: [
+    UserController,
+    SearchController,
+    FriendsController,
+    BlockedsController,
+    RankingController,
+    AvatarController
 })
 export class UserModule {}

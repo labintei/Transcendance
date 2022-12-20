@@ -1,14 +1,20 @@
-import { SubscribeMessage, WebSocketGateway, WebSocketServer } from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, WebSocketServer , } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 
-@WebSocketGateway()
+WebSocketGateway()
 export class GameGateway {
 
-  @WebSocketServer() private server: Server;
+  @WebSocketServer() private io: Server;
 
-  @SubscribeMessage('loop')
-  handleMessage(client: Socket,rawDdata: string): string {
-    return "RESPONSE: " + rawDdata;
+  async error(client: Socket, msg: string = ''): Promise<any> {
+    await client.emit('error', msg);
+    return null;
+  }
+
+  @SubscribeMessage('game')
+  async game(client: Socket){
+    console.log("recu back'");
+    this.io.emit('wait_game');
   }
 
 }

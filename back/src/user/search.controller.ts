@@ -3,7 +3,7 @@ import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
 import { UserRelationship } from "src/entities/userrelationship.entity";
-import { Any, ILike, In, IsNull, Not } from "typeorm";
+import { ILike } from "typeorm";
 
 @Controller('search')
 @UseGuards(TransGuard)
@@ -15,6 +15,28 @@ export class SearchController {
     let howMany = Number(count);
     if (isNaN(howMany) || howMany > 50)
       howMany = 10;
+      
+    //  Typeorm way doesnt permit to return selected
+    //  and also empty relationship, so we are forced
+    //  to use the QueryBuilder.
+    //
+    // return User.find({
+    //   select: User.defaultFilter,
+    //   relations: {
+    //     relatedships: true
+    //   },
+    //   where: {
+    //     username: ILike(partialUsername+"%"),
+    //     relatedships: [
+    //       null,
+    //       {
+    //         ownerLogin: req.user
+    //       }
+    //     ]
+    //   },
+    //   take: howMany
+    // });
+    
     return await User.createQueryBuilder("user")
       .leftJoinAndMapMany(
         "user.relatedships",
