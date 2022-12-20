@@ -1,6 +1,4 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
-import { Channel } from './entities/channel.entity';
-import { ChannelUser } from './entities/channeluser.entity';
 import { User } from './entities/user.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
 
@@ -79,19 +77,6 @@ export class AppService implements OnModuleInit {
         status: UserRelationship.Status.BLOCKED
       } as UserRelationship
     ]);
-    let chan = (await Channel.findOneBy({name: "testChannel"}))
-    if (!chan)
-      chan = await Channel.save({
-        name: "testChannel",
-        status: Channel.Status.PUBLIC,
-        users: [
-          {
-            user: {ft_login:"jraffin"},
-            status: ChannelUser.Status.OWNER,
-            joined: true
-          }
-        ]
-      });
     await User.refreshRanks();
   }
 }

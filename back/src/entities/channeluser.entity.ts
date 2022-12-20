@@ -3,8 +3,8 @@ import { User } from "./user.entity";
 import { Channel } from "./channel.entity";
 
 const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
+  rights: true,
   status: true,
-  joined: true,
   statusEnd: true,
   channel: {
 		id: true,
@@ -21,13 +21,17 @@ const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
 
 };
 
-enum ChannelUserStatus {
+enum ChannelUserRights {
   OWNER = "Owner",
   ADMIN = "Admin",
-  INVITED = "Invited",
   MUTED = "Muted",
-  BANNED = "Banned",
-	DIRECT_ALTER = "Direct Message Alter"
+  BANNED = "Banned"
+}
+
+enum ChannelUserStatus {
+  INVITED = "Invited",
+  JOINED = "Joined",
+  DIRECT_ALTER = "Direct Message Alter"
 }
 
 @Entity('channel_user')
@@ -42,13 +46,18 @@ export class ChannelUser extends BaseEntity {
   @Column({
     type: 'enum',
 		nullable: true,
+    enum: ChannelUserRights,
+    default: null
+  })
+  rights: ChannelUserRights;
+
+  @Column({
+    type: 'enum',
+		nullable: true,
     enum: ChannelUserStatus,
     default: null
   })
   status: ChannelUserStatus;
-
-  @Column({ default: null })
-  joined: boolean;
 
   @Column({ nullable: true })
   statusEnd: Date;
@@ -62,23 +71,23 @@ export class ChannelUser extends BaseEntity {
   user: User;
 
 	isOwner(): boolean {
-		return this.status === ChannelUser.Status.OWNER;
+		return this.rights === ChannelUser.Rights.OWNER;
   }
 
   isAdmin(): boolean {
 		return this.isOwner()
-			|| this.status === ChannelUser.Status.ADMIN;
+			|| this.rights === ChannelUser.Rights.ADMIN;
   }
 
   canSpeak(): boolean {
-		return this.joined
-		&& this.status !== ChannelUser.Status.MUTED;
+		return this.status === ChannelUser.Status.JOINED;
   }
 
 }
 
 export namespace ChannelUser {
   export import Status = ChannelUserStatus;
+  export import Rights = ChannelUserRights;
   export const defaultFilter = channelUserDefaultFilter;
 }
 
