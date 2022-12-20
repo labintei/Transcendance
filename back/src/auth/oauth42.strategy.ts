@@ -9,7 +9,7 @@ import { User } from 'src/entities/user.entity';
 export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 {
   constructor(
-		private http: HttpService
+    private http: HttpService
   ) {
     super({
       authorizationURL  : "https://api.intra.42.fr/oauth/authorize",
@@ -24,14 +24,14 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 
   async validate(accessToken: string): Promise<any> {
     const { data } = (await lastValueFrom(
-			this.http.get(
+      this.http.get(
         'https://api.intra.42.fr/v2/me',
         {
           headers: {
             Authorization: "Bearer " + accessToken
           },
-    	  })
-		));
+        })
+    ));
     let user = await User.findOneBy({ft_login: data.login});
     if (!user)
       user = await User.createFrom42Login(data.login, data.image_url);

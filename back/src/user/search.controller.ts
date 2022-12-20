@@ -7,7 +7,7 @@ import { ILike, IsNull, Not } from "typeorm";
 
 @Controller('search')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class SearchController {
 
   @Get(':username')
@@ -15,11 +15,11 @@ export class SearchController {
     let howMany = Number(count);
     if (isNaN(howMany) || howMany > 50)
       howMany = 10;
-      
+
     //  Typeorm way doesnt permit to return selected
     //  and also empty relationship, so we are forced
     //  to use the QueryBuilder.
-    
+
     // return User.find({
     //   select: User.defaultFilter,
     //   relations: {
@@ -38,7 +38,7 @@ export class SearchController {
     //   },
     //   take: howMany
     // });
-    
+
     return await User.createQueryBuilder("user")
       .leftJoinAndMapMany(
         "user.relatedships",

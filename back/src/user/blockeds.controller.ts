@@ -6,14 +6,14 @@ import { UserRelationship } from 'src/entities/userrelationship.entity';
 
 @Controller('blockeds')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class BlockedsController
 {
 
   @Get()
   async getBlockeds(@Request() req): Promise<User[]> {
     return User.find({
-			select: User.defaultFilter,
+      select: User.defaultFilter,
       relations: {
         relatedships: true
       },
