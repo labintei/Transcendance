@@ -14,5 +14,6 @@ import { AvatarController } from './avatar.controller';
     BlockedsController,
     RankingController,
     AvatarController
+  ]
 })
 export class UserModule {}

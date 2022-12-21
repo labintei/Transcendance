@@ -29,14 +29,8 @@ export class FriendsController
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
     const related = await User.findOne({
-			relations: {
-				relatedships: true
-			},
 			where: { 
-				username: username,
-				relatedships: {
-					ownerLogin: req.user
-				}
+				username: username
 			}
 		});
     if (!related)
