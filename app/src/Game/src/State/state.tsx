@@ -60,23 +60,18 @@ export const useStore = create((set,get) => {
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
 
-/*  eys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
-  
-    useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
-    return null
-  }
-*/
   SetReady: (num:number) => set((s:any)=>({gameReady: true})),
 
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
   Setz: (num:number) => set((state:any)=>({sphere_z : num})),
 
+  // marche PAS
+  Getx: (s:any) => (x:number) => {return s.sphere_x},
+  Gety: (s:any) => (z:number) => {return s.sphere_z},
+
   SetId: (num:number) => set((state:any)=>({ id : num})),
   SetRole: (num:number) => set((state:any)=>({ role : num})),
-  //SetRoom: (num:number, num1:number) => set ((s:any) => ({room: [s.room[0]:num]; room: [s.room[0]:num]}))
 
-  //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})),
-  // marche pas 
   player1Move: (num:number) => set((state:any)=>({data : [state.data.player1_x = num]})),
   player2Move: (num:number) => set((state:any)=>({data : [state.data.player2_x = num]})),
 

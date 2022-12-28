@@ -42,6 +42,9 @@ export class Game {
 
     //setBox1x(num:number): number{return (this.Box1x + 0,2);}
     // mettre toutes les donnees necessaire
+
+    public time: number;
+    public end: boolean;
 }
 
 @Injectable()
@@ -61,15 +64,20 @@ export class GameService {
     // probleme peut pas faire les emit ici
 
 
-    async sphereroom(id:number): Promise<number[]>
+    sphereroom(id:number): number[]
     {
         if(!this.s.get(id))
+        {
             console.log('N EXISTE PAS');
-        var g = await this.sphere( await this.s.get(id));
+            return [0,0];
+        }
+        var g = this.sphere(this.s.get(id));
         return g;
     }
 
-    async sphere(room:Game): Promise<number[]>
+
+    // on va essayer d emettre des chiffre rond
+    sphere(room:Game): number[]
     {
         console.log("SPHERE")
       var width = 2;
@@ -83,25 +91,44 @@ export class GameService {
       room.sz += room.zdir;
       room.sx += room.xangle;
 
-      var x = room.sx;
+      var x = room.sx;// ne correspond pas a un chiffre rond
       var y = room.sz;
+
+
       //client.emit('newpos', [x, this.s.get(id).sz]);
 
 
+        // on peut que 0.005
+        // 5 / 1000
+        // 300 / 1000
+
         // deceleration
-      if (room.zdir > 0.1)
-        room.zdir -= 0.005
-      else (room.zdir < (-0.1))
-        room.zdir += 0.005;
-  
-      if(sz === (5 - 1) &&
-        sx >= (b1x - width) && 
-        sx <= (b1x + width))
-        room.zdir = -0.3;
-      else(sz === -5 && 
-        sx >= (b2x - width) &&
-        sx <= (b2x + width))
-        room.zdir = +0.3;
+        // 0.1
+      if (room.zdir > 100)
+        room.zdir -= 5  
+      //room.zdir -= 0.005
+        // -0.1
+      else (room.zdir < (-100))
+        room.zdir += 5  
+      //room.zdir += 0.005;
+        
+      // va etre faux de toute facon
+      if(sz / 1000 === (5 - 1) &&
+        sx / 1000  >= (b1x - width) && 
+        sx / 1000 <= (b1x + width))
+    {
+        //room.xangle *= -1;
+        room.zdir = 300
+    }
+        //room.zdir = -0.3;
+      else(sz / 1000 === -5 && 
+        sx / 1000 >= (b2x - width) &&
+        sx / 1000 <= (b2x + width))
+    {
+        //room. xangle *= -1;
+        room.zdir = - 300
+    }
+        //room.zdir = +0.3;
         // ne doit pas update dir ici
       //client.emit('updatez_dir', tzdir);
       
@@ -111,24 +138,52 @@ export class GameService {
         console.log("colision");
         room.xangle *= -1;
       }
-      /*
-      if (sz > 7)
+      
+      if (sz > 7000)
       {
         console.log("RESET");
         //client.emit('add1'); 
         //client.emit('reset');
+
+        // refait une initialisation
+        /*
+        var l = Math.random();
+        if (l < 0.5)
+            room.zdir = 50;
+
+        room.xangle = Math.floor(l * 10) * 10;*/
+
+
+
+        room.sx = 0;
+        room.sz = 0;
         return [0,0];
         //client.emit('newpos', [0,0]);
       }
-      else if(sz < -7)
+      else if(sz < -7000)
       {
         console.log("RESET");
         //client.emit('add2');
         //client.emit('newpos', [0,0]);
+
+        /*
+        var l = Math.random();
+        if (l < 0.5)
+            room.zdir = 50;// techniquement ok
+        //  room.zdir = -0.05;
+        // l * 0.1
+        room.xangle = Math.floor(l * 10) * 10;
+        */
+
+        room.sx = 0;
+        room.sz = 0;
         return [0,0];
-        }*/
+        }
         console.log('gameservice send ' + String(x) + " " + String(y));
         return [x,y];
+
+        // sx ne semble pas avoir d incidence
+
 
       //client.emit('ready');
     }
@@ -140,6 +195,26 @@ export class GameService {
     //id:status:Game
     //public sbis: Map<{number, {Game, number}} 
 
+    getTime(num:number): number
+    {
+        if(this.s.get(num))// securitee
+            return this.s.get(num).time;
+        return 0;
+    }
+
+
+    setTimer(room:Game)
+    {
+
+        setInterval(() => 
+            {
+                if(room.end)
+                    return ;// stop le timer en cas d arret
+                room.time += 1; 
+            }, 100
+        )
+
+    }
 
     // set(ajoute)get(find)has(bool)size(nombre:game)delete(key)clear()
     // fait une liste des joueurs en jeu (est ce vraiment necessaire)
@@ -174,23 +249,29 @@ export class GameService {
             player2_x: 2,
             Box1x:0,
             Box2x:0,
-            
             sx: 0,
             sz: 0,
             zdir: 0.05,
             xangle: 0,
 
+            time: 0,// je vais metter set Intervalle ici
+            end: false,
             }
 
             var l = Math.random();
             if (l < 0.5)
-              room.zdir = -0.05;
-            room.xangle = l *0.1;
+                room.zdir = 50;// techniquement ok
+            //  room.zdir = -0.05;
+            // l * 0.1
+            room.xangle = Math.floor(l * 10) * 10;
+            console.log('l initialisation' + String(l));
 
             var l = this.s.size;
             this.s.set(l , room);// permet de reconnaitre la room a l id
             this.dispo.add(room.id);
             const s = [l, 1];
+            if(room)
+                this.setTimer(room);// je peut pas faire un socket.emit // donc faire comme pour la balle
             return s;
             //client.emit('start', s);
             // renvoit le role et l id de la room

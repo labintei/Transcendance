@@ -49,8 +49,12 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     console.log('START');
+    console.log(ready);
     socket.emit('start_game');
-    socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0]);SetReady()})
+    socket.emit('ball', getId);
+  
+    socket.on('start', (data) => {console.log(data[1]);console.log(data[0]);setRole(data[1]);setId(data[0]);SetReady();console.log(String(ready));})
+ 
     return () => {
       socket.off('start_game');
     }
@@ -59,16 +63,20 @@ export default function PongGame(props: any) {
   
   useEffect(() => {
     socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
-    //socket.on('')
-    //
-    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]);Setz(data[1]);});
+    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]/1000);Setz(data[1] / 1000);});
+    socket.on('newtime', (data) => {console.log('newTime ' + String(data))})
+  
+  
   },[])
 
   // je dois creer une infinite loop ici
   useEffect(() => {
-    if(ready)
-      socket.emit('ball', getId);
-  },[getId])
+    /*if(ready)
+    {*/
+   //   socket.emit('ball', getId);// ne s active pas ici
+  //    socket.emit('timer', getId);// attendre que les deux soit en meme temps; // envoyer le timer toutes les 1 s
+    /*}*/
+  },[])
 
   // envoit un socket pour l initialisation
 

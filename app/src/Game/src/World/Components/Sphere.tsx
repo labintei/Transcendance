@@ -10,6 +10,7 @@ import { StaticReadUsage } from "three";
   y:numb
 }*/
 
+
 // Geometry
 export default function Sphere() {
   
@@ -34,19 +35,34 @@ export default function Sphere() {
   const Updatez_dir:any = useStore((s:any) => s.Updatez_dir);
   const Updatex_angle:any = useStore((s:any) => s.Updatex_angle);
 
+
+  const Getx:any = useStore((s:any) => s.Getx);
+  const Getz:any = useStore((s:any) => s.Getz);
+
+  /*   Getx: (s:any) => (x:number) => {return s.sphere_x},
+  Gety: (s:any) => (z:number) => {return s.sphere_z},*/
+
   const GetID = useStore((state:any) => state.id);
 
+  // x ne semble pas avoir d affluence
   const A = useStore((state:any) => state.sphere_x);
+  // faire une fct get
+  
   const B = useStore((state:any) => state.sphere_z);
+
+  const Setx:any = useStore((s:any)=> s.Setx);
+  const Setz:any = useStore((s:any) => s.Setz)
+
+  
+
 
   useFrame((state, delta) => { 
 
-    if (ready)
-    {
-      ref.current.position.z = A;
+      ref.current.position.x = A;
+      console.log('sphere');
+      console.log(ref.current.position.x);
       ref.current.position.z = B;
-      socket.emit('ball', GetID);
-    }
+      console.log(ref.current.position.z);
   })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow

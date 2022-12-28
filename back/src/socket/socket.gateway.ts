@@ -122,6 +122,16 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     client.emit('newpos', [0,0]);
   }
 
+  @SubscribeMessage('timer')
+  async give_time(client:Socket, data:number)
+  {
+    console.log('time');
+    setInterval(() => {
+      var a = this.gameservice.getTime(data);
+      client.emit('newtime', a);
+
+    }, 100);
+  }
 
   @SubscribeMessage('left')
   async left(client: Socket, c:any)//: Promise<number>
@@ -152,11 +162,33 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @SubscribeMessage('ball')
   async sphere(client: Socket, data:number)
   {
+    // mettre une securitee ici
+    console.log('Sphere ok');
+    // tant que ready
+
+      // ne rentre pas dans SetInterval
+      setInterval(() => {
+       console.log('loop sphere');
+       var a = this.gameservice.sphereroom(data);
+       client.emit('newpos', a);
+      }
+      , 100);//envoit la position de la balle toute les 1 s
+
+
     // socket.emit('ball', [GetID, zdirection, l, xangle]);
-    var a = await this.gameservice.sphereroom(data);
+    
+    
+    //var a = await this.gameservice.sphereroom(data);// doit passer les machins en entier 
+    
+    
+    // j utilise pas set Intervall ici
+
     //console.log(String(a[0]) + " " + String(a[1]));
     //console.log(this.gameservice.sphereroom(data));
-    client.emit('newpos', a);
+    
+    
+    
+    //client.emit('newpos', a);
   }
 
 
