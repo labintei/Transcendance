@@ -10,6 +10,7 @@ import { User } from 'src/entities/user.entity';
 import { match } from "assert";
 import { find } from "rxjs";
 import { getManager } from "typeorm";
+import { SqljsEntityManager } from "typeorm/entity-manager/SqljsEntityManager";
 
 
 // public io: Server = null
@@ -36,6 +37,8 @@ export class Game {
     public zdir: number;
     public xangle: number;
 
+    public time: number;
+
     //Box1_left: () => number;
     //Box1_right: () => number;
     //Setbox1x(num: number): void;
@@ -61,23 +64,28 @@ export class GameService {
     // probleme peut pas faire les emit ici
 
 
-    async sphereroom(id:number): Promise<number[]>
+    sphereroom(id:number): number[]
     {
         if(!this.s.get(id))
+        {
             console.log('N EXISTE PAS');
-        var g = await this.sphere( await this.s.get(id));
+            return [0,0];
+        }
+        var g = this.sphere(this.s.get(id));
         return g;
     }
 
-    async sphere(room:Game): Promise<number[]>
+    sphere(room:Game): number[]
     {
-        console.log("SPHERE")
+        // remttre les colission avec les boxs et autres
+
+        //console.log("SPHERE")
       var width = 2;
 
       var sz = room.sz;
       var sx = room.sx;
 
-      var b1x = room.Box1x  / 10;
+      var b1x = room.Box1x / 10;
       var b2x = room.Box2x / 10;
       
       room.sz += room.zdir;
@@ -89,45 +97,49 @@ export class GameService {
 
 
         // deceleration
-      if (room.zdir > 0.1)
-        room.zdir -= 0.005
-      else (room.zdir < (-0.1))
-        room.zdir += 0.005;
+      if (room.zdir > 100)
+        room.zdir -= 5// 1000 ?
+      else (room.zdir < (-100))
+        room.zdir += 5;// 1000 
   
-      if(sz === (5 - 1) &&
-        sx >= (b1x - width) && 
-        sx <= (b1x + width))
-        room.zdir = -0.3;
-      else(sz === -5 && 
-        sx >= (b2x - width) &&
-        sx <= (b2x + width))
-        room.zdir = +0.3;
+      if(sz/1000 === (5 - 1) &&
+        sx/1000 >= (b1x - width) && 
+        sx/1000 <= (b1x + width))
+        room.zdir = -300;
+      else(sz/1000 === -5 && 
+        sx/1000 >= (b2x - width) &&
+        sx/1000 <= (b2x + width))
+        room.zdir = 300;
         // ne doit pas update dir ici
       //client.emit('updatez_dir', tzdir);
       
       // colision avec les bords
-      if(sx === -5 || sx === 5)
+      if(sx/1000 === -5 || sx/1000 === 5)
       {
         console.log("colision");
         room.xangle *= -1;
       }
-      /*
-      if (sz > 7)
+      
+      if (sz/1000 > 7)
       {
-        console.log("RESET");
+        //console.log("RESET sz > 7");
+        room.sx = 0;
+        room.sz = 0;
         //client.emit('add1'); 
         //client.emit('reset');
         return [0,0];
         //client.emit('newpos', [0,0]);
       }
-      else if(sz < -7)
+      else if(sz/1000 < -7)
       {
-        console.log("RESET");
+        //console.log("RESET sz < 7");
+        room.sx = 0;
+        room.sz = 0;
         //client.emit('add2');
         //client.emit('newpos', [0,0]);
         return [0,0];
-        }*/
-        console.log('gameservice send ' + String(x) + " " + String(y));
+        }
+        //console.log('gameservice send ' + String(x) + " " + String(y));
         return [x,y];
 
       //client.emit('ready');
@@ -146,6 +158,7 @@ export class GameService {
 
     // les questions que je me pose c est qu il faudrait pas que
     // partie soit deja prise alors que la fonction est en cour
+
     async newGame(client:Socket): Promise<number[]>
     {
         console.log('START');
@@ -177,15 +190,16 @@ export class GameService {
             
             sx: 0,
             sz: 0,
-            zdir: 0.05,
+            zdir: 50,
             xangle: 0,
 
+            time : 0,
             }
 
             var l = Math.random();
             if (l < 0.5)
-              room.zdir = -0.05;
-            room.xangle = l *0.1;
+              room.zdir = -50;
+            room.xangle = Math.round(l * 10);
 
             var l = this.s.size;
             this.s.set(l , room);// permet de reconnaitre la room a l id
@@ -211,6 +225,18 @@ export class GameService {
     {
         return this.s.find(id);
     }*/
+
+
+
+    setTimer(id:number)// pas utile pour mettre le timer
+    {
+        var i = setInterval(() => {
+            this.s.get(id).time += 1;
+            console.log('Time ' + String(this.s.get(id).time));// penser a clear l interval
+        }, 1000)
+        //    while(this.s.get(id))
+        
+    }
 
     player1x_right(id:number): number
     {

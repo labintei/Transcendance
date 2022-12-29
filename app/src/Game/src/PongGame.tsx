@@ -8,6 +8,7 @@ import { io, Socket } from "socket.io-client";
 import { StaticReadUsage } from 'three';
 import { convertTypeAcquisitionFromJson, isConstructorDeclaration, setSyntheticLeadingComments } from 'typescript';
 import { off } from 'process';
+import { SocketAddress } from 'net';
 
 
 export interface Game_data {
@@ -47,6 +48,9 @@ export default function PongGame(props: any) {
   const Setz:any = useStore((s:any) => s.Setz);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
+  const GetTime = useStore((s:any)=> s.time);
+  const SetTime:any = useStore((s:any) => s.SetTime);
+
   useEffect(() => {
     console.log('START');
     socket.emit('start_game');
@@ -61,7 +65,8 @@ export default function PongGame(props: any) {
     socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
     //socket.on('')
     //
-    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]);Setz(data[1]);});
+    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]/1000);Setz(data[1]/1000);});
+    socket.on('time', (data) => {SetTime(data)});
   },[])
 
   // je dois creer une infinite loop ici
@@ -77,12 +82,14 @@ export default function PongGame(props: any) {
     {<World/>}
     <div className='score'>
       <div className='elem'>
+      Time:
+      {<div>{GetTime}</div>}
       Score: 
       {/*<div>{getScore[0]} - {getScore[1]}</div>*/}
     </div>
     </div>
 
-    {/*ready === false &&   <Timer nb={3}/>*/}
+    {ready === false && <Timer nb={3}/>}
     {/*  <Menu/>*/}
     </div>
     );

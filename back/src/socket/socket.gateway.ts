@@ -120,6 +120,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log(l[1]);
     client.emit('start', l);
     client.emit('newpos', [0,0]);
+    // je peut lancer le timer ici
+    this.gameservice.setTimer(l[0]);
   }
 
 
@@ -153,10 +155,15 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async sphere(client: Socket, data:number)
   {
     // socket.emit('ball', [GetID, zdirection, l, xangle]);
-    var a = await this.gameservice.sphereroom(data);
+    //var a = await this.gameservice.sphereroom(data);
     //console.log(String(a[0]) + " " + String(a[1]));
     //console.log(this.gameservice.sphereroom(data));
-    client.emit('newpos', a);
+    var i = setInterval(() => {
+      var a = this.gameservice.sphereroom(data);
+      console.log('Ball:');
+      console.log(a);
+      client.emit('newpos', a);
+    }, 1000)
   }
 
 

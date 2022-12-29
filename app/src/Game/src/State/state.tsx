@@ -51,6 +51,8 @@ export const useStore = create((set,get) => {
   angle_x:0,
   zdir:0,
 
+  time: 0,
+
   bgdChoice: 0,
   padColor: "#ffffff",
   ballColor: "#ffffff",
@@ -91,6 +93,9 @@ export const useStore = create((set,get) => {
   Spherex: (numx:number) => set((s:any) => ({sphere_x:numx})),
   Spherey: (numy:number) => set((s:any) => ({spherez:numy})),
   Spherenew: (numx:number, numy:number) => set((s:any) => ({sphere_x:numx,sphere_z:numy})),
+
+
+  setTime: (num:number) => set((s:any) => ({time: num})),
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),
