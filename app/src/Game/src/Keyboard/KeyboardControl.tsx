@@ -7,8 +7,17 @@ const pressed = [false]
 function useKeys(target:any, event:any, up = true) {
   useEffect(() => {
 
+
+/*    var i = setInterval(() => {
+      this.s.get(id).time += 1;
+      console.log('Time ' + String(this.s.get(id).time));// penser a clear l interval
+  }, 1000)
+*/
     const downHandler = (e:any) => {
+      
       if (target.indexOf(e.key) !== -1) {
+        console.log(e.key)
+        console.log(target)
         const isRepeating = !!pressed[e.keyCode]
         pressed[e.keyCode] = true
         if (up || !isRepeating) event(true)

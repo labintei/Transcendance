@@ -75,6 +75,7 @@ export class GameService {
         return g;
     }
 
+
     sphere(room:Game): number[]
     {
         // remttre les colission avec les boxs et autres
@@ -250,12 +251,16 @@ export class GameService {
         return this.s.get(id).Box1x;
     }
 
+    getRoom(id:number): any
+    {
+        return this.s.get(id);
+    }
 
     getBox1(id:number): number
     {
-        var d = this.s.get(id)
-        var num = d.Box1x;
-        return num;
+        if(this.s.get(id))
+            return this.s.get(id).Box1x;
+        return 0;
     }
 
     async player2x_right(id:number) : Promise<number>

@@ -48,6 +48,8 @@ export const useStore = create((set,get) => {
   player2_x: 0,
   player1_x: 0,
 
+  p1x: 0,
+
   angle_x:0,
   zdir:0,
 
@@ -87,7 +89,12 @@ export const useStore = create((set,get) => {
   Updatex_angle: (num:number) => set((s:any)=>({x_angle:num})),
   Updatez_dir: (num:number) => set((s:any)=>({z_dir:num})),
 
-  Player1: (num:number) => set((s:any)=>({player1_x:num})),
+
+  // ne fonctionne pas
+  
+  Player1: (numt:number) => set((s:any)=>({p1x:numt})),
+
+
 
   Player2: (num:number) => set((s:any)=>({player2_x:num})),
   Spherex: (numx:number) => set((s:any) => ({sphere_x:numx})),

@@ -41,14 +41,23 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   const id = useStore((s:any) => s.id);
   
   const getD: any = useStore((state: any) => state.controls);
+  let deltotal = 0;
+
+  const g = useStore((state:any) => state.p1x);
+
 
   useFrame((state, delta) => {
-    if(getD.left === true)
-      socket.emit('left', [role,id]);
-    if(getD.right === true)
-      socket.emit('right', [role,id]);
-    box.current.position.x = data;
-  })
+   // deltotal ++;
+   // if(deltotal % 2 == 0){
+     
+      if(getD.left === true)
+        socket.emit('left', [role,id]);
+      if(getD.right === true)
+        socket.emit('right', [role,id]);
+      
+   // }
+    box.current.position.x = g / 10;
+})
 
   const { scale } = useSpring({
     scale: active ? 1.2 : 1,

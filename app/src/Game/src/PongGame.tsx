@@ -34,7 +34,13 @@ export default function PongGame(props: any) {
 
   const d:any = useStore((s: any) => s.player1Move);
   const so = useStore((state:any) => state.set);
-  const B:any = useStore((s:any)=> s.Player1);// MovePlayer1
+
+
+  // marche po
+  var B:any = useStore((s:any)=> s.Player1);// MovePlayer1
+  
+  
+  
   const c:number = useStore((s:any)=> s.player1_x);
   
   const setRole:any = useStore((s:any)=> s.SetRole);
@@ -59,15 +65,33 @@ export default function PongGame(props: any) {
       socket.off('start_game');
     }
   }, [setId, setRole])
-
+/*
+  const role = useStore((s:any) => s.role);
+  const id = useStore((s:any) => s.id);
   
+
+  const getD: any = useStore((state: any) => state.controls);
+  let deltotal = 0;
+  */
+  //socket.on('box1_x', (data) => {console.log('BOX1 ' + String(data));B(data);});
   useEffect(() => {
-    socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
+    // peut etre trop de messages recu
+    socket.on('box1_x', (data) => {/*console.log(data);*/B(data);});
+    
+    
     //socket.on('')
     //
-    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]/1000);Setz(data[1]/1000);});
+
+ /*     if(getD.left === true)
+        socket.emit('left', [role,id]);
+      if(getD.right === true)
+        socket.emit('right', [role,id]);
+ */     
+    
+
+    socket.on('newpos', (data) => {/*console.log(String(data[0]) + " " + String(data[1]))*/;Setx(data[0]/1000);Setz(data[1]/1000);});
     socket.on('time', (data) => {SetTime(data)});
-  },[])
+  },[B])
 
   // je dois pas creer une infiinnite loop
   useEffect(() => {

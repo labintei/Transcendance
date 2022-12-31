@@ -121,7 +121,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     client.emit('start', l);
     client.emit('newpos', [0,0]);
     // je peut lancer le timer ici
-    this.gameservice.setTimer(l[0]);
+    
+    
+    //this.gameservice.setTimer(l[0]);
   }
 
 
@@ -129,9 +131,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async left(client: Socket, c:any)//: Promise<number>
   {
     //if(await(c[0] === 1))
-    var num = this.gameservice.player1x_left(c[1]);
-    var numbis = await (num/10);
-    client.emit('box1_x', num);
+    var num = await this.gameservice.player1x_left(c[1]);
+    //var numbis = await (num/10);
+    //client.emit('box1_x', num);
+    
+    
     //else
       //client.emit('box2_x', this.gameservice.player2x_left(c[1]));
   }
@@ -141,12 +145,16 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   {
     //if(await(c[0] === 1))
     //{
-      var num = this.gameservice.player1x_right(c[1]);
-      var numbis = await (num/10);
+      var num = await this.gameservice.player1x_right(c[1]);
+      //var numbis = await (num/10);
       console.log('Renvoye  R' + String(num));
-      console.log('Numbis ' + String(numbis));
-      client.emit('box1_x', num);
-    //}
+      //console.log('Numbis ' + String(numbis));
+      
+      
+      //client.emit('box1_x', num);
+    
+    
+      //}
     //else
       //client.emit('box_2', this.gameservice.player2x_right(c[1]));
   }
@@ -162,10 +170,15 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
     var i = setInterval(() => {
       var a = this.gameservice.sphereroom(data);
+      var posBox1 = this.gameservice.getBox1(data);
+      console.log('Box1: ' +  String(posBox1));
       //console.log('Ball:');
       //console.log(a);
+
+      client.emit('box1_x', posBox1);
+      
       client.emit('newpos', a);
-    }, 100)
+    }, 190)
   }
 
 
