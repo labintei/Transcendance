@@ -158,12 +158,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     //var a = await this.gameservice.sphereroom(data);
     //console.log(String(a[0]) + " " + String(a[1]));
     //console.log(this.gameservice.sphereroom(data));
+    console.log('Once');
+
     var i = setInterval(() => {
       var a = this.gameservice.sphereroom(data);
-      console.log('Ball:');
-      console.log(a);
+      //console.log('Ball:');
+      //console.log(a);
       client.emit('newpos', a);
-    }, 1000)
+    }, 100)
   }
 
 

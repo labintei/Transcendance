@@ -69,11 +69,11 @@ export default function PongGame(props: any) {
     socket.on('time', (data) => {SetTime(data)});
   },[])
 
-  // je dois creer une infinite loop ici
+  // je dois pas creer une infiinnite loop
   useEffect(() => {
-    if(ready)
-      socket.emit('ball', getId);
-  },[getId])
+    //if(ready)
+    socket.emit('ball', getId);
+  },[])
 
   // envoit un socket pour l initialisation
 

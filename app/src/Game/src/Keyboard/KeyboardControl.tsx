@@ -68,7 +68,9 @@ export default function KeyBoardControls()
   useKeys(['Escape'], (escape:boolean) =>
   {
       if(escape)
+      {
         socket.emit('escape', [role,id])
+      }
   })
 
   return null;

@@ -45,7 +45,7 @@ export default function Sphere() {
     {
       ref.current.position.z = A;
       ref.current.position.z = B;
-      socket.emit('ball', GetID);
+      //socket.emit('ball', GetID);
     }
   })
   return (
