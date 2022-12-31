@@ -166,9 +166,7 @@ export class GameService {
         if(this.dispo.size === 0)// aucune room dispo
         {*/
             //const us = User.findOneBy({ft_login: (client.request as any).user});
-            
-            
-            
+                  
             const m = new Match();
             
             m.score1 = 0;
@@ -220,14 +218,6 @@ export class GameService {
 
     }
 
-/*
-    get(id): Game
-    {
-        return this.s.find(id);
-    }*/
-
-
-
     setTimer(id:number)// pas utile pour mettre le timer
     {
         var i = setInterval(() => {
@@ -240,13 +230,13 @@ export class GameService {
 
     player1x_right(id:number): number
     {
-        this.s.get(id).Box1x -= 2;
+        this.s.get(id).Box1x += 2;
         return this.s.get(id).Box1x;
     }
 
     player1x_left(id:number): number
     {
-        this.s.get(id).Box1x += 2;
+        this.s.get(id).Box1x -= 2;
         return this.s.get(id).Box1x;
     }
 
@@ -270,14 +260,6 @@ export class GameService {
         //return 0;
     }
 
-    test()
-    {
-        console.log('ok');
-    }
-
-    
-
-
     async endGame(client: Socket, id: number)// je ne sait pas si j implemente directement le score a la fin ou pendant
     {
         const m:Game = this.s.get(id);
@@ -296,7 +278,6 @@ export class GameService {
     {
         this.s.get(id);
     }
-
 
     initBall(roomId: number ) {
         // declare une nouvelle variable

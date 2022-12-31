@@ -36,15 +36,19 @@ export const useStore = create((set,get) => {
     player2_x : 0,
   },
 
+  player1: 0,
+
 
   // Variable socket
   role : 1,//par default
+  
   id : 0,//pardefault
   //room : [0,0],
 
-  sphere_x: 0,// initalisatio
+  sphere_x: 0,
   sphere_z: 0,
   
+  // ? UTILISE POUR LA POSITION DES RAQUETTES
   player2_x: 0,
   player1_x: 0,
 

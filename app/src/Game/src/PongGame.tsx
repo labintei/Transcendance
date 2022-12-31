@@ -28,18 +28,18 @@ export const socket = io(secu_url);
 //{
 export default function PongGame(props: any) {
 
-  //constructor(){
   const getScore:any = useStore((state:any) => state.score);
   const ready = useStore((s:any) => s.gameReady);
 
   const d:any = useStore((s: any) => s.player1Move);
   const so = useStore((state:any) => state.set);
-  const B:any = useStore((s:any)=> s.Player1);// MovePlayer1
+  
+  // ? MOVE PLAYER 1
+  const B:any = useStore((s:any)=> s.Player1);
   const c:number = useStore((s:any)=> s.player1_x);
   
   const setRole:any = useStore((s:any)=> s.SetRole);
   const setId:any = useStore((s:any)=> s.SetId);
-  //}
 
   const getId:any = useStore((s:any)=> s.id);
 
@@ -51,6 +51,16 @@ export default function PongGame(props: any) {
   const GetTime = useStore((s:any)=> s.time);
   const SetTime:any = useStore((s:any) => s.SetTime);
 
+  // useEffect(() => {
+  //   socket.emit('start_eric');
+  // }, [])
+
+  // useEffect(() => {
+  //   socket.on('recu' , () => {console.log('recu')});
+
+  // }, []);
+
+
   useEffect(() => {
     console.log('START');
     socket.emit('start_game');
@@ -61,21 +71,24 @@ export default function PongGame(props: any) {
   }, [setId, setRole])
 
   
+  
   useEffect(() => {
-    socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
-    //socket.on('')
-    //
-    socket.on('newpos', (data) => {console.log(String(data[0]) + " " + String(data[1]));Setx(data[0]/1000);Setz(data[1]/1000);});
-    socket.on('time', (data) => {SetTime(data)});
+    // socket.on('box1_x', (data) => {console.log(String(data));B(Math.round(data)/10);});
+    socket.on('box1_x', (data) => {B(data);});
+    socket.on('newpos', (data) => {Setx(data[0]/1000);Setz(data[1]/1000);});
+    // socket.on('time', (data) => {SetTime(data)});  
+    // return () => {
+    //   socket.close();
+    // };
   },[])
 
-  // je dois pas creer une infiinnite loop
+
+
+  // ? LAUNCHING THE BALL
   useEffect(() => {
-    //if(ready)
+    // if(ready)
     socket.emit('ball', getId);
   },[])
-
-  // envoit un socket pour l initialisation
 
   return (
     <div className="App" tabIndex={0} >

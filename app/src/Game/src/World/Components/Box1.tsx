@@ -27,20 +27,26 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   const player1move:any = useStore((s:any) => s.Player1)
   
   
+  const role = useStore((s:any) => s.role);
+  const id = useStore((s:any) => s.id);
   const data = useStore((s:any) => s.player1_x);
 
-  /*
-  useEffect(() => { 
-    //socket.on('box1_x', (data) => {console.log('box1' + String(data));player1move(data)});
-    
-    socket.on('box1_x', (data) => {console.log(String(data));player1move(data)});//recoit des 1 ...
-    return () => {
-    }
-  }, [player1move])*/
-  
+  useEffect(() => {
 
+    if(getDirection.left === true) {
+      // box.current.position.x -= 0.2
+      socket.emit('left', [role,id]);
+    }
+
+    if(getDirection.right === true) {
+      // box.current.position.x += 0.2
+      socket.emit('right', [role,id]);
+      
+    }
+  }, [])
+  
   useFrame((state, delta) => {
-    box.current.position.x = data;
+    myMesh.current.position.x = data;
   })
 
   const { scale } = useSpring({
