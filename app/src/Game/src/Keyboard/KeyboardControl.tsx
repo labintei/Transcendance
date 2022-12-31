@@ -38,30 +38,27 @@ export default function KeyBoardControls()
   const role = useStore((s:any) => s.role);
   const id = useStore((s:any) => s.id);
   //const box = useStore((s: any) => s.box2)
+  const set = useStore((state: any) => state.set)
+
+  useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, left } })))
+  useKeys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
+  useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
+
+/*
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
     if(left)
     {
-      //console.log('left');
-      //console.log(role);
-      //console.log(id);
       socket.emit('left', [role,id]);
     }
-      //else
-      //socket.emit('end_left', useStore((s:any) => s.data.player1_x));
   })
 
   useKeys(['ArrowRight', 'd', 'D'], (right:boolean) =>
   { 
     if(right)// envoyer le role et l iddelaroom
     {
-      //console.log('right');
-      //console.log(role);
-      //console.log(id);
       socket.emit('right', [role,id])
     }
-        //else
-      //socket.emit('end_right')
 
   })
 
@@ -72,7 +69,7 @@ export default function KeyBoardControls()
         socket.emit('escape', [role,id])
       }
   })
-
+*/
   return null;
 }
 

@@ -83,13 +83,13 @@ export default function PongGame(props: any) {
     <div className='score'>
       <div className='elem'>
       Time:
-      {<div>{GetTime}</div>}
+      {/*<div>{GetTime}</div>*/}
       Score: 
       {/*<div>{getScore[0]} - {getScore[1]}</div>*/}
     </div>
     </div>
 
-    {ready === false && <Timer nb={3}/>}
+    {/*ready === false && <Timer nb={3}/>*/}
     {/*  <Menu/>*/}
     </div>
     );

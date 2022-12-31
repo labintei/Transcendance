@@ -37,9 +37,16 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
     return () => {
     }
   }, [player1move])*/
+  const role = useStore((s:any) => s.role);
+  const id = useStore((s:any) => s.id);
   
+  const getD: any = useStore((state: any) => state.controls);
 
   useFrame((state, delta) => {
+    if(getD.left === true)
+      socket.emit('left', [role,id]);
+    if(getD.right === true)
+      socket.emit('right', [role,id]);
     box.current.position.x = data;
   })
 
