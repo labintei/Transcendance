@@ -34,7 +34,7 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
       status = "Protected"
     }
 
-    props.socket.emit('create', {
+    props.socket.emit('createChannel', {
       name: input?.value,
       password: password,
       status: status,
