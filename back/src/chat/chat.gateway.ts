@@ -80,6 +80,7 @@ export class ChatGateway {
         users: [
           {
             userLogin: client.data.login,
+            status: ChannelUser.Status.JOINED,
             rights: ChannelUser.Rights.OWNER
           }
         ]
