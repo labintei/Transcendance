@@ -31,7 +31,7 @@ function MessageInput(props: MessageInputProps) {
 
             console.log("[DEBUG][%s]", input.value);
 
-            props.socket.emit("message", {
+            props.socket.emit("sendMsg", {
                 content: input.value,
                 channel: props.channelKey,
             },
