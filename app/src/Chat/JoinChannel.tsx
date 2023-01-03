@@ -55,7 +55,7 @@ export default function JoinChannel(props: PopupChildProps) : JSX.Element {
 
   function join(channel : string, key : string | null) {
     console.log("[DEBUG]");
-    props.socket.emit('join', {
+    props.socket.emit('joinChannel', {
       "name": channel,
       "password": key,
     }, (data: any) => {
