@@ -6,7 +6,7 @@ import { Between } from "typeorm";
 
 @Controller('ranking')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class RankingController {
 
   @Get()

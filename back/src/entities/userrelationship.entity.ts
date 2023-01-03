@@ -3,11 +3,11 @@ import { User } from "./user.entity";
 
 const userRelationshipDefaultFilter: FindOptionsSelect<UserRelationship> = {
   owner: {
-		username: true
-	},
+    username: true
+  },
   related: {
-		username: true
-	},
+    username: true
+  },
   status: true
 };
 

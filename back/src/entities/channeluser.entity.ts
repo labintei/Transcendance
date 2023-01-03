@@ -5,20 +5,19 @@ import { Channel } from "./channel.entity";
 const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
   rights: true,
   status: true,
-  statusEnd: true,
+  rightsEnd: true,
   channel: {
-		id: true,
+    id: true,
     status: true,
     name: true
   },
   user: {
-		ft_login: true,
-		username: true,
-		status: true,
-		level: true,
-		xp: true
-	}
-
+    ft_login: true,
+    username: true,
+    status: true,
+    level: true,
+    xp: true
+  }
 };
 
 enum ChannelUserRights {
@@ -45,7 +44,7 @@ export class ChannelUser extends BaseEntity {
 
   @Column({
     type: 'enum',
-		nullable: true,
+    nullable: true,
     enum: ChannelUserRights,
     default: null
   })
@@ -53,14 +52,14 @@ export class ChannelUser extends BaseEntity {
 
   @Column({
     type: 'enum',
-		nullable: true,
+    nullable: true,
     enum: ChannelUserStatus,
     default: null
   })
   status: ChannelUserStatus;
 
-  @Column({ nullable: true })
-  statusEnd: Date;
+  @Column({ nullable: true, default: null })
+  rightsEnd: Date;
 
   @ManyToOne(() => Channel, (chan) => (chan.users), { onDelete: "CASCADE" })
   @JoinColumn({ name: 'channel' })
@@ -70,17 +69,17 @@ export class ChannelUser extends BaseEntity {
   @JoinColumn({ name: 'user' })
   user: User;
 
-	isOwner(): boolean {
-		return this.rights === ChannelUser.Rights.OWNER;
+  isOwner(): boolean {
+    return this.rights === ChannelUser.Rights.OWNER;
   }
 
   isAdmin(): boolean {
-		return this.isOwner()
-			|| this.rights === ChannelUser.Rights.ADMIN;
+    return this.isOwner()
+      || this.rights === ChannelUser.Rights.ADMIN;
   }
 
   canSpeak(): boolean {
-		return this.status === ChannelUser.Status.JOINED;
+    return this.status === ChannelUser.Status.JOINED;
   }
 
 }
@@ -90,4 +89,3 @@ export namespace ChannelUser {
   export import Rights = ChannelUserRights;
   export const defaultFilter = channelUserDefaultFilter;
 }
-

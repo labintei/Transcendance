@@ -59,6 +59,12 @@ export class Channel extends BaseEntity {
     SocketGateway.channelEmit(this, 'updateChannel', channelWithUsers);
   }
 
+  async emitDelete() {
+    if (this.status === Channel.Status.PUBLIC)
+      SocketGateway.getIO().emit('publicList', await Channel.publicList());
+    SocketGateway.channelEmit(this, 'deleteChannel', { id:this.id });
+  }
+
   static async hashPassword(password: string): Promise<string> {
     return bcrypt.hash(password, bcryptSaltRounds);
   }

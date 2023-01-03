@@ -25,7 +25,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }
     );
     client.data.login = user.ft_login;
-		await SocketGateway.userDisconnect(user);
+    await SocketGateway.userDisconnect(user);
     user.socket = client.id;
     user.status = User.Status.ONLINE;
     await user.save();
@@ -35,7 +35,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       SocketGateway.channelEmit(channel, 'updateUser', user);
     console.log('Joining rooms : ');
     console.log(joinedList);
-    SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
+    SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
   }
@@ -56,7 +56,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     const joinedList = await Channel.joinedList(client.data.login);
     console.log('Leaving rooms : ');
     console.log(joinedList);
-    SocketGateway.userLeaveRooms(user, SocketGateway.channelsToRooms(joinedList));
+    SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
     for (let channel of joinedList)
       SocketGateway.channelEmit(channel, 'updateUser', user);
   }
@@ -73,41 +73,29 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
   }
 
-	@SubscribeMessage('pong')
-	async pong(client: Socket) {
-		client.data.pingOK = true;
-	}
+  @SubscribeMessage('pong')
+  async pong(client: Socket) {
+    client.data.pingOK = true;
+  }
 
   public static getIO(): Server {
-		if (!this.io)
-			throw new WsException("Uninitialized socket.io instance.")
-		return this.io;
-	}
+    if (!this.io)
+      throw new WsException("Uninitialized socket.io instance.")
+    return this.io;
+  }
 
-	public static async userEmit(user: User, event: string, content: any): Promise<boolean> {
-		return this.getIO().in(user.socket).emit(event, content);
-	}
+  public static async channelEmit(channel: Channel, event: string, content: any): Promise<boolean> {
+    return this.getIO().in(chanRoomPrefix + channel.id).emit(event, content);
+  }
 
-	public static async channelEmit(channel: Channel, event: string, content: any): Promise<boolean> {
-		return this.getIO().in(chanRoomPrefix + channel.id).emit(event, content);
-	}
-
-	public static async userJoinRooms(user: User, rooms: string|string[]): Promise<void> {
-		return this.getIO().in(user.socket).socketsJoin(rooms);
-	}
-
-	public static async userLeaveRooms(user: User, rooms: string|string[]): Promise<void> {
-		return this.getIO().in(user.socket).socketsLeave(rooms);
-	}
-
-	public static async userDisconnect(user: User): Promise<void> {
+  public static async userDisconnect(user: User): Promise<void> {
     if (!user.socket)
       return;
-		return this.getIO().in(user.socket).disconnectSockets();
-	}
+    return this.getIO().in(user.socket).disconnectSockets();
+  }
 
-	public static channelsToRooms(channels: Channel[]): string[] {
-		return channels.map<string>((chan) => { return chanRoomPrefix + chan.id; });
-	}
+  public static channelsToRooms(channels: Channel[]): string[] {
+    return channels.map<string>((chan) => { return chanRoomPrefix + chan.id; });
+  }
 
 }

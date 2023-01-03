@@ -1,4 +1,5 @@
 import { WebSocketGateway, WebSocketServer, SubscribeMessage, WsException } from '@nestjs/websockets';
+import { stat } from 'fs';
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { ChannelUser } from 'src/entities/channeluser.entity';
@@ -34,9 +35,9 @@ export class ChatGateway {
         if (!recipient)
           throw new WsException("Direct message recipient was not found !");
         message.channel = await Channel.getDirectChannel(recipient, user, false);
-				await message.send();
+        await message.send();
         message.channel = await Channel.getDirectChannel(user, recipient, true);
-				return message.send();
+        return message.send();
       }
       else if (data.channel) {
         const channel = await Channel.findOneBy(data.channel as FindOptionsWhere<Channel>);
@@ -50,7 +51,7 @@ export class ChatGateway {
         } as FindOptionsWhere<ChannelUser>);
         if (!chanUser || !chanUser.canSpeak())
           throw new WsException("You cannot speak in this channel !");
-				return message.send();
+        return message.send();
       }
       else
         throw new WsException("Invalid message submitted");
@@ -84,8 +85,8 @@ export class ChatGateway {
         ]
       });
       delete channel.password;
-      if (channel.status === Channel.Status.PUBLIC)
-        this.io.emit('publicList', await Channel.publicList());
+      this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
+      channel.emitUpdate();
       return channel;
     }
     catch (e) {
@@ -94,8 +95,8 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('editChannel')
-  async alterChannel(client: Socket, data: Channel): Promise<Channel> {
+  @SubscribeMessage('updateChannel')
+  async updateChannel(client: Socket, data: Channel): Promise<Channel> {
     try {
       let altered = false;
       data.id = Number(data.id);
@@ -139,12 +140,42 @@ export class ChatGateway {
       return channel;
     }
     catch (e) {
-      this.err(client, 'editChannel', e.message);
+      this.err(client, 'updateChannel', e.message);
+      return null;
     }
   }
 
-  @SubscribeMessage('join')
-  async join(client: Socket, data: Channel): Promise<ChannelUser> {
+  @SubscribeMessage('deleteChannel')
+  async deleteChannel(client: Socket, data: Channel): Promise<Channel> {
+    try {
+      data.id = Number(data.id);
+      if (!Number.isInteger(data.id) || data.id < 0)
+        throw new WsException("Invalid channel id");
+      let channel = await Channel.findOne({
+        select: Channel.defaultFilter,
+        where: {
+          id: data.id,
+          name: data.name
+        }
+      });
+      if (!channel)
+        throw new WsException("Channel was not found.");
+      const chanUser = await ChannelUser.findOneBy({ channelId: data.id, userLogin: client.data.login });
+      if (!chanUser || !chanUser.isOwner())
+        throw new WsException("You are not the owner of this channel.");
+      await channel.remove();
+      channel.emitDelete();
+      this.io.socketsLeave(SocketGateway.channelsToRooms([channel]));
+      return channel;
+    }
+    catch (e) {
+      this.err(client, 'editChannel', e.message);
+      return null;
+    }
+  }
+
+  @SubscribeMessage('joinChannel')
+  async joinChannel(client: Socket, data: Channel): Promise<ChannelUser> {
     try {
       if (!data.id && !data.name)
         throw new WsException("You must provide the channel id or name.");
@@ -153,6 +184,9 @@ export class ChatGateway {
         throw new WsException("Channel was not found.");
       let chanUser = await ChannelUser.findOne({
         select: ChannelUser.defaultFilter,
+        relations: {
+          user: true
+        },
         where: {
           channelId: channel.id,
           userLogin: client.data.login
@@ -187,6 +221,7 @@ export class ChatGateway {
       else if (channel.status === Channel.Status.PRIVATE)
         throw new WsException("Channel is private, you must be invited by a channel admin to join.");
       chanUser.save();
+      this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
       return chanUser;
     }
@@ -196,8 +231,8 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('leave')
-  async leave(client: Socket, data: Channel): Promise<ChannelUser> {
+  @SubscribeMessage('leaveChannel')
+  async leaveChannel(client: Socket, data: Channel): Promise<ChannelUser> {
     try {
       const channel = await Channel.findOneBy({ id: data.id, name: data.name });
       if (!channel)
@@ -214,10 +249,13 @@ export class ChatGateway {
       if (!chanUser || chanUser.status === ChannelUser.Status.DIRECT_ALTER)
         throw new WsException("User is not a member of this channel.");
       chanUser.status = null;
-      SocketGateway.channelEmit(channel, 'msgs', [channel]);
       if (!chanUser.rights)
-        return chanUser.remove();
-      return chanUser.save();
+        await chanUser.remove();
+      else
+        await chanUser.save();
+      this.io.in(client.id).socketsLeave(SocketGateway.channelsToRooms([channel]));
+      channel.emitUpdate();
+      return chanUser
     }
     catch (e) {
       this.err(client, 'leave', e.message);
@@ -298,25 +336,39 @@ export class ChatGateway {
       const ownChanUser = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
       if (!ownChanUser || !ownChanUser.isAdmin())
         throw new WsException("You are not administrator of this channel.");
-      const other = User.findOneBy({ft_login: data.user.ft_login, username: data.user.username});
+      const other = await User.findOneBy({ft_login: data.user.ft_login, username: data.user.username});
       if (!other)
         throw new WsException("Target user not found.");
       let otherChanUser = await ChannelUser.findOne({
-        relations: {
-          channel: true
-        },
+        select: ChannelUser.defaultFilter,
         where: {
           channel: channel,
-          user: {
-            ft_login: data.user.ft_login,
-            username: data.user.username
-          }
+          user: other
         } as FindOptionsWhere<ChannelUser>
       });
-      if (!otherChanUser)
+      if (!Object.values(ChannelUser.Rights).includes(data.rights))
+        throw new WsException("Invalid new channel user rights.");
+      if (!Object.values(ChannelUser.Status).includes(data.status))
+        throw new WsException("Invalid new channel user status.");
+      const endDate = new Date(data.rightsEnd);
+      if (isNaN(endDate.getTime()))
+        throw new WsException("Invalid new channel user status end date.");
+      if (otherChanUser)
+      {
+        otherChanUser.rights = data.rights;
+        otherChanUser.status = data.status;
+        otherChanUser.rightsEnd = endDate;
+      }
+      else
         otherChanUser = ChannelUser.create({
-
+          channel: channel,
+          user: other,
+          rights: data.rights,
+          status: data.status,
+          rightsEnd: endDate
         });
+      await otherChanUser.save();
+      channel.emitUpdate();
     }
     catch (e) {
       this.err(client, 'setPermissions', e.message);

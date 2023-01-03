@@ -7,7 +7,7 @@ import { UpdateResult } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class UserController
 {
 
@@ -46,17 +46,17 @@ export class UserController
         username: username
       }
     });
-		if (!related)
-			throw new NotFoundException('Username not found.')
-		related.relatedships = await UserRelationship.find({
-			select : {
-				status: true
-			},
-			where: {
-				ownerLogin: req.user,
-				relatedLogin: related.ft_login
-			}
-		});
+    if (!related)
+      throw new NotFoundException('Username not found.')
+    related.relatedships = await UserRelationship.find({
+      select : {
+        status: true
+      },
+      where: {
+        ownerLogin: req.user,
+        relatedLogin: related.ft_login
+      }
+    });
     return related;
   }
 

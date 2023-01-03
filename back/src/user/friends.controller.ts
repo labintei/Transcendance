@@ -6,7 +6,7 @@ import { UserRelationship } from 'src/entities/userrelationship.entity';
 
 @Controller('friends')
 @UseGuards(TransGuard)
-@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
+//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class FriendsController
 {
 
@@ -29,19 +29,19 @@ export class FriendsController
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
     const related = await User.findOne({
-			relations: {
-				relatedships: true
-			},
-			where: { 
-				username: username,
-				relatedships: {
-					ownerLogin: req.user
-				}
-			}
-		});
+      relations: {
+        relatedships: true
+      },
+      where: {
+        username: username,
+        relatedships: {
+          ownerLogin: req.user
+        }
+      }
+    });
     if (!related)
       throw new NotFoundException('Username not found.');
-		if (related)
+    if (related)
     return UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,

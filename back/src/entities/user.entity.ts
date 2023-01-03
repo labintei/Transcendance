@@ -28,15 +28,15 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     },
     status: true
   },
-	channels: {
+  channels: {
     rights: true,
-		status: true,
-		statusEnd: true,
-		channel: {
-			status: true,
-			name: true
-		},
-	}
+    status: true,
+    rightsEnd: true,
+    channel: {
+      status: true,
+      name: true
+    },
+  }
 };
 
 const usernamePattern = new RegExp('^$', );
