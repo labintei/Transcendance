@@ -18,6 +18,7 @@ export class AppService implements OnModuleInit {
     await User.reinitSockets();
   }
 
+  // genere les exemples
   async generateExamples() {
     await User.save([
       {

@@ -121,12 +121,19 @@ function SkyBox() {
   return null;
 }
 
+// changer la position de la Camera si role === 2
+
+
 export default function World(props: any) {
+
+  var camposx = useStore((s:any) => s.cx);
+  var camposy = useStore((s:any) => s.cy);
+  var camposz = useStore((s:any) => s.cz);
 
   const map = useStore((s: any) => s.bgdChoice)
   return (
     <Canvas
-    camera={{ position: [0, 3, 7] }}>
+    camera={{ position: [camposx, camposy, camposz] }}>
     <CameraControls />
     <KeyboardControls />
     <ambientLight intensity={0.5} />

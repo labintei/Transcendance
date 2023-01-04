@@ -49,12 +49,12 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   useFrame((state, delta) => {
    // deltotal ++;
    // if(deltotal % 2 == 0){
-     
+     /*
       if(getD.left === true)
         socket.emit('left', [role,id]);
       if(getD.right === true)
         socket.emit('right', [role,id]);
-      
+     */ 
    // }
     box.current.position.x = g / 10;
 })

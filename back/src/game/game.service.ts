@@ -9,7 +9,7 @@ import { User } from 'src/entities/user.entity';
 
 import { match } from "assert";
 import { find } from "rxjs";
-import { getManager } from "typeorm";
+import { getManager, NoVersionOrUpdateDateColumnError } from "typeorm";
 import { SqljsEntityManager } from "typeorm/entity-manager/SqljsEntityManager";
 
 
@@ -23,8 +23,10 @@ export class Game {
     public nb_player: number;
     public score1: number;
     public score2: number;
+
     public player1: Socket;
     public player2: Socket;
+    
     public player1_x: number;
     public player2_x: number;
     public Box1x: number;
@@ -39,6 +41,8 @@ export class Game {
 
     public time: number;
 
+    public ready: boolean;
+
     //Box1_left: () => number;
     //Box1_right: () => number;
     //Setbox1x(num: number): void;
@@ -51,14 +55,18 @@ export class Game {
 export class GameService {
  
 
+
     // Liste de Game
     public s: Map<number, Game>;
     // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
+    // je vais plutot le mettre sous vector
     public dispo:  Set<number>;
+    //public dispo: Array<number>;
     //public dispo: Map<number, number>;
     constructor(){
         this.s = new Map();
         this.dispo = new Set()
+        //this.dispo = new Array();
     }
 
     // probleme peut pas faire les emit ici
@@ -163,15 +171,10 @@ export class GameService {
     async newGame(client:Socket): Promise<number[]>
     {
         console.log('START');
-        /*
+        
         if(this.dispo.size === 0)// aucune room dispo
-        {*/
-            //const us = User.findOneBy({ft_login: (client.request as any).user});
-            
-            
-            
-            const m = new Match();
-            
+        {            
+            const m = new Match();    
             m.score1 = 0;
             m.score2 = 0;
             m.user1 = await User.findOneBy({ft_login: (client.request as any).user});
@@ -187,39 +190,51 @@ export class GameService {
             player1_x: 1,
             player2_x: 2,
             Box1x:0,
-            Box2x:0,
-            
+            Box2x:0,         
             sx: 0,
             sz: 0,
             zdir: 50,
             xangle: 0,
-
             time : 0,
+            ready: false,
             }
-
             var l = Math.random();
             if (l < 0.5)
               room.zdir = -50;
             room.xangle = Math.round(l * 10);
-
             var l = this.s.size;
-            this.s.set(l , room);// permet de reconnaitre la room a l id
-            this.dispo.add(room.id);
+            this.s.set(l , room);
+            this.dispo.add(l);
             const s = [l, 1];
             return s;
-            //client.emit('start', s);
-            // renvoit le role et l id de la room
-        //}
-        /*else
+        }
+        else
         {
-            const m:Game = this.s.get(this.dispo[0]);
-            m.player2 = client;
-            m.nb_player = 2;
-            this.dispo.delete(this.dispo[0]);
-
-        }*/
+            console.log(this.dispo);
+            var iterator = this.dispo.values();
+            var value = iterator.next().value;
+            var room = this.s.get(value);
+            /*console.log('JOIN other room');
+            console.log(room);*/
+            if(room)
+            {
+                room.ready = true;
+                room.player2 = client;
+                this.dispo.delete(value);
+                return [room.room_id, 2];
+            }
+            return [0,0];
+        }
 
     }
+
+    getReady(id:number): boolean
+    {
+        if(this.s.get(id))
+            return this.s.get(id).ready;
+        return false;
+    }
+
 
 /*
     get(id): Game
@@ -239,6 +254,18 @@ export class GameService {
         
     }
 
+    player2x_right(id:number)
+    {
+        console.log('Box2 right');
+        this.s.get(id).Box2x += 2;
+    }
+
+    player2x_left(id:number)
+    {
+        console.log('Box2 left');
+        this.s.get(id).Box2x -= 2;
+    }
+
     player1x_right(id:number): number
     {
         this.s.get(id).Box1x -= 2;
@@ -251,10 +278,6 @@ export class GameService {
         return this.s.get(id).Box1x;
     }
 
-    getRoom(id:number): any
-    {
-        return this.s.get(id);
-    }
 
     getBox1(id:number): number
     {
@@ -263,17 +286,13 @@ export class GameService {
         return 0;
     }
 
-    async player2x_right(id:number) : Promise<number>
+    getBox2(id:number): number
     {
-        return this.s.get(id).Box2x += 0.2;
-        //return 0;
+        if(this.s.get(id))
+            return this.s.get(id).Box2x;
+        return 0;
     }
 
-    async player2x_left(id:number) : Promise<number>
-    {
-        return this.s.get(id).Box2x -= 0.2;
-        //return 0;
-    }
 
     test()
     {
@@ -296,6 +315,20 @@ export class GameService {
         }
         this.s.delete(id);
     }
+
+    getRoom(id:number): Game
+    {
+        return this.s.get(id);
+    }
+
+    getClients(id:number): Socket[]
+    {
+        if(this.s.get(id))
+            return [this.s.get(id).player1, this.s.get(id).player2];
+        else
+            return [null,null];
+    }
+
 
     async findRoom(id:number)
     {

@@ -2,6 +2,7 @@ import React, { RefObject, useEffect, useRef, useState } from "react"
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
+import { socket } from '../../PongGame'
 
 export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
 
@@ -19,10 +20,19 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
   const myMesh = React.useRef() as RefObject<any>;
   const getDirection: any = useStore((state: any) => state.controls);
 
-  const data = useStore((s:any) => s.player2_x);
+  const data = useStore((s:any) => s.p2x);
+  const getD: any = useStore((state: any) => state.controls);
+  const role = useStore((s:any) => s.role);
+  const id = useStore((s:any) => s.id);
 
+  // va l envoyer en double pas bon bail
   useFrame((state, delta) => {
-    box.current.position.x = data
+/*
+    if(getD.left === true)
+      socket.emit('left', [role,id]);
+    if(getD.right === true)
+      socket.emit('right', [role,id]);*/
+    box.current.position.x = data / 10;
   })
 
   const { scale } = useSpring({

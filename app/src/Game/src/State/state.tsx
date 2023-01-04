@@ -2,7 +2,7 @@ import { createRef } from 'react';
 import create from 'zustand';
 import {defaultavatar} from "component/const";
 import { io, Socket } from "socket.io-client";
-import { socket, Game_data } from "../PongGame"
+//import { socket, Game_data } from "../PongGame"
 
 type Profile = {
   uname:string,
@@ -10,6 +10,7 @@ type Profile = {
   rank:number,
   inMatch:boolean
 }
+
 
 // define the store
 export const useStore = create((set,get) => {
@@ -31,14 +32,21 @@ export const useStore = create((set,get) => {
   data: {//je met toute mes init
     id: 0,
     nb_player: 0,
-    player1: socket,
+    player1 : null,
+    //player1: socket,
     player1_x : 0,
     player2_x : 0,
   },
 
+  // position par default
+
+  cx : 0,
+  cy : 3,
+  cz : 7,
+
 
   // Variable socket
-  role : 1,//par default
+  role : 0,//par default
   id : 0,//pardefault
   //room : [0,0],
 
@@ -49,6 +57,7 @@ export const useStore = create((set,get) => {
   player1_x: 0,
 
   p1x: 0,
+  p2x: 0,
 
   angle_x:0,
   zdir:0,
@@ -64,12 +73,19 @@ export const useStore = create((set,get) => {
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
 
+  // ne marcha po
+  Setcx: (num:number) => set((state:any)=>({cx : num})),
+  Setcy: (num:number) => set((state:any)=>({cy : num})),
+  Setcz: (num:number) => set((state:any)=>({cz : num})),
+  getAll: () => this,
 /*  eys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
   
     useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
     return null
   }
 */
+  //Getcamerapos:number[] : (s:any) => {return [s.]};
+
   SetReady: (num:number) => set((s:any)=>({gameReady: true})),
 
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
@@ -93,10 +109,10 @@ export const useStore = create((set,get) => {
   // ne fonctionne pas
   
   Player1: (numt:number) => set((s:any)=>({p1x:numt})),
+  Player2: (numt:number) => set((s:any)=>({p2x:numt})),
 
 
-
-  Player2: (num:number) => set((s:any)=>({player2_x:num})),
+  //Player2: (num:number) => set((s:any)=>({player2_x:num})),
   Spherex: (numx:number) => set((s:any) => ({sphere_x:numx})),
   Spherey: (numy:number) => set((s:any) => ({spherez:numy})),
   Spherenew: (numx:number, numy:number) => set((s:any) => ({sphere_x:numx,sphere_z:numy})),

@@ -42,17 +42,24 @@ export class AuthController
   @Get('42')
   @UseGuards(Oauth42Guard)
   async loginWith42(@Request() req, @Response({ passthrough: true }) res) {
+    // faire une liste actuelle des user
+    //console.log(await User.find());
+    console.log('LOGIN');
+    //console.log(res);
+    console.log('Il s agit bien du login ' + req.user);
     const redir = req.query.redirectURL;
     if (redir)
       return res.redirect(redir);
     if (req.session === undefined)
       throw new UnauthorizedException("42 API refused connection.");
     const me = await User.findOneBy({ft_login: req.user});
+    // ne creer pas le user au niveau du login
     if (me.status === User.Status.BANNED) {
       req.session.destroy();
       throw new UnauthorizedException("You are banned from this server.");
     }
     req.session.twoFASecret = me.twoFASecret;
+    console.log(User);
     return "Success";
   }
 
@@ -77,6 +84,7 @@ export class AuthController
   @Get('logout')
   @UseGuards(SessionGuard)
   async logout(@Request() req, @Response({ passthrough: true }) res): Promise<any> {
+    console.log('process logout');
     req.session.destroy();
     const redir = req.query.redirectURL;
     if (redir)

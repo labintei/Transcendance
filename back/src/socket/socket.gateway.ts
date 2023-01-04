@@ -27,7 +27,13 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     SocketGateway.io = server;
   }
 
+  // peut prendre une liste d argument
+  // async handleConnection(client: Socket, ...args: any[]){
+
+  //}
+
   async handleConnection(client: Socket) {
+    //console.log('correspond a ' + (client.request as any).user);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     client.data.login = user.ft_login;
 		await SocketGateway.userDisconnect(user);
@@ -52,7 +58,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.ping(client);
   }
 
+
+
   async handleDisconnect(client: Socket) {
+    // ne cherche pas le bon login de base
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     user.socket = null;
     user.status = User.Status.OFFLINE;
@@ -111,73 +120,110 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log('Bien Implementer');
   }
 
+  // ca me le disconnect pour une raison obscure
+
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
+    console.log('Liste User');
+    console.log(await User.find());
     var l = await this.gameservice.newGame(client);// renvoit  une Promise
+    console.log('room id et role ');
     console.log(l);
     console.log(l[0]);
     console.log(l[1]);
+    console.log('On a donc l user ' + (client.request as any).user);
+    console.log('end');
     client.emit('start', l);
-    client.emit('newpos', [0,0]);
-    // je peut lancer le timer ici
-    
-    
-    //this.gameservice.setTimer(l[0]);
+    if(this.gameservice.getReady(l[0]) === true)// si le game et ready et correspond a client2
+    {    
+        console.log('Launch game')// ne correspond pas a data
+        var room = this.gameservice.getClients(l[0]);
+        room[0].emit('recu');
+        room[1].emit('recu');
+
+        var i = setInterval(() => {
+        var a = this.gameservice.sphereroom(l[0]);
+        var posBox1 = this.gameservice.getBox1(l[0]);
+        var posBox2 = this.gameservice.getBox2(l[0]);
+        if(room[0] != null)
+        {
+            room[0].emit('box1_x', posBox1);
+            room[0].emit('box2_x', posBox2);
+            room[0].emit('newpos', a);
+        }
+        if(room[1] != null)
+        {
+          room[1].emit('box1_x', posBox1);
+          room[1].emit('box2_x', posBox2);
+          room[1].emit('newpos', a);
+        }
+        
+       }, 190)
+    }
   }
 
 
   @SubscribeMessage('left')
   async left(client: Socket, c:any)//: Promise<number>
   {
-    //if(await(c[0] === 1))
-    var num = await this.gameservice.player1x_left(c[1]);
-    //var numbis = await (num/10);
-    //client.emit('box1_x', num);
-    
-    
-    //else
-      //client.emit('box2_x', this.gameservice.player2x_left(c[1]));
+    console.log('action')
+    console.log(c);
+    if(c[0] === 1)// si le role correspond a 1
+      this.gameservice.player1x_left(c[1]);
+    if(c[0] === 2)
+    {
+      console.log('ok');
+      this.gameservice.player2x_left(c[1]);
+      console.log(this.gameservice.getBox2(c[1]));
+    } 
   }
 
   @SubscribeMessage('right')
   async right(client: Socket, c:any)//: Promise<number>
   {
-    //if(await(c[0] === 1))
-    //{
-      var num = await this.gameservice.player1x_right(c[1]);
-      //var numbis = await (num/10);
-      console.log('Renvoye  R' + String(num));
-      //console.log('Numbis ' + String(numbis));
-      
-      
-      //client.emit('box1_x', num);
-    
-    
-      //}
-    //else
-      //client.emit('box_2', this.gameservice.player2x_right(c[1]));
+    console.log('action');
+    console.log(c);
+    if(c[0] === 1)
+      this.gameservice.player1x_right(c[1]);
+    if(c[0] === 2)
+    {
+      console.log('ok');
+      this.gameservice.player2x_right(c[1]);
+      console.log(this.gameservice.getBox2(c[1]));
+    }
   }
+
+  // ne devra peut etre pas etre lancer cotee cotee front mais plutot cote front
+
 
   @SubscribeMessage('ball')
   async sphere(client: Socket, data:number)
   {
-    // socket.emit('ball', [GetID, zdirection, l, xangle]);
-    //var a = await this.gameservice.sphereroom(data);
-    //console.log(String(a[0]) + " " + String(a[1]));
-    //console.log(this.gameservice.sphereroom(data));
     console.log('Once');
-
+    var room = this.gameservice.getClients(data);
     var i = setInterval(() => {
+
       var a = this.gameservice.sphereroom(data);
       var posBox1 = this.gameservice.getBox1(data);
-      console.log('Box1: ' +  String(posBox1));
+      var posBox2 = this.gameservice.getBox2(data);
+
+      console.log(posBox2);
+
+      //console.log('Box1: ' +  String(posBox1));
       //console.log('Ball:');
       //console.log(a);
 
+        room[0].emit('box1_x', posBox1);
+        room[0].emit('box2_x', posBox2);
+        room[0].emit('newpos', a);
+
+        room[1].emit('box1_x', posBox1);
+        room[1].emit('box2_x', posBox2);
+        room[1].emit('newpos', a);
+      /*
       client.emit('box1_x', posBox1);
-      
-      client.emit('newpos', a);
+      client.emit('newpos', a);*/
     }, 190)
   }
 
