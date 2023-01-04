@@ -29,6 +29,8 @@ export interface Game_data {
 
 
 //export const socket = io(secu_url);
+//export const s = socket
+
 
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 //console.log('hear');
@@ -117,9 +119,19 @@ export default function PongGame(props: any) {
       //console.log
       SetReady();
       // toujours undefined
-      h1(0);
-      h2(3);
-      h3(7);
+      if(data[1] === 1)
+      {
+        h1(0);
+        h2(3);
+        h3(7);
+      }
+      else
+      {
+        console.log('set camera role 2')
+        h1(0);
+        h2(3);
+        h3(7);
+      }
       
     })// me semble ok
     return () => {

@@ -85,6 +85,7 @@ const CameraControls = () => {
   const controls: any = useRef();
   useFrame((state) => controls.current.update());
 
+  console.log(camera);
   // 3. Initializing the Orbit Control
   return <orbitControls
     ref={controls}
@@ -133,7 +134,7 @@ export default function World(props: any) {
   const map = useStore((s: any) => s.bgdChoice)
   return (
     <Canvas
-    camera={{ position: [camposx, camposy, camposz] }}>
+    camera={{ position: [camposx, camposy, camposz]}}>
     <CameraControls />
     <KeyboardControls />
     <ambientLight intensity={0.5} />
