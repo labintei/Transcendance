@@ -1,6 +1,5 @@
 import React, { useEffect, useState } from 'react';
 import { Socket } from 'socket.io-client';
-import { Message } from './Message';
 import './Chat.css';
 
 interface ChannelMessageProps {
@@ -13,19 +12,24 @@ function ChannelMessage(props: ChannelMessageProps) {
 
   useEffect(() => {
     if (!props.socket) return;
-    props.socket.on('loadMessages', (data) => {
+    props.socket.on('msgs', (data) => {
       setMessages(data);
+      console.log('debug', data);
     });
     console.log('UseEffect ChannelMessage');
-    props.socket.emit('loadMessages', {id: props.channelKey});
-  }, [props.channelKey]);
+    props.socket.emit('getMsgs', {
+      channel: { id: props.channelKey },
+      from: null,
+      count: 10
+    });
+  }, []);
 
   return (
     <div className="messages">
       <p>Chat Message from Channel {props.channelKey}</p>
-      {messages.map((message: Message, index: number) => (
+      {messages.map((message: any, index: number) => (
         <div key={index} className="message">
-          [{message.time.toString()}] {message.sender} : {message.content}
+          [{message.time.toString()}] {message.sender.username} : {message.content}
         </div>
       ))}
     </div>
