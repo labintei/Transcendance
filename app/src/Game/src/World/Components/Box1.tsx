@@ -3,7 +3,9 @@ import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
 
-import { socket } from '../../PongGame'
+//import { socket } from '../../PongGame'
+//import { socket } from '../../../../App' ;
+
 
 export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 

@@ -36,7 +36,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     //console.log('correspond a ' + (client.request as any).user);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     client.data.login = user.ft_login;
-		await SocketGateway.userDisconnect(user);
+		// sinon disconnect le player1
+    //await SocketGateway.userDisconnect(user);
     user.socket = client.id;
     user.status = User.Status.ONLINE;
     await user.save();
@@ -158,7 +159,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           room[1].emit('box2_x', posBox2);
           room[1].emit('newpos', a);
         }
-        
+
        }, 190)
     }
   }

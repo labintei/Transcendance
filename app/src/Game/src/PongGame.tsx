@@ -10,6 +10,9 @@ import { convertTypeAcquisitionFromJson, isConstructorDeclaration, setSyntheticL
 import { off } from 'process';
 import { SocketAddress } from 'net';
 
+// test
+import { socket } from '../../App' ;
+
 
 // je vais utiliser axios pour envoyer le client de Game vers mon user
 import axios from 'axios';
@@ -25,13 +28,18 @@ export interface Game_data {
 }
 
 
-//xport const socket = io(secu_url);
-
+//export const socket = io(secu_url);
 
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 //console.log('hear');
 
-export const socket = io(secu_url);
+//export const socket = io(secu_url);
+
+//export cons
+
+//const options = {};
+//export const s = io(secu_url, options);
+
 
 /*
 export default class C extends React.Component

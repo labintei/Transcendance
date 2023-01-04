@@ -1,7 +1,7 @@
 import React, { useRef , useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import { useStore } from "../../State/state";
-import { socket } from "Game/src/PongGame";
+//import { socket } from "Game/src/PongGame";
 import { StaticReadUsage } from "three";
 
 //interface 
