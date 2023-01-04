@@ -41,6 +41,11 @@ export default function Chat() {
 
     const text = event.target.textContent;
     console.log('loadMessageChannel', text, key);
+    socket.emit('getMsgs', {
+      channel: { id: key },
+      from: null,
+      count: 10
+    });
     setChannelKey(key);
   }
 
