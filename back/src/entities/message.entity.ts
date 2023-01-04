@@ -4,6 +4,7 @@ import { User } from './user.entity';
 import { SocketGateway } from 'src/socket/socket.gateway';
 
 const messageDefaultFilter: FindOptionsSelect<Message> = {
+  id: true,
   time: true,
   content: true,
   sender: {
