@@ -91,10 +91,10 @@ const CameraControls = () => {
     ref={controls}
     args={[camera, domElement]}
     // enableZoom={false}
-    maxAzimuthAngle={Math.PI / 4}
-    maxPolarAngle={Math.PI}
-    minAzimuthAngle={-Math.PI / 4}
-    minPolarAngle={0}
+   // maxAzimuthAngle={Math.PI / 4}
+ //   maxPolarAngle={Math.PI}
+ //   minAzimuthAngle={-Math.PI / 4}
+  //  minPolarAngle={0}
     enableDamping={true}
   />;
 };
@@ -126,10 +126,20 @@ function SkyBox() {
 
 
 export default function World(props: any) {
+  let role = useStore((s:any) => s.role);
+  let camposx = useStore((s:any) => s.cx);
+  let camposy = useStore((s:any) => s.cy);
+  let camposz = useStore((s:any) => s.cz);
+  
+  console.log("role is")
+  console.log(role)
 
-  var camposx = useStore((s:any) => s.cx);
-  var camposy = useStore((s:any) => s.cy);
-  var camposz = useStore((s:any) => s.cz);
+if (role === 2)
+{
+  camposx *= 0
+  camposy = 5
+  camposz = -9
+}
 
   const map = useStore((s: any) => s.bgdChoice)
   return (
