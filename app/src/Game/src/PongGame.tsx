@@ -129,8 +129,8 @@ export default function PongGame(props: any) {
       {
         console.log('set camera role 2')
         h1(0);
-        h2(3);
-        h3(7);
+        h2(5);
+        h3(-9);
       }
       
     })// me semble ok
