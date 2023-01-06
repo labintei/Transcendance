@@ -31,14 +31,6 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   
   const data = useStore((s:any) => s.player1_x);
 
-  /*
-  useEffect(() => { 
-    //socket.on('box1_x', (data) => {console.log('box1' + String(data));player1move(data)});
-    
-    socket.on('box1_x', (data) => {console.log(String(data));player1move(data)});//recoit des 1 ...
-    return () => {
-    }
-  }, [player1move])*/
   const role = useStore((s:any) => s.role);
   const id = useStore((s:any) => s.id);
   

@@ -18,8 +18,6 @@ function useKeys(target:any, event:any, up = true) {
     const downHandler = (e:any) => {
       
       if (target.indexOf(e.key) !== -1) {
-        console.log(e.key)
-        console.log(target)
         const isRepeating = !!pressed[e.keyCode]
         pressed[e.keyCode] = true
         if (up || !isRepeating) event(true)
@@ -58,7 +56,6 @@ export default function KeyBoardControls()
 
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
-    console.log(role);
     if(left)
     {
       socket.emit('left', [role,id]);
@@ -67,7 +64,6 @@ export default function KeyBoardControls()
 
   useKeys(['ArrowRight', 'd', 'D'], (right:boolean) =>
   { 
-    console.log(role);
     if(right)// envoyer le role et l iddelaroom
     {
       socket.emit('right', [role,id])

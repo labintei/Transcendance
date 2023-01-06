@@ -109,16 +109,13 @@ export default function PongGame(props: any) {
 
 
   useEffect(() => {
-    //console.log(sta)
     
     console.log('START');
     socket.emit('start_game');
     socket.on('start', (data) => {
       setRole(data[1]);
       setId(data[0]);
-      //console.log
       SetReady();
-      // toujours undefined
       if(data[1] === 1)
       {
         h1(0);
@@ -127,10 +124,9 @@ export default function PongGame(props: any) {
       }
       else
       {
-        console.log('set camera role 2')
         h1(0);
-        h2(3);
-        h3(7);
+        h2(5);
+        h3(-9);
       }
       
     })// me semble ok
@@ -138,24 +134,14 @@ export default function PongGame(props: any) {
       socket.off('start_game');
     }
   }, [setId, setRole])
-/*
-  const role = useStore((s:any) => s.role);
-  const id = useStore((s:any) => s.id);
-  
 
-  const getD: any = useStore((state: any) => state.controls);
-  let deltotal = 0;
-  */
-  //socket.on('box1_x', (data) => {console.log('BOX1 ' + String(data));B(data);});
   
   useEffect(() => {
-    // peut etre trop de messages recu
-    //console.log(sta);
-    
+
     socket.on('recu', () => {console.log('RECU')});
     socket.on('box1_x', (data) => {B(data);});
     socket.on('box2_x', (data) => {C(data);});
-    socket.on('newpos', (data) => {Setx(data[0]/1000);Setz(data[1]/1000);});
+    socket.on('newpos', (data) => {console.log('position recu ' + data);Setx(data[0]);Setz(data[1]);});
     socket.on('time', (data) => {SetTime(data)});
     
   },[B])

@@ -89,70 +89,79 @@ export class GameService {
         // remttre les colission avec les boxs et autres
 
         //console.log("SPHERE")
-      var width = 2;
-
-      var sz = room.sz;
-      var sx = room.sx;
-
-      var b1x = room.Box1x / 10;
-      var b2x = room.Box2x / 10;
       
-      room.sz += room.zdir;
-      room.sx += room.xangle;
+      // parseFloat
+
+      console.log('New');
+      console.log(room.xangle.toFixed(3));
+      // correspond techniquement a 0.5
+      var width = 0.5;
+
+      /*var sz = Number(room.sz.toFixed(3));
+      var sx = Number(room.sx.toFixed(3));
+
+      var b1x = Number(room.Box1x.toFixed(2));// 2 de precision
+      var b2x = Number(room.Box2x.toFixed(2));// 
+      
+      room.sz += Number(room.zdir.toFixed(3));
+      room.sx += Number(room.xangle.toFixed(3));
 
       var x = room.sx;
-      var y = room.sz;
+      var y = room.sz;*/
+
+    // reprendre le model de variable
+
+        var sz = Math.floor(room.sz);
+        var sx = Math.round(room.sx * 10) / 100;
+        var b2x = Math.round(room.Box2x * 10) / 100;
+        var b1x = Math.round(room.Box1x * 10) / 100;
+
+        room.sx += room.zdir;
+        room.sz += room.zdir;
+
+        console.log('sz ' + sz + ' sx ' + sx + ' b2x ' + b2x + ' b1x ' + b1x);
       //client.emit('newpos', [x, this.s.get(id).sz]);
-
-
         // deceleration
-      if (room.zdir > 100)
-        room.zdir -= 5// 1000 ?
-      else (room.zdir < (-100))
-        room.zdir += 5;// 1000 
-  
-      if(sz/1000 === (5 - 1) &&
-        sx/1000 >= (b1x - width) && 
-        sx/1000 <= (b1x + width))
-        room.zdir = -300;
-      else(sz/1000 === -5 && 
-        sx/1000 >= (b2x - width) &&
-        sx/1000 <= (b2x + width))
-        room.zdir = 300;
-        // ne doit pas update dir ici
-      //client.emit('updatez_dir', tzdir);
-      
-      // colision avec les bords
-      if(sx/1000 === -5 || sx/1000 === 5)
-      {
-        console.log("colision");
-        room.xangle *= -1;
-      }
-      
-      if (sz/1000 > 7)
-      {
-        //console.log("RESET sz > 7");
-        room.sx = 0;
-        room.sz = 0;
-        //client.emit('add1'); 
-        //client.emit('reset');
-        return [0,0];
-        //client.emit('newpos', [0,0]);
-      }
-      else if(sz/1000 < -7)
-      {
-        //console.log("RESET sz < 7");
-        room.sx = 0;
-        room.sz = 0;
-        //client.emit('add2');
-        //client.emit('newpos', [0,0]);
-        return [0,0];
-        }
-        //console.log('gameservice send ' + String(x) + " " + String(y));
-        return [x,y];
+      if(room.zdir > 0.1)
+        room.zdir -= 0.005;
+      if(room.zdir < (-0.1))
+        room.zdir += 0.005;
 
-      //client.emit('ready');
+        
+    if(sz === (5 - 1) &&
+        (sx >= (b1x - width) && 
+        sx <= (b1x + width)))
+    {
+        console.log('collision');
+        room.zdir = -0.3;// corresond a box1.z = 5
+    }  
+    if(sz === -5 && 
+        (sx >= (b2x - width) &&
+        sx <= (b2x + width)))
+    {
+        console.log('collision');
+        room.zdir = 0.3;// correspond a box2.z = -5
     }
+    var sxint = Math.round(room.sx);
+      if(sx === -5 || sx === 5)
+        room.xangle *= -1;
+      if (sz > 7 || sz < -7)
+      {
+        room.sx = 0;
+        room.sz = 0;
+        var l = Math.random();
+        var side = Math.random();
+        console.log(l);
+        if (l < 0.5)
+          room.zdir = -0.05;
+        room.xangle = l * 0.1;
+        if(side < 0.5)
+            room.xangle *= -1;
+        console.log(room.xangle.toFixed(3));
+        return [0,0];
+      }   
+    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3))];
+}
     
 
 
@@ -193,15 +202,15 @@ export class GameService {
             Box2x:0,         
             sx: 0,
             sz: 0,
-            zdir: 50,
+            zdir: 0.05,
             xangle: 0,
             time : 0,
             ready: false,
             }
             var l = Math.random();
             if (l < 0.5)
-              room.zdir = -50;
-            room.xangle = Math.round(l * 10);
+              room.zdir = -0.05;
+            room.xangle = l * 0.1;
             var l = this.s.size;
             this.s.set(l , room);
             this.dispo.add(l);
@@ -256,25 +265,23 @@ export class GameService {
 
     player2x_right(id:number)
     {
-        console.log('Box2 right');
-        this.s.get(id).Box2x += 2;
+        this.s.get(id).Box2x += 0.2;
     }
 
     player2x_left(id:number)
     {
-        console.log('Box2 left');
-        this.s.get(id).Box2x -= 2;
+        this.s.get(id).Box2x -= 0.2;
     }
 
     player1x_right(id:number): number
     {
-        this.s.get(id).Box1x -= 2;
+        this.s.get(id).Box1x -= 0.2;
         return this.s.get(id).Box1x;
     }
 
     player1x_left(id:number): number
     {
-        this.s.get(id).Box1x += 2;
+        this.s.get(id).Box1x += 0.2;
         return this.s.get(id).Box1x;
     }
 
@@ -282,14 +289,24 @@ export class GameService {
     getBox1(id:number): number
     {
         if(this.s.get(id))
-            return this.s.get(id).Box1x;
+        {
+            //console.log(this.s.get(id).Box1x)
+            //console.log(Number(this.s.get(id).Box1x.toFixed(1)));// les deux marches
+            //console.log(Number(this.s.get(id).Box1x.toPrecision(2)));// les deux marches (left and right digits)
+            //return(Number(this.s.get(id).Box1x.toPrecision(2)));
+            return (Number(this.s.get(id).Box1x.toFixed(1)));
+        }
         return 0;
     }
 
     getBox2(id:number): number
     {
         if(this.s.get(id))
-            return this.s.get(id).Box2x;
+        {
+            //console.log(this.s.get(id).Box2x)
+            //return this.s.get(id).Box2x;
+            return (Number(this.s.get(id).Box2x.toFixed(1)));
+        }
         return 0;
     }
 

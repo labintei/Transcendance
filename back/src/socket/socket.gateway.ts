@@ -145,6 +145,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
         var i = setInterval(() => {
         var a = this.gameservice.sphereroom(l[0]);
+        console.log('Envoye ' + a);
         var posBox1 = this.gameservice.getBox1(l[0]);
         var posBox2 = this.gameservice.getBox2(l[0]);
         if(room[0] != null)
@@ -168,31 +169,19 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @SubscribeMessage('left')
   async left(client: Socket, c:any)//: Promise<number>
   {
-    console.log('action')
-    console.log(c);
     if(c[0] === 1)// si le role correspond a 1
       this.gameservice.player1x_left(c[1]);
     if(c[0] === 2)
-    {
-      console.log('ok');
       this.gameservice.player2x_left(c[1]);
-      console.log(this.gameservice.getBox2(c[1]));
-    } 
   }
 
   @SubscribeMessage('right')
   async right(client: Socket, c:any)//: Promise<number>
   {
-    console.log('action');
-    console.log(c);
     if(c[0] === 1)
       this.gameservice.player1x_right(c[1]);
     if(c[0] === 2)
-    {
-      console.log('ok');
       this.gameservice.player2x_right(c[1]);
-      console.log(this.gameservice.getBox2(c[1]));
-    }
   }
 
   // ne devra peut etre pas etre lancer cotee cotee front mais plutot cote front
@@ -206,14 +195,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     var i = setInterval(() => {
 
       var a = this.gameservice.sphereroom(data);
-      var posBox1 = this.gameservice.getBox1(data);
-      var posBox2 = this.gameservice.getBox2(data);
-
-      console.log(posBox2);
-
-      //console.log('Box1: ' +  String(posBox1));
-      //console.log('Ball:');
-      //console.log(a);
+      var posBox1:number = (this.gameservice.getBox1(data));
+      var posBox2:number = (this.gameservice.getBox2(data));
 
         room[0].emit('box1_x', posBox1);
         room[0].emit('box2_x', posBox2);
