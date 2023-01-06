@@ -3,6 +3,9 @@ import axios from 'axios';
 import './LoginPage.css';
 import { Link } from 'react-router-dom';
 
+// rajouter ici
+import { socket } from '../App' ;
+
 enum LogStatus {
   NotLogged,
   twoFA,

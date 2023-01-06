@@ -21,7 +21,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   constructor(
     private gameservice: GameService
-    ) {}
+    ) {}// n utilise pas le meme game service
 
   afterInit(server: Server) {
     SocketGateway.io = server;
@@ -59,10 +59,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     this.ping(client);
   }
 
-
-
   async handleDisconnect(client: Socket) {
-    // ne cherche pas le bon login de base
+    this.gameservice.IsinGame(client);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     user.socket = null;
     user.status = User.Status.OFFLINE;
@@ -126,29 +124,17 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
-    console.log('Liste User');
-    console.log(await User.find());
     var l = await this.gameservice.newGame(client);// renvoit  une Promise
-    console.log('room id et role ');
-    console.log(l);
-    console.log(l[0]);
-    console.log(l[1]);
-    console.log('On a donc l user ' + (client.request as any).user);
-    console.log('end');
     client.emit('start', l);
     if(this.gameservice.getReady(l[0]) === true)// si le game et ready et correspond a client2
-    {    
-        console.log('Launch game')// ne correspond pas a data
+    {
         var room = this.gameservice.getClients(l[0]);
         room[0].emit('recu');
         room[1].emit('recu');
 
-
-        //var i = setInterval(() => {
         var i = setInterval(() => {
-        var a = this.gameservice.sphereroom(l[0]);// peut aussi revoyer box1 box2
-        /*var posBox1 = this.gameservice.getBox1(l[0]);
-        var posBox2 = this.gameservice.getBox2(l[0]);*/
+        var a = this.gameservice.sphereroom(l[0]);
+
         if(room[0] != null)
             room[0].emit('newpos', a);
         if(room[1] != null)
@@ -166,7 +152,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
       this.gameservice.SetTimer(l[0],j);
       this.gameservice.SetRender(l[0],i);
-      // je doit faire des clear Interval ici
     }
   }
 
@@ -194,35 +179,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     if(c[0] === 2)
       this.gameservice.player2x_right(c[1]);
   }
-
-  // ne devra peut etre pas etre lancer cotee cotee front mais plutot cote front
-
-
-  @SubscribeMessage('ball')
-  async sphere(client: Socket, data:number)
-  {
-    console.log('Once');
-    var room = this.gameservice.getClients(data);
-    var i = setInterval(() => {
-
-      var a = this.gameservice.sphereroom(data);
-      var posBox1:number = (this.gameservice.getBox1(data));
-      var posBox2:number = (this.gameservice.getBox2(data));
-
-        room[0].emit('box1_x', posBox1);
-        room[0].emit('box2_x', posBox2);
-        room[0].emit('newpos', a);
-
-        room[1].emit('box1_x', posBox1);
-        room[1].emit('box2_x', posBox2);
-        room[1].emit('newpos', a);
-      /*
-      client.emit('box1_x', posBox1);
-      client.emit('newpos', a);*/
-    }, 190)
-  }
-
-
-
+  
 }
 

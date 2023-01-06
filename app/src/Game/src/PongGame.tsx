@@ -132,17 +132,19 @@ export default function PongGame(props: any) {
     })// me semble ok
     return () => {
       socket.off('start_game');
+      socket.disconnect();
     }
   }, [setId, setRole])
 
   
   useEffect(() => {
     socket.on('newpos', (data) => {Setx(data[0]);Setz(data[1]);B(data[2]);C(data[3]);});
-    socket.on('time', (data) => {SetTime(data)});
+    //socket.on('time', (data) => {SetTime(data)});
     return () => {
-      socket.off('time');
+      //socket.off('time');
       socket.off('newpos');
       socket.emit('endgame');
+      socket.disconnect();
     }
   },[B])
 

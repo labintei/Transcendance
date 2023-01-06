@@ -75,6 +75,45 @@ export class GameService {
     // probleme peut pas faire les emit ici
 
 
+    IsinGame(client:Socket)
+    {
+        console.log('AHHHHHHHHHHHHHHHHHHHHHHH');
+        console.log(this.s);// pourquoi map{0} ici
+        console.log(Object.entries(this.s));
+        
+        for(var [key, value] of this.s.entries())
+        {
+            console.log('Ex1');
+            if(value)
+            {
+                if(value.player1 == client ||
+                    value.player2 == client)
+                {
+                    console.log('EST BIEN DANS GAME');
+                    return true;
+                }
+            }
+        }
+        /*
+        for(var m in this.s)
+        {
+            console.log('Ex2');
+        }
+        this.s.forEach((value:Game, key:number) => {console.log(key + ' ' + value)});
+        
+        for (let [key, value] of this.s) {
+            console.log(key, value);
+        }*/
+/*
+        for (const [key, value] of Object.entries(this.s)) { 
+            console.log(key, value);
+        }*/
+        
+        return false;
+    }
+
+
+
     sphereroom(id:number): number[]
     {
         if(!this.s.get(id))
@@ -150,6 +189,11 @@ export class GameService {
         room.xangle *= -1;
       if (sz > 7 || sz < -7)
       {
+        if(sz > 7)
+            room.score2++;
+        if(sz < -7)
+            room.score1++;
+        console.log('Score 1 : ' + room.score1 + ' Score 2 : ' + room.score2);
         room.sx = 0;
         room.sz = 0;
         var l = Math.random();
@@ -185,7 +229,7 @@ export class GameService {
         console.log('START');
         
         if(this.dispo.size === 0)// aucune room dispo
-        {            
+        {          
             const m = new Match();    
             m.score1 = 0;
             m.score2 = 0;
@@ -342,17 +386,15 @@ export class GameService {
 
 
     async endGame(client: Socket, id: number)// je ne sait pas si j implemente directement le score a la fin ou pendant
-    {
+    {/*
         const m:Game = this.s.get(id);
         const match = await Match.findOneBy({id: id});
-        if(m.nb_player === 1)// si il n y a pas eu de match 
+        if(m.nb_player === 1)
         {
-            match.remove(); // l effacera peut etre tout seule
-            //match = find
-            // efface des dispo et efface le match history associes
+            match.remove();
             this.dispo.delete(id);
         }
-        this.s.delete(id);
+        this.s.delete(id);*/
     }
 
     getRoom(id:number): Game
