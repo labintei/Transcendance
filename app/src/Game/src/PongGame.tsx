@@ -103,7 +103,7 @@ export default function PongGame(props: any) {
 
 
   const GetTime = useStore((s:any)=> s.time);
-  const SetTime:any = useStore((s:any) => s.SetTime);
+  var SetTime:any = useStore((s:any) => s.SetTime);
 
   // je dois donc le faire qu une seule fois
 
@@ -137,13 +137,13 @@ export default function PongGame(props: any) {
 
   
   useEffect(() => {
-
-    socket.on('recu', () => {console.log('RECU')});
-    socket.on('box1_x', (data) => {B(data);});
-    socket.on('box2_x', (data) => {C(data);});
-    socket.on('newpos', (data) => {console.log('position recu ' + data);Setx(data[0]);Setz(data[1]);});
+    socket.on('newpos', (data) => {Setx(data[0]);Setz(data[1]);B(data[2]);C(data[3]);});
     socket.on('time', (data) => {SetTime(data)});
-    
+    return () => {
+      socket.off('time');
+      socket.off('newpos');
+      socket.emit('endgame');
+    }
   },[B])
 
   // je dois pas creer une infiinnite loop
@@ -160,9 +160,9 @@ export default function PongGame(props: any) {
     <div className='score'>
       <div className='elem'>
       Time:
-      {/*<div>{GetTime}</div>*/}
+      {<div>{/*GetTime*/}</div>}
       Score: 
-      {/*<div>{getScore[0]} - {getScore[1]}</div>*/}
+      {<div>{getScore[0]} - {getScore[1]}</div>}
     </div>
     </div>
 

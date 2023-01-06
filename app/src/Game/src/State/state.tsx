@@ -117,8 +117,9 @@ export const useStore = create((set,get) => {
   Spherey: (numy:number) => set((s:any) => ({spherez:numy})),
   Spherenew: (numx:number, numy:number) => set((s:any) => ({sphere_x:numx,sphere_z:numy})),
 
-
-  setTime: (num:number) => set((s:any) => ({time: num})),
+  // Pour le time
+  //addTime: () => set((s:any) => ({s.time: s.time + 1})),
+  SetTime: (num:number) => set((s:any) => ({time: num})),
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),

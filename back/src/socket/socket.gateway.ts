@@ -143,26 +143,37 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         room[0].emit('recu');
         room[1].emit('recu');
 
-        var i = setInterval(() => {
-        var a = this.gameservice.sphereroom(l[0]);
-        console.log('Envoye ' + a);
-        var posBox1 = this.gameservice.getBox1(l[0]);
-        var posBox2 = this.gameservice.getBox2(l[0]);
-        if(room[0] != null)
-        {
-            room[0].emit('box1_x', posBox1);
-            room[0].emit('box2_x', posBox2);
-            room[0].emit('newpos', a);
-        }
-        if(room[1] != null)
-        {
-          room[1].emit('box1_x', posBox1);
-          room[1].emit('box2_x', posBox2);
-          room[1].emit('newpos', a);
-        }
 
-       }, 100)
+        //var i = setInterval(() => {
+        var i = setInterval(() => {
+        var a = this.gameservice.sphereroom(l[0]);// peut aussi revoyer box1 box2
+        /*var posBox1 = this.gameservice.getBox1(l[0]);
+        var posBox2 = this.gameservice.getBox2(l[0]);*/
+        if(room[0] != null)
+            room[0].emit('newpos', a);
+        if(room[1] != null)
+          room[1].emit('newpos', a);
+       }, 100);
+       
+       var time = 0;
+       var j = setInterval(() => {
+        if(room[0] != null)
+          room[0].emit('time', time);
+        if(room[1] != null)
+          room[1].emit('time', time);
+        time++;
+      }, 1000);
+
+      this.gameservice.SetTimer(l[0],j);
+      this.gameservice.SetRender(l[0],i);
+      // je doit faire des clear Interval ici
     }
+  }
+
+  @SubscribeMessage('end_game')
+  async endgame(client:Socket, data:number)
+  {
+    console.log('END GAME');
   }
 
 

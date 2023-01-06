@@ -43,6 +43,9 @@ export class Game {
 
     public ready: boolean;
 
+    public timer: any;
+    public render: any;
+
     //Box1_left: () => number;
     //Box1_right: () => number;
     //Setbox1x(num: number): void;
@@ -119,7 +122,7 @@ export class GameService {
         room.sx += room.zdir;
         room.sz += room.zdir;
 
-        console.log('sz ' + sz + ' sx ' + sx + ' b2x ' + b2x + ' b1x ' + b1x);
+       // console.log('sz ' + sz + ' sx ' + sx + ' b2x ' + b2x + ' b1x ' + b1x);
       //client.emit('newpos', [x, this.s.get(id).sz]);
         // deceleration
       if(room.zdir > 0.1)
@@ -158,9 +161,9 @@ export class GameService {
         if(side < 0.5)
             room.xangle *= -1;
         console.log(room.xangle.toFixed(3));
-        return [0,0];
+        return [0,0, b1x, b2x];
       }   
-    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3))];
+    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
 }
     
 
@@ -206,6 +209,8 @@ export class GameService {
             xangle: 0,
             time : 0,
             ready: false,
+            timer : null,
+            render : null,
             }
             var l = Math.random();
             if (l < 0.5)
@@ -265,37 +270,54 @@ export class GameService {
 
     player2x_right(id:number)
     {
-        this.s.get(id).Box2x += 0.2;
+        this.s.get(id).Box2x += 0.6;
     }
 
     player2x_left(id:number)
     {
-        this.s.get(id).Box2x -= 0.2;
+        this.s.get(id).Box2x -= 0.6;
     }
 
-    player1x_right(id:number): number
+    player1x_right(id:number)
     {
-        this.s.get(id).Box1x -= 0.2;
-        return this.s.get(id).Box1x;
+        this.s.get(id).Box1x -= 0.6;
     }
 
-    player1x_left(id:number): number
+    player1x_left(id:number)
     {
-        this.s.get(id).Box1x += 0.2;
-        return this.s.get(id).Box1x;
+        this.s.get(id).Box1x += 0.6;
     }
 
+    getRender(id:number):any
+    {
+        if(this.s.get(id))
+            return this.s.get(id).render;
+        return null;
+    }
+
+    getTimer(id:number):any
+    {
+        if(this.s.get(id))
+            return this.s.get(id).timer;
+        return null;
+    }
+
+    SetRender(id:number, render:any)
+    {
+        if(this.s.get(id))
+            return this.s.get(id).render = render;
+    }
+
+    SetTimer(id:number, timer:any )
+    {
+        if(this.s.get(id))
+            return this.s.get(id).timer = timer;
+    }
 
     getBox1(id:number): number
     {
         if(this.s.get(id))
-        {
-            //console.log(this.s.get(id).Box1x)
-            //console.log(Number(this.s.get(id).Box1x.toFixed(1)));// les deux marches
-            //console.log(Number(this.s.get(id).Box1x.toPrecision(2)));// les deux marches (left and right digits)
-            //return(Number(this.s.get(id).Box1x.toPrecision(2)));
             return (Number(this.s.get(id).Box1x.toFixed(1)));
-        }
         return 0;
     }
 
