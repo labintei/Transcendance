@@ -92,10 +92,10 @@ export class GameService {
       
       // parseFloat
 
-      console.log('New');
-      console.log(room.xangle.toFixed(3));
       // correspond techniquement a 0.5
-      var width = 0.5;
+      
+      //var width = 0.5;
+        var width = 1;
 
       /*var sz = Number(room.sz.toFixed(3));
       var sx = Number(room.sx.toFixed(3));
@@ -127,21 +127,21 @@ export class GameService {
       if(room.zdir < (-0.1))
         room.zdir += 0.005;
 
-        
-    if(sz === (5 - 1) &&
-        (sx >= (b1x - width) && 
-        sx <= (b1x + width)))
+    if(sz === (4) &&
+    ((sx >= (b1x - 0.8)) && 
+    (sx <= (b1x + 1.8))))
     {
         console.log('collision');
         room.zdir = -0.3;// corresond a box1.z = 5
     }  
-    if(sz === -5 && 
-        (sx >= (b2x - width) &&
-        sx <= (b2x + width)))
+    if(sz === (-5) && 
+        ((sx >= (b2x - 1.8)) &&
+        (sx <= (b2x + 0.8))))
     {
         console.log('collision');
         room.zdir = 0.3;// correspond a box2.z = -5
     }
+    
     var sxint = Math.round(room.sx);
       if(sx === -5 || sx === 5)
         room.xangle *= -1;

@@ -12,7 +12,7 @@ import { Inject } from '@nestjs/common';
 import { GameService } from 'src/game/game.service';
 
 const chanRoomPrefix = "channel_";
-const pingTimeout = 60000;//10000;
+const pingTimeout = 60000000;//10000;//
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -161,7 +161,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           room[1].emit('newpos', a);
         }
 
-       }, 190)
+       }, 100)
     }
   }
 
@@ -170,7 +170,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async left(client: Socket, c:any)//: Promise<number>
   {
     if(c[0] === 1)// si le role correspond a 1
-      this.gameservice.player1x_left(c[1]);
+      this.gameservice.player1x_right(c[1]);
     if(c[0] === 2)
       this.gameservice.player2x_left(c[1]);
   }
@@ -179,7 +179,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async right(client: Socket, c:any)//: Promise<number>
   {
     if(c[0] === 1)
-      this.gameservice.player1x_right(c[1]);
+      this.gameservice.player1x_left(c[1]);
     if(c[0] === 2)
       this.gameservice.player2x_right(c[1]);
   }
