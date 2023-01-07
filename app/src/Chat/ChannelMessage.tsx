@@ -13,7 +13,7 @@ function ChannelMessage(props: ChannelMessageProps) {
   useEffect(() => {
     if (!props.socket) return;
     props.socket.on('msgs', (data) => {
-      setMessages(data);
+      setMessages(data.reverse());
       console.log('debug', data);
     });
     console.log('UseEffect ChannelMessage');
