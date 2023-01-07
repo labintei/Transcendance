@@ -35,7 +35,13 @@ function MessageInput(props: MessageInputProps) {
                 content: input.value,
                 channel: props.channelKey,
             },
-            (data: any) => {console.log(data)});
+            () => {
+                props.socket?.emit("getMsgs", {
+                    channel: { id: props.channelKey },
+                    from: null,
+                    count: 10
+                })
+            });
             input.value = '';
         }
     }
