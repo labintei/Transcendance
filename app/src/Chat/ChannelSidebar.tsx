@@ -55,6 +55,13 @@ export default function ChannelSidebar(props: ChannelSidebarProps) {
               setFunctionPopup(() => InviteChannel);
               setName(channel.name);
             }}>invite</button>
+            <button onClick={() => {
+              props.socket.emit('leaveChannel', { name: channel.name },
+              () => {
+                props.socket.emit('joinedList');
+              });
+            }}>leave
+            </button>
           </div>
         ))}
 
