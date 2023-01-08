@@ -61,6 +61,7 @@ export class GameService {
 
     // Liste de Game
     public s: Map<number, Game>;
+    public invit: Map<number, Game>;
     // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
     // je vais plutot le mettre sous vector
     public dispo:  Set<number>;
@@ -77,38 +78,27 @@ export class GameService {
 
     IsinGame(client:Socket)
     {
-        console.log('AHHHHHHHHHHHHHHHHHHHHHHH');
+        console.log('End Game');
         console.log(this.s);// pourquoi map{0} ici
         console.log(Object.entries(this.s));
         
         for(var [key, value] of this.s.entries())
         {
-            console.log('Ex1');
             if(value)
             {
                 if(value.player1 == client ||
                     value.player2 == client)
                 {
                     console.log('EST BIEN DANS GAME');
+                    clearInterval(value.render);
+                    clearInterval(value.timer);
+                    var id = value.room_id;
+                    this.dispo.delete(id);
+                    this.s.delete(id);
                     return true;
                 }
             }
         }
-        /*
-        for(var m in this.s)
-        {
-            console.log('Ex2');
-        }
-        this.s.forEach((value:Game, key:number) => {console.log(key + ' ' + value)});
-        
-        for (let [key, value] of this.s) {
-            console.log(key, value);
-        }*/
-/*
-        for (const [key, value] of Object.entries(this.s)) { 
-            console.log(key, value);
-        }*/
-        
         return false;
     }
 
@@ -174,6 +164,8 @@ export class GameService {
     (sx <= (b1x + 1.8))))
     {
         console.log('collision');
+        // xangle
+
         room.zdir = -0.3;// corresond a box1.z = 5
     }  
     if(sz === (-5) && 
@@ -205,7 +197,7 @@ export class GameService {
         if(side < 0.5)
             room.xangle *= -1;
         console.log(room.xangle.toFixed(3));
-        return [0,0, b1x, b2x];
+        return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
       }   
     return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
 }
@@ -229,14 +221,19 @@ export class GameService {
         console.log('START');
         
         if(this.dispo.size === 0)// aucune room dispo
-        {          
+        {
+            // ne pas creer le match ici
+            /*          
             const m = new Match();    
             m.score1 = 0;
             m.score2 = 0;
+            
             m.user1 = await User.findOneBy({ft_login: (client.request as any).user});
+            console.log('User1 ? : ' + m.user1);
             await m.save();
+            */
             var room: Game = {
-            id: m.id,
+            id: 0,
             room_id: this.s.size,
             nb_player: 1,
             score1: 0,
@@ -259,7 +256,7 @@ export class GameService {
             var l = Math.random();
             if (l < 0.5)
               room.zdir = -0.05;
-            room.xangle = l * 0.1;
+            room.xangle = l * 0.5;
             var l = this.s.size;
             this.s.set(l , room);
             this.dispo.add(l);
@@ -267,7 +264,10 @@ export class GameService {
             return s;
         }
         else
-        {
+        {/*
+            user1 = await User.findOneBy({ft_login: (client.request as any).user});
+            if(await User.findOneBy({ft}))*/
+            
             console.log(this.dispo);
             var iterator = this.dispo.values();
             var value = iterator.next().value;

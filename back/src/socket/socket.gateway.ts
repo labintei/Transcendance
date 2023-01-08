@@ -33,40 +33,52 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   //}
 
   async handleConnection(client: Socket) {
-    //console.log('correspond a ' + (client.request as any).user);
+    //console.log(client.handshake.auth);
+    //console.log('Hear');
+    //console.log(client.handshake.query.data);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    client.data.login = user.ft_login;
-		// sinon disconnect le player1
-    //await SocketGateway.userDisconnect(user);
-    user.socket = client.id;
-    user.status = User.Status.ONLINE;
-    await user.save();
-    console.log('Websocket Client Connected : ' + user.ft_login);
-    const joinedList = await Channel.find({
-      relations: {
-        users: true
-      },
-      select: Channel.defaultFilter,
-      where: {
-        users: {
-          userLogin: user.ft_login,
-          joined: true
-        }
-      }
-    });
-    SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
+    
+    console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
+    if(user)
+    {
+      client.data.login = user.ft_login;
+      user.socket = client.id;
+      user.status = User.Status.ONLINE;
+      await user.save();
+      console.log('Websocket Client Connected  ici : ' + user.ft_login);
+      const joinedList = await Channel.find({
+       relations: {
+          users: true
+        },
+        select: Channel.defaultFilter,
+        where: {
+         users: {
+           userLogin: user.ft_login,
+           joined: true
+         }
+        }      
+      });
+      SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
+    }
     client.data.pingOK = true;
     this.ping(client);
+
+    //const c = await User.find();
+    //console.log(c);
   }
 
   async handleDisconnect(client: Socket) {
     this.gameservice.IsinGame(client);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    user.socket = null;
-    user.status = User.Status.OFFLINE;
-    await user.save();
-    console.log('Websocket Client Disconnected : ' + user.ft_login);
-  }
+    console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
+    if(user)
+    {
+      user.socket = null;
+      user.status = User.Status.OFFLINE;
+      await user.save();
+      console.log('Websocket Client Disconnected : ' + user.ft_login);
+    }
+}
 
   async ping(client: Socket) {
     if (!client.data.pingOK)
@@ -178,6 +190,12 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       this.gameservice.player1x_left(c[1]);
     if(c[0] === 2)
       this.gameservice.player2x_right(c[1]);
+  }
+
+
+  @SubscribeMessage('verif')
+  async verif(client:Socket, data:any)
+  {
   }
   
 }

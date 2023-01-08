@@ -21,13 +21,15 @@ const corsOptions = {
 class SessionIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
     const io: Server = super.createIOServer(port, {cors: corsOptions, ...options});
+    
 
     io.use((socket, next) => {
+      // next call apres deconnection
       const req = socket.request as Request;
 
       //  ********** FOR DEVELOPMENT ONLY **********
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      req.user = 'jraffin'; return next();
+      req.user = 'visitor'; return next();
 
       let sessionID;
       if (req.headers.cookie) {
@@ -35,15 +37,19 @@ class SessionIOAdapter extends IoAdapter {
         sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret);
       }
       sessionStore.get(sessionID, (err, session: any) => {
-        if (err)
+        if (err){
           return next(err);
-        if (!session?.passport?.user)
+        }
+        if (!session?.passport?.user){
           return next(new Error('Not logged in : you need to get 42 API authorization.'));
+        }
         req.user = session.passport.user;
-        if (session.twoFASecret)
-        return next(new Error('Partially logged in : you need to validate a 2FA token.'));
+        if (session.twoFASecret){
+          return next(new Error('Partially logged in : you need to validate a 2FA token.'));
+        }
         return next();
       });
+
     });
     return io;
   }

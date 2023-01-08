@@ -34,7 +34,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 		));
     let user = await User.findOneBy({ft_login: data.login});
     if (!user)
-      user = await User.createFrom42Login(data.login, data.image_url);
+      user = await User.createFrom42Login(data.login, data.image_url);// cet endroit la qu il creer le user
     return data.login;
   }
 }
