@@ -25,7 +25,7 @@ class SessionIOAdapter extends IoAdapter {
 
       //  ********** FOR DEVELOPMENT ONLY **********
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      req.user = 'jraffin'; return next();
+      // req.user = 'jraffin'; return next();
 
       let sessionID;
       if (req.headers.cookie) {

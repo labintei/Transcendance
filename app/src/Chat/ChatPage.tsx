@@ -5,7 +5,7 @@ import ChannelSidebar from './ChannelSidebar';
 import MessageInput from './MessageInput';
 
 const backend_url = process.env.REACT_APP_BACKEND_URL || '';
-const socket = io(backend_url);
+const socket = io(backend_url, { withCredentials: true });
 
 export default function Chat() {
   const [channelKey, setChannelKey] = useState(0);
