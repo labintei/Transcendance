@@ -6,14 +6,16 @@ import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 import { io, Socket } from "socket.io-client";
 import axios from 'axios';
 
+import {soc} from './component/LoginPage'
+
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 console.log('once');
-export const socket = io(secu_url);
+//export const socket = io(secu_url);
 
 console.log('Axios request ' );
 //io.on('user');
 
-
+export const socket = soc; 
 // 
 /*
 export const soc = io(secu_url, {

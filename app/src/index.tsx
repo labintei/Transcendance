@@ -13,6 +13,7 @@ import MatchList from './component/MatchHistory';
 import LevelList from './component/LevelList';
 import PongGame from './Game/src/PongGame';
 import LoginPage from 'component/LoginPage';
+import Livematch from 'component/Livematch/Livematch';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -46,6 +47,10 @@ const router = createBrowserRouter([
       {
         path: "game",
         element: <PongGame />,
+      },
+      {
+          path: "lives",
+          element: <Livematch />
       },
     ],
   },

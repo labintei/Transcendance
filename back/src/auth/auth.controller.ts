@@ -5,6 +5,8 @@ import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
 
+import { Socket } from 'socket.io';// rajouter
+
 @Controller('auth')
 export class AuthController
 {
@@ -39,6 +41,30 @@ export class AuthController
   **  http://backend:3000/auth/42?redirectURL=2FA%3FtwoFAToken%3D000000%26redirectURL%3Dhttp%253A%252F%252Ffrontend%253A3080%252FProfile
   **
   */
+  @Get('42')
+  @UseGuards(Oauth42Guard)
+  async loginWith42Socket(@Request() req, client:Socket, @Response({ passthrough: true }) res) {
+    // faire une liste actuelle des user
+    //console.log(await User.find());
+    const redir = req.query.redirectURL;
+    if (redir)
+      return res.redirect(redir);
+    if (req.session === undefined)
+      throw new UnauthorizedException("42 API refused connection.");
+    client.handshake.query.user = req.user; 
+    const me = await User.findOneBy({ft_login: req.user});
+    // ne creer pas le user au niveau du login
+    if (me.status === User.Status.BANNED) {
+      req.session.destroy();
+      throw new UnauthorizedException("You are banned from this server.");
+    }
+    req.session.twoFASecret = me.twoFASecret;
+    //console.log('Res User ' + res.user);
+    //console.log(User);
+    return "Success";
+  }
+
+
   @Get('42')
   @UseGuards(Oauth42Guard)
   async loginWith42(@Request() req, @Response({ passthrough: true }) res) {

@@ -18,10 +18,12 @@ const pingTimeout = 60000000;//10000;//
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
 
   private static io: Server = null;
-
+  public n:number;
   constructor(
     private gameservice: GameService
-    ) {}// n utilise pas le meme game service
+    ) {
+      this.n = 0;
+  }// n utilise pas le meme game service
 
   afterInit(server: Server) {
     SocketGateway.io = server;
@@ -33,9 +35,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   //}
 
   async handleConnection(client: Socket) {
+    this.n++;
+    console.log('Connection ' + this.n);
     //console.log(client.handshake.auth);
     //console.log('Hear');
-    //console.log(client.handshake.query.data);
+    console.log(client.handshake.query);
+    console.log(client.handshake.headers);
+    console.log('HEADER ' + client.handshake.headers);
+    console.log('AUTH ' + client.handshake.query.auth);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     
     console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
@@ -45,7 +52,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       user.socket = client.id;
       user.status = User.Status.ONLINE;
       await user.save();
-      console.log('Websocket Client Connected  ici : ' + user.ft_login);
+      //console.log('Websocket Client Connected  ici : ' + user.ft_login);
       const joinedList = await Channel.find({
        relations: {
           users: true
@@ -68,9 +75,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleDisconnect(client: Socket) {
+    this.n--
+    console.log('Deconnection ' + this.n);
     this.gameservice.IsinGame(client);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
-    console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
+    //console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
     if(user)
     {
       user.socket = null;
