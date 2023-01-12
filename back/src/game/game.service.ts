@@ -60,6 +60,9 @@ export class GameService {
 
 
     // Liste de Game
+    public stream: Map<number, Array<Socket>>;// number correspond a l id de la room Socket aux socket correspondant  
+    // probleme plusieurs fois la meme key
+    // Ce qui va etre enervant c est de push a chaque fois je vais opter pour un Array
     public s: Map<number, Game>;
     public invit: Map<number, Game>;
     // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
@@ -68,12 +71,33 @@ export class GameService {
     //public dispo: Array<number>;
     //public dispo: Map<number, number>;
     constructor(){
+        this.stream = new Map();
         this.s = new Map();
         this.dispo = new Set()
         //this.dispo = new Array();
     }
 
     // probleme peut pas faire les emit ici
+
+
+    Getlist(): Array<[number,string,string]>
+    {
+        let list: Array<[number,string,string]> = []
+
+        for(var [key, value] of this.s.entries())
+        {
+            if(value)
+            {
+                if(value.ready === true)
+                {
+                    var ft_login1 = (value.player1.request as any).user;
+                    var ft_login2 = (value.player2.request as any).user;
+                    list.push([key, ft_login1, ft_login2]);
+                }
+            }
+        }
+        return list;
+    }
 
 
     IsinGame(client:Socket)
@@ -115,6 +139,13 @@ export class GameService {
         return g;
     }
 
+    getPos(data:number): number[]
+    {
+        var room = this.s.get(data);
+        if(room)
+            return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
+        return ([0,0,0,0])// valeur par default tout a 0
+    }
 
     sphere(room:Game): number[]
     {
@@ -414,6 +445,30 @@ export class GameService {
     async findRoom(id:number)
     {
         this.s.get(id);
+    }
+
+    startstream(client:Socket, data:number): boolean
+    {
+        // retourne un booleen si un stream a ete creer ou non
+        //s[0] === client s[1] === room associate devra etre associe a data
+        if(this.stream && this.stream.get(0))// si le stream existe deja
+        {
+            this.stream.get(0).push(client); // ajoute le client a la liste de stream   
+            return false;
+        }
+        else
+        {
+            var i = new Array<Socket>;
+            i.push(client);//
+            this.stream.set(0, i);
+            return true;
+        }// creer le stream
+    }
+
+    getStream(data:number)
+    {
+        if(this.stream)
+            return this.stream.get(data);// par default sera a 0
     }
 
 

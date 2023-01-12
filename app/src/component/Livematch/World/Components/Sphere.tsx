@@ -40,11 +40,8 @@ export default function Sphere() {
   const B = useStore((state:any) => state.sphere_z);
 
   useFrame((state, delta) => { 
-    if(ready)
-    {
       ref.current.position.z = A;
       ref.current.position.z = B;
-    }
   })
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow

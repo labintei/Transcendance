@@ -140,6 +140,12 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log('Bien Implementer');
   }
 
+  @SubscribeMessage('renderstream')
+  async render_stream()
+  {
+
+  }
+
   // ca me le disconnect pour une raison obscure
 
   @SubscribeMessage('start_game')
@@ -150,6 +156,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     if(this.gameservice.getReady(l[0]) === true)// si le game et ready et correspond a client2
     {
         var room = this.gameservice.getClients(l[0]);
+        //var stream = this.gameservice.getStream(l[0]);// met a zero pour l instant
         room[0].emit('recu');
         room[1].emit('recu');
 
@@ -170,9 +177,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
           room[1].emit('time', time);
         time++;
       }, 1000);
-
+      //
       this.gameservice.SetTimer(l[0],j);
       this.gameservice.SetRender(l[0],i);
+      //this.gameservice.GetStream().emit;
     }
   }
 
@@ -205,6 +213,34 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   @SubscribeMessage('verif')
   async verif(client:Socket, data:any)
   {
+  }
+
+  @SubscribeMessage('getlist')
+  async getlist(client:Socket)
+  {
+    client.emit('getlist', this.gameservice.Getlist());
+  }
+
+
+  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
+  {
+    stream.map((s) => {s.emit('pos', data);});
+	}
+
+
+  @SubscribeMessage('startstream')
+  async startstream(client:Socket, data:number)
+  {
+    console.log('StartStream');
+    if(this.gameservice.startstream(client, data))
+    {
+      // je vais creer un render
+      var render_stream;
+      render_stream =  setInterval(() => {
+        SocketGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+      }, 160)
+    }
+    //client.emit('getlist',this.gameservice.Getlist());
   }
   
 }
