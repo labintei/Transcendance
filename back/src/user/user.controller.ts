@@ -13,6 +13,7 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
+    console.log("HEAR CONTROLLER USER");
     const me = await User.find({
       select: User.defaultFilter,
       relations: {

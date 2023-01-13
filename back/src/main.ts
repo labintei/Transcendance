@@ -27,25 +27,23 @@ class SessionIOAdapter extends IoAdapter {
     })
 
     io.use((socket, next) => {
-      // next call apres deconnection
-      //console.log('Request ' + socket.request);// la request n a pas changer
-      //console.log('Handshake ' + socket.handshake.query)
-      console.log("REQ ")
-      console.log(socket.request.headers.cookie);
-      console.log("AS REQUEST ")
-      console.log((socket.request as Request).headers.cookie);
+      console.log('USE');
+      /*
+      console.log('USE');
+      console.log('REQ HANDSHAKE AUTH : ' + (socket.handshake.query.auth));
+      console.log('REQ HANDSHAKE OTHER : ' + (socket.handshake.query.other));
+      console.log('REQ HANDSHAKE HEADERS : ');
+      console.log(socket.handshake.headers);*/
+
       const req = socket.request as Request;
 
       //  ********** FOR DEVELOPMENT ONLY **********
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      console.log('cookie : ');
-      console.log(req.headers.cookie);
       req.user = 'visitor'; return next();
 
       let sessionID;
       console.log('1')
       if (req.headers.cookie) {
-        console.log('Headers cookies ' + req.headers.cookie);
         const cookies = cookie.parse(req.headers.cookie);
         sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret);
       }
@@ -56,7 +54,6 @@ class SessionIOAdapter extends IoAdapter {
         if (!session?.passport?.user){
           return next(new Error('Not logged in : you need to get 42 API authorization.'));
         }
-        console.log('ICI');
         req.user = session.passport.user;
         if (session.twoFASecret){
           return next(new Error('Partially logged in : you need to validate a 2FA token.'));

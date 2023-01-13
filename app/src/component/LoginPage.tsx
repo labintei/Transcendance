@@ -3,91 +3,62 @@ import axios from 'axios';
 import './LoginPage.css';
 import { Link } from 'react-router-dom';
 
-// rajouter ici
-
+// peut etre effaces
+import ReactDOM from "react-dom";
 
 import { io, Socket } from "socket.io-client";
-/*
-import { socket } from '../App' ;
-var j:any;
-var d:any;*/
+import { socket } from 'App';
 
-
-export var c:string = "";
 
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 
-//export const g = io.connect(secu_url);
-//g.on('connect')
+var y = 56;
 
-/*
-export const soc = io(secu_url, {
-  query: {
-    data: {j}},
-  auth: {d}
-})*/
-
-
-// sending credentials section
-/*
-export const soc = io(secu_url, {
-  extraHeaders : {
-    Authorization : "1234"
-  }
-});*/
+var c = {}
 
 export const soc = io(secu_url, {
   withCredentials: true,
-  //rememberUpgrade: true,
-  //transports: ["websocket" , "polling"],// default value
-  // par default the HTTP long polling connection first and then Websocket is attempted 
   extraHeaders: {
-    l : "pizza"
-  },// marche uniquement avec websocket
+    l : "pizza",
+    auth : "",
+  },
   query: {
-    // already inside EIO, transport sid j t
-    auth: {c},
-    test: 42// marche comme ca
+    auth: c,
+    other: {y},
+    test: 42
   }
 })
 
-//soc.io.on("open", () => {})
-
-
-
-// https://sailsjs.com/documentation/reference/web-sockets/socket-client/io-socket-post
 soc.on("connect_error", () => {
-  // revert to classic upgrade
-  console.log('here');
+
+
   soc.io.opts.transports = ["polling", "websocket"];
 });
 
-//soc.on('start_serv_get_c', soc.emit('user', c));
-// ne remplace pas un handshake
 
+//class Compo exte
 
-soc.onAny((event, ...args) => {
-  console.log(event,args);
-})
-
-/*
-soc.on('connect', () => {
-  console.log('connect');
-})*/
-
-
-// reconnect // ping // reconenct error , reconnect_failed
-
-
-/*
-soc.on("reconnect_attempt", () => {
-  console.log("Reconnect attempt")
-})
-*/
-
-type MyState = {
-  auth: number;
+async function getUser()
+{
+  return axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login);
 }
+
+soc.on('connect', async () => {
+  console.log('connect');
+  //var c = "";
+  const donnes = await axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login)
+  const C = getUser();
+  //console.log('REQUEST ');
+  console.log('donnes + : ');
+  console.log(donnes);
+  console.log('C + : ');
+  //console.log(await C);
+  socket.emit('useremit', donnes);
+  //console.log(donnes.)// je dois donc obtemir le promise result
+  //console.log(' C ' + c);
+})
+
+
 
 enum LogStatus {
   NotLogged,
@@ -96,9 +67,12 @@ enum LogStatus {
 }
 
 export default class LoginPage extends React.Component {
+  
+  //const [auth, setauth] = React.useState(0);
+
   state = {
     logged:LogStatus.NotLogged,
-    auth: "",
+    //auth: ,
   }
  
   constructor (props:any) {
@@ -110,19 +84,9 @@ export default class LoginPage extends React.Component {
     }).then(res => {
       console.log('Au niveau du login : ');
       console.log(res.data.ft_login);
-      //soc.auth = res.data.ft_login
+      c = res.data.ft_login
+      console.log(c);
       this.setState({logged:LogStatus.Logged})
-      this.setState({auth:res.data.ft_login})// va le stocker dans le state
-      //this.setState((state,props) => { return {auth: res.data.ft_login};});
-      //console.log(soc.auth);
-      c = res.data.ft_login;
-      //console.log('State ' + this.state.auth);
-      console.log('C ' + c);
-      console.log('state' + this.state.auth)
-      //soc.disconnect().connect();
-      //soc.on('reconnect_attempt', function () {
-      //  soc.io.opts.query = { data: res.data};
-      //});
       soc.emit('verif', res.data.ft_login);
     }).catch(error => {
       console.log(error);

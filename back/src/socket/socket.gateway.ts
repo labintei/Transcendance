@@ -36,16 +36,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   async handleConnection(client: Socket) {
     this.n++;
-    console.log('Connection ' + this.n);
-    //console.log(client.handshake.auth);
-    //console.log('Hear');
-    console.log(client.handshake.query);
-    console.log(client.handshake.headers);
-    console.log('HEADER ' + client.handshake.headers);
-    console.log('AUTH ' + client.handshake.query.auth);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     
-    console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
+    console.log('CONNECTION : ' + (client.request as any).user);
     if(user)
     {
       client.data.login = user.ft_login;
@@ -65,10 +58,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
          }
         }      
       });
-      SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
+      //SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
     }
     client.data.pingOK = true;
     this.ping(client);
+    console.log('ENDCONNECTION');
 
     //const c = await User.find();
     //console.log(c);
@@ -241,6 +235,35 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }, 160)
     }
     //client.emit('getlist',this.gameservice.Getlist());
+  }
+
+  @SubscribeMessage('useremit')
+  async useremit(client:Socket, user:string)
+  {
+    // je vais faire une liste de User
+    var c = await User.find();
+    console.log(c);
+    console.log('HEAR USEREMIT');
+    console.log('USER ' + user);
+
+    //const user = await User.findOneBy({ft_login: (client.request as any).user});
+
+    const l = await  User.findOneBy({ft_login: user})
+
+    if(l)
+    {
+      console.log('ID client ' + client.id);
+      l.socket = client.id;
+    }
+    console.log(l.socket);// id est bien associe au user
+    /*
+    console.log('REQ USER : ' + ((client.request as any).user));
+    console.log('REQ HANDSHAKE AUTH : ' + (client.handshake.query.auth));
+    console.log('REQ HANDSHAKE OTHER : ' + (client.handshake.query.other));
+    console.log('REQ HANDSHAKE HEADERS : ');
+    console.log(client.handshake.headers);
+    console.log('USER RECEIVE : ' + user);
+    */
   }
   
 }

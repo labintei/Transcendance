@@ -6,6 +6,7 @@ import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
 
 import { Socket } from 'socket.io';// rajouter
+import { Console } from 'console';
 
 @Controller('auth')
 export class AuthController
@@ -45,7 +46,7 @@ export class AuthController
   @UseGuards(Oauth42Guard)
   async loginWith42Socket(@Request() req, client:Socket, @Response({ passthrough: true }) res) {
     // faire une liste actuelle des user
-    //console.log(await User.find());
+    console.log("LOG HEAR")
     const redir = req.query.redirectURL;
     if (redir)
       return res.redirect(redir);
@@ -59,8 +60,6 @@ export class AuthController
       throw new UnauthorizedException("You are banned from this server.");
     }
     req.session.twoFASecret = me.twoFASecret;
-    //console.log('Res User ' + res.user);
-    //console.log(User);
     return "Success";
   }
 

@@ -9,13 +9,14 @@ import axios from 'axios';
 import {soc} from './component/LoginPage'
 
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-console.log('once');
+
 //export const socket = io(secu_url);
 
-console.log('Axios request ' );
+
 //io.on('user');
 
 export const socket = soc; 
+export const user = {};
 // 
 /*
 export const soc = io(secu_url, {

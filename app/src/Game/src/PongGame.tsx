@@ -69,7 +69,7 @@ export default function PongGame(props: any) {
 
   const d:any = useStore((s: any) => s.player1Move);
   const so = useStore((state:any) => state.set);
-
+  var isGameFinished = 0; 
 
   // marche po
   var B:any = useStore((s:any)=> s.Player1);// MovePlayer1
@@ -132,7 +132,7 @@ export default function PongGame(props: any) {
     })// me semble ok
     return () => {
       socket.off('start_game');
-      socket.disconnect();
+      //socket.disconnect();
     }
   }, [setId, setRole])
 
@@ -144,7 +144,7 @@ export default function PongGame(props: any) {
       //socket.off('time');
       socket.off('newpos');
       socket.emit('endgame');
-      socket.disconnect();
+      //socket.disconnect();
     }
   },[B])
 
@@ -155,7 +155,9 @@ export default function PongGame(props: any) {
   },[])
 
   // envoit un socket pour l initialisation
-
+  const restartGame = function(){
+    window.location.href = window.location.href;
+  }
   return (
     <div className="App" tabIndex={0} >
     {<World/>}
@@ -167,7 +169,12 @@ export default function PongGame(props: any) {
       {<div>{getScore[0]} - {getScore[1]}</div>}
     </div>
     </div>
-
+    <div className={'endGameContainer ' + (isGameFinished ? "showEndGame" : "")}>
+      <h2>Game Over</h2>
+      <div className='btnRestartGame' onClick={restartGame}>
+        Rejouer
+      </div>
+    </div>
     {/*ready === false && <Timer nb={3}/>*/}
     {/*  <Menu/>*/}
     </div>
