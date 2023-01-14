@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 import axios from 'axios';
 import './LoginPage.css';
-import { Link } from 'react-router-dom';
+import { getLoginContext } from 'WebSocketWrapper';
 
 enum LogStatus {
   NotLogged,
@@ -11,6 +11,8 @@ enum LogStatus {
 
 export default function LoginPage() {
   const [logged, setLogged] = useState<LogStatus>(LogStatus.NotLogged);
+
+  const setLogin = useContext(getLoginContext);
 
   useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
@@ -47,8 +49,10 @@ export default function LoginPage() {
       withCredentials: true
     }).then(() => {
       setLogged(LogStatus.NotLogged);
+      setLogin(false);
     }).catch(error => {
       setLogged(LogStatus.NotLogged);
+      setLogin(false);
       console.log(error);
     });
   }
