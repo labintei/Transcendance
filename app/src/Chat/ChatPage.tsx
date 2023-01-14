@@ -26,13 +26,13 @@ export default function Chat() {
     // This code will run when component unmount
     // need to remove
     return () => {
-      socket.off('ping');
+      // socket.off('ping');
       socket.off('error');
       socket.off('connect');
       socket.off('disconnect');
       socket.off('msg');
       socket.off('getChannels');
-      socket.disconnect();
+      // socket.disconnect();
     };
   }, []);
 
