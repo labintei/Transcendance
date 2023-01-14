@@ -14,6 +14,7 @@ import LevelList from './component/LevelList';
 import PongGame from './Game/src/PongGame';
 import Chat from './Chat/ChatPage';
 import LoginPage from 'component/LoginPage';
+import WebSocketWrapper from 'WebSocketWrapper';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -58,7 +59,9 @@ const router = createBrowserRouter([
 
 root.render(
   // <React.StrictMode>
+  <WebSocketWrapper>
     <RouterProvider router={router} />
+  </WebSocketWrapper>
   // </React.StrictMode>
 );
 
