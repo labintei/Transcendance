@@ -26,14 +26,14 @@ export default function PongGame(props: any) {
   const socket = useContext(getSocketContext);
 
   useEffect(() => {
-    if (socket === undefined)
+    if (socket === undefined || socket.disconnected)
       return ;
     socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
     socket.on('error', () => { console.log('error')});
     console.log(ready)
   }, [ready])
 
-  if (socket === undefined) {
+  if (socket === undefined || socket.disconnected) {
     return (
         <p>You are not logged in.</p>
     );
@@ -45,7 +45,7 @@ export default function PongGame(props: any) {
     <div className="App" tabIndex={0} >
 
       {}
-      {/*<World/>*/}
+      <World/>
     <div className='score'>
       <div className='elem'>
       Score: 
@@ -53,7 +53,7 @@ export default function PongGame(props: any) {
       </div>
     </div>
 
-    {/*ready === false &&   <Timer nb={3}/>*/}
+    ready === false &&   <Timer nb={3}/>
       <Menu/>
     </div>
   );

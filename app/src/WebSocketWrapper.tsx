@@ -17,8 +17,14 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
 
 
   useEffect(() => {
-    if (login === false) {
+    if (login === false && socket === undefined) {
       isLogged();
+      return ;
+    }
+
+    if (login === false) {
+      socket?.disconnect()
+      setSocket(undefined);
       return ;
     }
 

@@ -14,7 +14,7 @@ export default function Chat() {
   const socket = useContext(getSocketContext);
 
   useEffect(() => {
-    if (socket === undefined)
+    if (socket === undefined || socket.disconnected)
         return ;
     socket.on('ping', () => { socket.emit('pong') });
     socket.on('error', () => { console.log('error') });
@@ -36,7 +36,7 @@ export default function Chat() {
     };
   }, []);
 
-  if (socket === undefined) {
+  if (socket === undefined || socket.disconnected) {
     return (
         <p>You are not logged in.</p>
     );
