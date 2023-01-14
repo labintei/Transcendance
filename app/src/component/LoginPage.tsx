@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import './LoginPage.css';
 import { Link } from 'react-router-dom';
@@ -9,67 +9,62 @@ enum LogStatus {
   Logged
 }
 
-export default class LoginPage extends React.Component {
-  state = {logged:LogStatus.NotLogged}
- 
+export default function LoginPage() {
+  const [logged, setLogged] = useState<LogStatus>(LogStatus.NotLogged);
 
-  constructor (props:any) {
-    super(props);
+  useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
-    }).then(res => {
-      this.setState({logged:LogStatus.Logged})
+    }).then(() => {
+      setLogged(LogStatus.Logged);
     }).catch(error => {
-      console.log(error);
+      // console.log(error);
       if (error.status == 401)
-        this.setState({logged:LogStatus.NotLogged})
+        setLogged(LogStatus.NotLogged);
       if (error.status == 403)
-        this.setState({logged:LogStatus.twoFA})
+        setLogged(LogStatus.twoFA);
     });
-  }
+  }, []);
 
-  styleImgAsDiv(src:string) {
+  function styleImgAsDiv(src: string) {
     const divStyle = {
       backgroundImage: 'url(' + src + ')',
     };
     return (divStyle)
   }
 
-  requestLogin() {
+  function requestLogin() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "auth/42", {
       withCredentials: true
-    }).then(res => {
-      
+    }).then(() => {
     }).catch(error => {
       console.log(error);
     });
   }
 
-  requestLogout() {
+  function requestLogout() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "auth/logout", {
       withCredentials: true
-    }).then(res => {
-      this.setState({logged:LogStatus.NotLogged});
+    }).then(() => {
+      setLogged(LogStatus.NotLogged);
     }).catch(error => {
-      this.setState({logged:LogStatus.NotLogged});
+      setLogged(LogStatus.NotLogged);
       console.log(error);
     });
   }
 
-  render() {
-    return (
-        <>
-        { this.state.logged == LogStatus.Logged ?
-          <button onClick={() => this.requestLogout()}>Log Out</button>
-        : (this.state.logged == LogStatus.NotLogged ?
-          <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
-          :
-          <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>
-          )
-        }</>
-
-    )
-  }
+  return (
+    <>
+      { logged == LogStatus.Logged ?
+        <button onClick={() => requestLogout()}>Log Out</button>
+      : logged == LogStatus.NotLogged ?
+        <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
+      : // LogStatus.2FA
+        <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>
+      }
+    </>
+  );
 }
+
 // Intersting icon
 //https://www.iconfinder.com/icons/103676/path_icon
