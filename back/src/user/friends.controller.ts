@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Patch, Put, Request, UseGuards } from '@nestjs/common';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -60,7 +60,7 @@ export class FriendsController
     });
     if (!relationship)
       throw new NotFoundException('No friend found with this username.')
-    relationship.remove();
+    await relationship.remove();
   }
 
 }

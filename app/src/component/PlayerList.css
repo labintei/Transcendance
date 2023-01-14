@@ -3,7 +3,8 @@ list-style: none;
 margin:0; padding:0;
 }
 #person-list {
-height: 480px;
+min-height: 48px;
+margin-bottom: 126px;
 }
 
 #person-list > li{
