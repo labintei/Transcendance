@@ -1,10 +1,11 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import './PongGame.css';
 import Timer from './Timer/timer';
 import World from './World/World';
 import {useStore} from './State/state'
 import Menu from './Menu/menu';
 import { io, Socket } from "socket.io-client";
+import { getSocketContext } from 'WebSocketWrapper';
 
 
 
@@ -17,20 +18,26 @@ export interface Game_data {
   player2_x: number;
 }
 
-const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-export const socket = io(secu_url);
-
 export default function PongGame(props: any) {
-
   const getScore:any = useStore((state:any) => state.score);
   const ready = useStore((s:any) => s.gameReady)
   console.log(props)
 
+  const socket = useContext(getSocketContext);
+
   useEffect(() => {
+    if (socket === undefined)
+      return ;
     socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
     socket.on('error', () => { console.log('error')});
     console.log(ready)
   }, [ready])
+
+  if (socket === undefined) {
+    return (
+        <p>You are not logged in.</p>
+    );
+  }
 
   socket.emit('pong');
 

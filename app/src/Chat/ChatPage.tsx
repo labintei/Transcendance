@@ -1,16 +1,21 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
+import { getSocketContext } from 'WebSocketWrapper';
 import ChannelMessage from './ChannelMessage';
 import ChannelSidebar from './ChannelSidebar';
 import MessageInput from './MessageInput';
 
-const backend_url = process.env.REACT_APP_BACKEND_URL || '';
-const socket = io(backend_url, { withCredentials: true });
+// const backend_url = process.env.REACT_APP_BACKEND_URL || '';
+// const socket = io(backend_url, { withCredentials: true });
 
 export default function Chat() {
   const [channelKey, setChannelKey] = useState(0);
 
+  const socket = useContext(getSocketContext);
+
   useEffect(() => {
+    if (socket === undefined)
+        return ;
     socket.on('ping', () => { socket.emit('pong') });
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
@@ -31,10 +36,11 @@ export default function Chat() {
     };
   }, []);
 
-  function loadChannel() {
-    if (!socket) return;
-    socket.emit('getChannels'); // determine how to get user's name
-  };
+  if (socket === undefined) {
+    return (
+        <p>You are not logged in.</p>
+    );
+  }
 
   const loadMessageChannel = (key : number) => (event : any) => {
     event.preventDefault();
