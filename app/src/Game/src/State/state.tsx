@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import create from 'zustand';
+import { create } from 'zustand';
 import {defaultavatar} from "component/const";
 
 type Profile = {
