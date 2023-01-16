@@ -12,15 +12,17 @@ enum LogStatus {
 export default function LoginPage() {
   const [logged, setLogged] = useState<LogStatus>(LogStatus.NotLogged);
 
-  const setLogin = useContext(getLoginContext);
+  const login = useContext(getLoginContext);
 
   useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
     }).then(() => {
       setLogged(LogStatus.Logged);
+      login.set(true);
     }).catch(error => {
       // console.log(error);
+      login.set(false);
       if (error.status == 401)
         setLogged(LogStatus.NotLogged);
       if (error.status == 403)
@@ -49,10 +51,10 @@ export default function LoginPage() {
       withCredentials: true
     }).then(() => {
       setLogged(LogStatus.NotLogged);
-      setLogin(false);
+      login.set(false);
     }).catch(error => {
       setLogged(LogStatus.NotLogged);
-      setLogin(false);
+      login.set(false);
       console.log(error);
     });
   }

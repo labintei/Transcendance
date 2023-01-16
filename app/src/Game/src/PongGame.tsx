@@ -26,20 +26,18 @@ export default function PongGame(props: any) {
   const socket = useContext(getSocketContext);
 
   useEffect(() => {
-    if (socket === undefined || socket.disconnected)
+    if (!socket.connected)
       return ;
     socket.on('wait_game', () => { console.log('recu');socket.emit('game')});
     socket.on('error', () => { console.log('error')});
     console.log(ready)
   }, [ready])
 
-  if (socket === undefined || socket.disconnected) {
+  if (!socket.connected) {
     return (
         <p>You are not logged in.</p>
     );
   }
-
-  socket.emit('pong');
 
   return (
     <div className="App" tabIndex={0} >

@@ -14,14 +14,12 @@ export default function Chat() {
   const socket = useContext(getSocketContext);
 
   useEffect(() => {
-    if (socket === undefined || socket.disconnected)
+    if (!socket.connected)
         return ;
-    socket.on('ping', () => { socket.emit('pong') });
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
     socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
-    // socket.on('getChannels', (data) => { console.log('channels :', data)}); // move to ChannelSidebar
 
     // This code will run when component unmount
     // need to remove
@@ -36,7 +34,7 @@ export default function Chat() {
     };
   }, []);
 
-  if (socket === undefined || socket.disconnected) {
+  if (!socket.connected) {
     return (
         <p>You are not logged in.</p>
     );
