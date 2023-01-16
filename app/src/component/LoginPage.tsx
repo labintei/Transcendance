@@ -1,12 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 import './LoginPage.css';
-import { Link } from 'react-router-dom';
 
-// peut etre effaces
-import ReactDOM from "react-dom";
-
-import { io, Socket } from "socket.io-client";
+import { io} from "socket.io-client";
 import { socket } from 'App';
 
 
@@ -35,27 +31,9 @@ soc.on("connect_error", () => {
   soc.io.opts.transports = ["polling", "websocket"];
 });
 
-
-//class Compo exte
-
-async function getUser()
-{
-  return axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login);
-}
-
 soc.on('connect', async () => {
-  console.log('connect');
-  //var c = "";
   const donnes = await axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login)
-  const C = getUser();
-  //console.log('REQUEST ');
-  console.log('donnes + : ');
-  console.log(donnes);
-  console.log('C + : ');
-  //console.log(await C);
   socket.emit('useremit', donnes);
-  //console.log(donnes.)// je dois donc obtemir le promise result
-  //console.log(' C ' + c);
 })
 
 
@@ -90,9 +68,9 @@ export default class LoginPage extends React.Component {
       soc.emit('verif', res.data.ft_login);
     }).catch(error => {
       console.log(error);
-      if (error.status == 401)
+      if (error.status === 401)
         this.setState({logged:LogStatus.NotLogged})
-      if (error.status == 403)
+      if (error.status === 403)
         this.setState({logged:LogStatus.twoFA})
     });
   
@@ -120,9 +98,9 @@ export default class LoginPage extends React.Component {
   render() {
     return (
         <>
-        { this.state.logged == LogStatus.Logged ?
+        { this.state.logged === LogStatus.Logged ?
           <button onClick={() => this.requestLogout()}>Log Out</button>
-        : (this.state.logged == LogStatus.NotLogged ?
+        : (this.state.logged === LogStatus.NotLogged ?
           <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
           :
           <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>

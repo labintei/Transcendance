@@ -8,6 +8,6 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 //@Global()
 @Module({
   controllers: [GameController],
-  providers: [GameGateway, GameService/*, SocketGateway*/]
+  providers: [GameGateway, GameService, SocketGateway]
 })
 export class GameModule {}

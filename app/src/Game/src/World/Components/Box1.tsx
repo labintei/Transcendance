@@ -1,55 +1,23 @@
-import React, { RefObject, useEffect, useRef, useState } from "react"
+import React, { RefObject, useState } from "react"
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
 
-//import { socket } from '../../PongGame'
-//import { socket } from '../../../../App' ;
-
-
 export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
-
-  // This reference will give us direct access to the THREE.Mesh object
-  // const ref = useRef<any>(null!)
-
-  // tie ship and camera ref to store to allow getting at them elsewhere
   const box = useStore((s: any) => s.box1)
   const color = useStore((s: any) => s.padColor)
 
-  // Hold state for hovered and clicked events
   const [hovered, hover] = useState(false)
   const [active, setActive] = useState(false);
 
   const myMesh = React.useRef() as RefObject<any>;
 
-  
-  const getDirection: any = useStore((state: any) => state.controls);
-
-  const player1move:any = useStore((s:any) => s.Player1)
-  
-  
-  const data = useStore((s:any) => s.player1_x);
-
-  const role = useStore((s:any) => s.role);
-  const id = useStore((s:any) => s.id);
-  
-  const getD: any = useStore((state: any) => state.controls);
-  let deltotal = 0;
 
   const g = useStore((state:any) => state.p1x);
 
+  useFrame(() => {
 
-  useFrame((state, delta) => {
-   // deltotal ++;
-   // if(deltotal % 2 == 0){
-     /*
-      if(getD.left === true)
-        socket.emit('left', [role,id]);
-      if(getD.right === true)
-        socket.emit('right', [role,id]);
-     */ 
-   // }
     box.current.position.x = g / 10;
 })
 
@@ -58,7 +26,6 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
     config: config.wobbly
   });
 
-//TODO: make a 180° rotation x 
   return (
     <animated.mesh
       scale={scale}

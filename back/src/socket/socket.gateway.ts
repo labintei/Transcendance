@@ -5,9 +5,6 @@ import { User } from 'src/entities/user.entity';
 import { Game } from 'src/game/game.service';
 import { Inject } from '@nestjs/common';
 
-/*
-  A suppr
-*/
 
 import { GameService } from 'src/game/game.service';
 
@@ -22,7 +19,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   constructor(
     private gameservice: GameService
     ) {
-      this.n = 0;
+      
   }// n utilise pas le meme game service
 
   afterInit(server: Server) {
@@ -68,10 +65,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     //console.log(c);
   }
 
-  async handleDisconnect(client: Socket) {
+  async handleDisconnect(client: Socket) {// ne doit pas etre liee au meme game service
     this.n--
     console.log('Deconnection ' + this.n);
-    this.gameservice.IsinGame(client);
+    console.log(this.gameservice.IsinGame(client));
+    this.gameservice.DisconnectionGame(client);
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     //console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
     if(user)
@@ -127,10 +125,34 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 		return channels.map<string>((chan) => { return chanRoomPrefix + chan.id; });
 	}
 
+
+  // je dois le faire ici
+  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
+  {
+    stream.map((s) => {s.emit('pos', data);});
+	}
+
+
+  @SubscribeMessage('startstream')
+  async startstream(client:Socket, data:number)
+  {
+    console.log('StartStream');
+    if(this.gameservice.startstream(client, data))
+    {
+      // je vais creer un render
+      var render_stream;
+      render_stream =  setInterval(() => {
+        SocketGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+      }, 160)
+    }
+    //client.emit('getlist',this.gameservice.Getlist());
+  }
+/*
+
   @SubscribeMessage('testlaulau')
   async marchepo(client:Socket)
   {
-    this.gameservice.test();
+    //this.gameservice.test();
     console.log('Bien Implementer');
   }
 
@@ -140,13 +162,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   }
 
+
   // ca me le disconnect pour une raison obscure
 
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
     var l = await this.gameservice.newGame(client);// renvoit  une Promise
-    client.emit('start', l);
+    client.emit('start', l);// renvoit le role
     if(this.gameservice.getReady(l[0]) === true)// si le game et ready et correspond a client2
     {
         var room = this.gameservice.getClients(l[0]);
@@ -164,7 +187,16 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
        }, 100);
        
        var time = 0;
+       var score = [0,0];
        var j = setInterval(() => {
+        console.log(this.gameservice.IsInside(client));
+
+        var newscore = this.gameservice.getScore(l[0]);
+        if(score != newscore)
+        {
+          room[0].emit('score', newscore);
+          room[1].emit('score', newscore);
+        }
         if(room[0] != null)
           room[0].emit('time', time);
         if(room[1] != null)
@@ -178,10 +210,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     }
   }
 
-  @SubscribeMessage('end_game')
+  @SubscribeMessage('endgame')
   async endgame(client:Socket, data:number)
   {
-    console.log('END GAME');
+    console.log('SOCKET SERVER ON ENDGAME : ' +  this.gameservice.IsinGame(client));
+    this.gameservice.DisconnectionGame(client);
   }
 
 
@@ -216,26 +249,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
 
-  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
-  {
-    stream.map((s) => {s.emit('pos', data);});
-	}
-
-
-  @SubscribeMessage('startstream')
-  async startstream(client:Socket, data:number)
-  {
-    console.log('StartStream');
-    if(this.gameservice.startstream(client, data))
-    {
-      // je vais creer un render
-      var render_stream;
-      render_stream =  setInterval(() => {
-        SocketGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
-      }, 160)
-    }
-    //client.emit('getlist',this.gameservice.Getlist());
-  }
 
   @SubscribeMessage('useremit')
   async useremit(client:Socket, user:string)
@@ -256,15 +269,9 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       l.socket = client.id;
     }
     console.log(l.socket);// id est bien associe au user
-    /*
-    console.log('REQ USER : ' + ((client.request as any).user));
-    console.log('REQ HANDSHAKE AUTH : ' + (client.handshake.query.auth));
-    console.log('REQ HANDSHAKE OTHER : ' + (client.handshake.query.other));
-    console.log('REQ HANDSHAKE HEADERS : ');
-    console.log(client.handshake.headers);
-    console.log('USER RECEIVE : ' + user);
-    */
+
   }
-  
+
+*/  
 }
 

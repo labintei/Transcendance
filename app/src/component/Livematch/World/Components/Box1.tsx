@@ -1,10 +1,8 @@
-import React, { RefObject, useEffect, useRef, useState } from "react"
+import React, { RefObject, useState } from "react"
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
 
-//import { socket } from '../../PongGame'
-//import { socket } from '../../../../App' ;
 
 
 export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
@@ -22,20 +20,6 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
   const [active, setActive] = useState(false);
 
   const myMesh = React.useRef() as RefObject<any>;
-
-  
-  const getDirection: any = useStore((state: any) => state.controls);
-
-  const player1move:any = useStore((s:any) => s.Player1)
-  
-  
-  const data = useStore((s:any) => s.player1_x);
-
-  const role = useStore((s:any) => s.role);
-  const id = useStore((s:any) => s.id);
-  
-  const getD: any = useStore((state: any) => state.controls);
-  let deltotal = 0;
 
   const g = useStore((state:any) => state.p1x);
 

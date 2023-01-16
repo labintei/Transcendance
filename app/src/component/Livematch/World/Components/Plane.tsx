@@ -8,6 +8,7 @@ import {
   TextureLoader,
 } from "three";
 import { useStore } from "../../State/state";
+import * as THREE from 'three'
 import pv_color from "../Textures/Marble/Marble006_1K_Color.png"
 import pv_dipl from "../Textures/Marble/Marble006_1K_Displacement.png"
 import pv_norm from "../Textures/Marble/Marble006_1K_NormalDX.png"
@@ -19,7 +20,7 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
 
   const map = useStore((s: any) => s.bgdChoice)
 
-  const [colorMap, displacementMap, normalMap, roughnessMap] =
+  const [colorMap, normalMap, roughnessMap] =
     useLoader(TextureLoader, [
       pv_color,
       pv_dipl,
@@ -50,6 +51,7 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
   scene.add(cubeCamera);
   // Update the cubeCamera with current renderer and scene.
   useFrame(() => cubeCamera.update(gl, scene));
+  const color_choose = new THREE.Color('rgb(55,6,73)');
   return (
     // <PivotControls>
     <>
@@ -63,10 +65,10 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
           onPointerOut={(event) => hover(false)}>
           <boxGeometry args={[10, 0.5, 10]} />
           <meshBasicMaterial
-            // color={'black'} 
+            color={color_choose} 
             attach="material"
             // mirror effect
-            envMap={cubeCamera.renderTarget.texture}
+            // envMap={cubeCamera.renderTarget.texture}
           />
         </mesh>
       }
@@ -85,6 +87,5 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
         </mesh>
       }
       </>
-    // </PivotControls>
   )
 }

@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef, useState } from "react"
+import React, { RefObject, useState } from "react"
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
@@ -24,7 +24,7 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
 
 
   // va l envoyer en double pas bon bail
-  useFrame((state, delta) => {
+  useFrame(() => {
     box.current.position.x = data / 10;
   })
 

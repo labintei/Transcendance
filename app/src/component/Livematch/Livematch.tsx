@@ -1,4 +1,3 @@
-import axios from 'axios';
 import './Livematch.css';
 import World from './World/World';
 import {useStore} from './State/state';
@@ -39,6 +38,7 @@ export default function Livematch(props:any){
           console.log(data[0]);// va me sortir ma premiere salle
           setRoomList(data);
         }
+        // probleme renvoit un array 0
       });
       //socket.on(get_stream)
       socket.on('pos', (data) => {
@@ -52,7 +52,7 @@ export default function Livematch(props:any){
 
       }
 
-    }, [])
+    }, [B,C,Setx,Setz])
   
       return (
       <div className="App" tabIndex={0} >

@@ -27,7 +27,7 @@ const userDefaultFilter: FindOptionsSelect<User> = {
 
 const usernamePattern = new RegExp('^$', );
 
-enum UserStatus {
+export enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   MATCHING = "Matching",

@@ -2,9 +2,8 @@
 import { CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import * as React from 'react'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
-import Box from './Components/Box1'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ReactThreeFiber } from '@react-three/fiber'
@@ -19,7 +18,7 @@ import i6 from "../World/Components/Skybox/corona_lf.png"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles } from "@react-three/drei";
+import { Sky} from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 

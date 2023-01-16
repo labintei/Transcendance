@@ -4,7 +4,7 @@ import { RouterModule } from "@nestjs/core";
 import { Socket} from "socket.io";
 import session from "express-session";
 import { Match } from 'src/entities/match.entity';
-import { User } from 'src/entities/user.entity';
+import { User, UserStatus } from 'src/entities/user.entity';// j exporte l enum
 
 
 import { match } from "assert";
@@ -57,19 +57,11 @@ export class Game {
 @Injectable()
 export class GameService {
  
-
-
-    // Liste de Game
-    public stream: Map<number, Array<Socket>>;// number correspond a l id de la room Socket aux socket correspondant  
-    // probleme plusieurs fois la meme key
-    // Ce qui va etre enervant c est de push a chaque fois je vais opter pour un Array
+    public stream: Map<number, Array<Socket>>;
     public s: Map<number, Game>;
     public invit: Map<number, Game>;
-    // Liste de Game dispo (dispo et number) // une liste de room id sera suffisant
-    // je vais plutot le mettre sous vector
     public dispo:  Set<number>;
-    //public dispo: Array<number>;
-    //public dispo: Map<number, number>;
+
     constructor(){
         this.stream = new Map();
         this.s = new Map();
@@ -77,28 +69,70 @@ export class GameService {
         //this.dispo = new Array();
     }
 
-    // probleme peut pas faire les emit ici
-
-
     Getlist(): Array<[number,string,string]>
     {
-        let list: Array<[number,string,string]> = []
+        let list: Array<[number,string,string]> = [];
+        if(this.s)
+        {
+            for(var [key, value] of this.s.entries())
+            {
+                if(value)
+                {
+                    if(value.ready === true)
+                    {
+                      var ft_login1 = (value.player1.request as any).user;
+                      var ft_login2 = (value.player2.request as any).user;
+                      list.push([key, ft_login1, ft_login2]);
+                     }
+                }
+            }
+        }
+        return list
+    }
 
+    DisconnectionGame(client:Socket): Socket[]// renvoit les deux clients
+    {
+        console.log('DISCONNECTION GAME');
+        for(var [key, value] of this.s.entries())
+        {
+            console.log(key);
+            console.log(value);
+            if(value)
+            {
+                if(value.player1 == client ||
+                    value.player2 == client)
+                {
+                    var clients = [value.player1,value.player2];
+                    console.log('EST BIEN DANS GAME');
+                    clearInterval(value.render);
+                    clearInterval(value.timer);
+                    var id = value.room_id;
+                    this.dispo.delete(id);
+                    this.s.delete(id);
+                    return clients;
+                }
+            }
+        }
+        return [null,null];
+    }
+
+    IsInside(client:Socket)
+    {
         for(var [key, value] of this.s.entries())
         {
             if(value)
             {
-                if(value.ready === true)
+                if(value.player1 == client ||
+                    value.player2 == client)
                 {
-                    var ft_login1 = (value.player1.request as any).user;
-                    var ft_login2 = (value.player2.request as any).user;
-                    list.push([key, ft_login1, ft_login2]);
+                    console.log('EST BIEN DANS GAME');
+                    return true;
                 }
             }
         }
-        return list;
-    }
+        return false;       
 
+    }
 
     IsinGame(client:Socket)
     {
@@ -139,6 +173,14 @@ export class GameService {
         return g;
     }
 
+    getScore(data:number)
+    {
+        var room = this.s.get(data);
+        if(room)
+            return [room.score1,room.score2];
+        return [0,0];
+    }
+
     getPos(data:number): number[]
     {
         var room = this.s.get(data);
@@ -149,30 +191,7 @@ export class GameService {
 
     sphere(room:Game): number[]
     {
-        // remttre les colission avec les boxs et autres
-
-        //console.log("SPHERE")
-      
-      // parseFloat
-
-      // correspond techniquement a 0.5
-      
-      //var width = 0.5;
         var width = 1;
-
-      /*var sz = Number(room.sz.toFixed(3));
-      var sx = Number(room.sx.toFixed(3));
-
-      var b1x = Number(room.Box1x.toFixed(2));// 2 de precision
-      var b2x = Number(room.Box2x.toFixed(2));// 
-      
-      room.sz += Number(room.zdir.toFixed(3));
-      room.sx += Number(room.xangle.toFixed(3));
-
-      var x = room.sx;
-      var y = room.sz;*/
-
-    // reprendre le model de variable
 
         var sz = Math.floor(room.sz);
         var sx = Math.round(room.sx * 10) / 100;
@@ -182,9 +201,6 @@ export class GameService {
         room.sx += room.zdir;
         room.sz += room.zdir;
 
-       // console.log('sz ' + sz + ' sx ' + sx + ' b2x ' + b2x + ' b1x ' + b1x);
-      //client.emit('newpos', [x, this.s.get(id).sz]);
-        // deceleration
       if(room.zdir > 0.1)
         room.zdir -= 0.005;
       if(room.zdir < (-0.1))
@@ -195,16 +211,14 @@ export class GameService {
     (sx <= (b1x + 1.8))))
     {
         console.log('collision');
-        // xangle
-
-        room.zdir = -0.3;// corresond a box1.z = 5
+        room.zdir = -0.3;
     }  
     if(sz === (-5) && 
         ((sx >= (b2x - 1.8)) &&
         (sx <= (b2x + 0.8))))
     {
         console.log('collision');
-        room.zdir = 0.3;// correspond a box2.z = -5
+        room.zdir = 0.3;
     }
     
     var sxint = Math.round(room.sx);
@@ -232,20 +246,15 @@ export class GameService {
       }   
     return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
 }
-    
+    /*
+    enum UserStatus {
+     ONLINE = "Online",
+     OFFLINE = "Offline",
+     MATCHING = "Matching",
+     PLAYING = "Playing",
+     BANNED = "Banned"
+    }*/
 
-
-    // aimerais rajouter le statut dans Map
-    // j aimerais a la fois pouvoir le trouver avec 
-    //id:status:Game
-    //public sbis: Map<{number, {Game, number}} 
-
-
-    // set(ajoute)get(find)has(bool)size(nombre:game)delete(key)clear()
-    // fait une liste des joueurs en jeu (est ce vraiment necessaire)
-
-    // les questions que je me pose c est qu il faudrait pas que
-    // partie soit deja prise alors que la fonction est en cour
 
     async newGame(client:Socket): Promise<number[]>
     {
@@ -253,16 +262,7 @@ export class GameService {
         
         if(this.dispo.size === 0)// aucune room dispo
         {
-            // ne pas creer le match ici
-            /*          
-            const m = new Match();    
-            m.score1 = 0;
-            m.score2 = 0;
-            
-            m.user1 = await User.findOneBy({ft_login: (client.request as any).user});
-            console.log('User1 ? : ' + m.user1);
-            await m.save();
-            */
+            // PAS CREER LE MATCH ICI
             var room: Game = {
             id: 0,
             room_id: this.s.size,
@@ -284,31 +284,35 @@ export class GameService {
             timer : null,
             render : null,
             }
-            var l = Math.random();
+            var l = Math.random();    
+            const u = await User.findOneBy({socket: client.id});
+            if(u)
+                u.status = UserStatus.MATCHING;// en train de matcher
             if (l < 0.5)
               room.zdir = -0.05;
             room.xangle = l * 0.5;
             var l = this.s.size;
+            // set en dispo et creer la room
             this.s.set(l , room);
             this.dispo.add(l);
             const s = [l, 1];
             return s;
         }
         else
-        {/*
-            user1 = await User.findOneBy({ft_login: (client.request as any).user});
-            if(await User.findOneBy({ft}))*/
-            
+        {           
             console.log(this.dispo);
             var iterator = this.dispo.values();
             var value = iterator.next().value;
             var room = this.s.get(value);
-            /*console.log('JOIN other room');
-            console.log(room);*/
-            if(room)
+            if(room)// creer un cas d errur
             {
                 room.ready = true;
                 room.player2 = client;
+
+                var u1 = await User.findOneBy({socket: room.player1.id});// cherche user1
+                var u2 = await User.findOneBy({socket: room.player2.id});// cherche user2
+                u1 ? u1.status = UserStatus.PLAYING : u1;
+                u2 ? u2.status = UserStatus.PLAYING : u2;
                 this.dispo.delete(value);
                 return [room.room_id, 2];
             }
@@ -408,16 +412,9 @@ export class GameService {
     }
 
 
-    test()
-    {
-        console.log('ok');
-    }
-
-    
-
 
     async endGame(client: Socket, id: number)// je ne sait pas si j implemente directement le score a la fin ou pendant
-    {/*
+    {
         const m:Game = this.s.get(id);
         const match = await Match.findOneBy({id: id});
         if(m.nb_player === 1)
@@ -425,7 +422,7 @@ export class GameService {
             match.remove();
             this.dispo.delete(id);
         }
-        this.s.delete(id);*/
+        this.s.delete(id);
     }
 
     getRoom(id:number): Game
@@ -451,7 +448,7 @@ export class GameService {
     {
         // retourne un booleen si un stream a ete creer ou non
         //s[0] === client s[1] === room associate devra etre associe a data
-        if(this.stream && this.stream.get(0))// si le stream existe deja
+        if(this.stream && this.stream.get(data))// si le stream existe deja
         {
             this.stream.get(0).push(client); // ajoute le client a la liste de stream   
             return false;
@@ -459,8 +456,8 @@ export class GameService {
         else
         {
             var i = new Array<Socket>;
-            i.push(client);//
-            this.stream.set(0, i);
+            i.push(client);
+            this.stream.set(data, i);
             return true;
         }// creer le stream
     }
@@ -469,17 +466,6 @@ export class GameService {
     {
         if(this.stream)
             return this.stream.get(data);// par default sera a 0
-    }
-
-
-    initBall(roomId: number ) {
-        // declare une nouvelle variable
-        //const r = GameService.rooms.find((room) => room.id === roomId);// trouve r
-        //r.ballx = 42
-    }
-
-    updateBall(roomId: number) {
-
     }
 
 }

@@ -1,8 +1,5 @@
 import { createRef } from 'react';
 import create from 'zustand';
-import {defaultavatar} from "component/const";
-import { io, Socket } from "socket.io-client";
-//import { socket, Game_data } from "../PongGame"
 
 type Profile = {
   uname:string,

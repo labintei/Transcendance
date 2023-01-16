@@ -42,17 +42,9 @@ function useKeys(target:any, event:any, up = true) {
 
 export default function KeyBoardControls() 
 {
-
-  const data = useStore((s:any) => s.player1_x);
   const role = useStore((s:any) => s.role);
   const id = useStore((s:any) => s.id);
-  //const box = useStore((s: any) => s.box2)
   const set = useStore((state: any) => state.set)
-/*
-  useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, left } })))
-  useKeys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
-  useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
-*/
 
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
@@ -70,34 +62,15 @@ export default function KeyBoardControls()
     }
 
   })
-
+/*
   useKeys(['Escape'], (escape:boolean) =>
   {
       if(escape)
       {
         socket.emit('escape', [role,id])
       }
-  })
+  })*/useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
+
 
   return null;
 }
-
-
-
-/*export default function KeyboardControls() {
-  const set = useStore((state: any) => state.set)
-*/
-  
-  /*useKeys(['ArrowLeft', 'a', 'A'], (left:boolean)) => set((state:any) )
-  {
-      if(left === true)
-        socket.emit('left')
-      else
-        socket.emit('end_left');
-  }*/
-//   @ts-ignore
-/*  useKeys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
-
-  useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
-  return null
-}*/

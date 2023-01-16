@@ -2,18 +2,8 @@ import React from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 
-// test
-import { io, Socket } from "socket.io-client";
-import axios from 'axios';
-
 import {soc} from './component/LoginPage'
 
-const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-
-//export const socket = io(secu_url);
-
-
-//io.on('user');
 
 export const socket = soc; 
 export const user = {};
