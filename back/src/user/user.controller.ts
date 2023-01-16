@@ -1,4 +1,6 @@
-import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Post, PreconditionFailedException, Request, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -36,23 +38,30 @@ export class UserController
     };
     if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
-    return await User.update(req.user, toUpdate);
+    if (toUpdate.username.length > 24)
+      throw new PreconditionFailedException("Username too long.")
+    return User.update(req.user, toUpdate);
   }
 
   @Get(':username')
   async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<any> {
     const related = await User.findOne({
       select: User.defaultFilter,
-      relations: {
-        relatedships: true
-      },
       where: {
-        username: username,
-        relatedships: {
-          ownerLogin: req.user
-        }
+        username: username
       }
     });
+		if (!related)
+			throw new NotFoundException('Username not found.')
+		related.relatedships = await UserRelationship.find({
+			select : {
+				status: true
+			},
+			where: {
+				ownerLogin: req.user,
+				relatedLogin: related.ft_login
+			}
+		});
     return related;
   }
 

@@ -1,6 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Strategy } from 'passport-oauth2';
 import { lastValueFrom } from 'rxjs';
 import { User } from 'src/entities/user.entity';

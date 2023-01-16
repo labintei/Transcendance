@@ -7,25 +7,10 @@ import * as bcrypt from 'bcrypt';
 const bcryptSaltRounds = 10;
 
 const channelDefaultFilter: FindOptionsSelect<Channel> = {
-  id: true,
+	id: true,
   status: true,
   name: true,
-  users: {
-    status: true,
-    joined: true,
-    statusEnd: true,
-    user: {
-      username: true,
-      status: true,
-      avatarURL: true,
-      level: true,
-      xp: true,
-      victories: true,
-      defeats: true,
-      draws: true,
-      rank: true
-    }
-  }
+  users: ChannelUser.defaultFilter
 };
 
 enum ChannelStatus {

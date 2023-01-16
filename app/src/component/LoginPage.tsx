@@ -1,7 +1,6 @@
 import React from 'react';
 import axios from 'axios';
 import './LoginPage.css';
-
 import { io} from "socket.io-client";
 import { socket } from 'App';
 

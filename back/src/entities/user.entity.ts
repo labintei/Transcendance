@@ -21,8 +21,20 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     status: true
   },
   relatedships: {
+    owner: {
+      username: true
+    },
     status: true
-  }
+  },
+	channels: {
+		status: true,
+		joined: true,
+		statusEnd: true,
+		channel: {
+			status: true,
+			name: true
+		},
+	}
 };
 
 const usernamePattern = new RegExp('^$', );

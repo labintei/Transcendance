@@ -18,8 +18,10 @@ const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:
 type State = {
   player:Person
   nameEdit:boolean
+  errormsg:string | null
   query:string
   query2:File | null
+  avatar:File | null
   avatarEdit:boolean
   logged:boolean
 }
@@ -82,9 +84,22 @@ export default class PlayerProfile extends React.Component {
           player.victories = data.victories;
           player.draws = data.draws;
         }
+        if (data.avatarURL !== undefined){
+          axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
+            withCredentials: true,
+            responseType:'blob'
+          }).then(res => {
+            player.avatar_location = URL.createObjectURL(res.data);
+            this.setState({player:player});
+          }).catch(error => {
+            if (error.response.status === 401)
+              this.setState({logged:false});
+            else if (player !== this.state.player)
+              this.setState({player:player});
+          });
+        } else if (player !== this.state.player)
+          this.setState({player:player});
       }
-      if (player !== this.state.player)
-        this.setState({player:player});
     }).catch(error => {
       this.setState({logged:false});
     });
@@ -92,16 +107,20 @@ export default class PlayerProfile extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state = {player:dflt, nameEdit:false, avatarEdit:false, query:'', query2:null, logged:true};
+    this.state = {
+      player:dflt, nameEdit:false, avatarEdit:false,
+      query:'', query2:null, avatar:null, logged:true, errormsg:null
+    };
     this.requestUser();
   }
 
   nameFormat(editing:boolean, name:string) {
     if (editing)
       return (
-        <input type="text"
+        <><input type="text"
           placeholder={name}
           minLength={2}
+          maxLength={24}
           onChange={event => {this.setState({query: event.target.value})}}
           onKeyPress={event => {
                     if (event.key === 'Enter') {
@@ -109,6 +128,7 @@ export default class PlayerProfile extends React.Component {
                     }
                   }}>
         </input>
+        </>
       )
     else
         return (
@@ -119,19 +139,46 @@ export default class PlayerProfile extends React.Component {
   }
 
   changeName() {
-    let temp:Person = this.state.player;
-    temp.name = this.state.query;
-    this.setState({player:temp, nameEdit:false});
+    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:this.state.query}, {withCredentials:true}).then(() => {
+      let temp:Person = this.state.player;
+      temp.name = this.state.query;
+      this.setState({player:temp, nameEdit:false, errormsg:null});
+    }).catch(error => {
+      if (error.response.status === 500){
+        this.setState({errormsg:this.state.query + " is already taken."})
+      } else if (error.response.status === 412) {
+        this.setState({errormsg:"Name is too long (24 characters max)."});
+      } else if (error.response.status === 401)
+        this.setState({logged:false});
+      console.log(error)
+    })
   }
 
   changeAvatar() {
     let temp:Person = this.state.player;
-    if (this.state.query2 !== null)
+    if (this.state.query2 === null)
     {
-      temp.avatar_location = "/logo192.png";//this.state.query2.name;
+      console.log(temp.avatar_location);
+      this.setState({player:temp, avatarEdit:false});
+      return ;
     }
-    console.log(temp.avatar_location);
-    this.setState({player:temp, avatarEdit:false});
+    let formData = new FormData();
+    formData.set('file', this.state.query2);
+    axios.post(process.env.REACT_APP_BACKEND_URL + "avatar", formData, {
+      withCredentials:true,
+      responseType: 'blob'
+    }).then(res => {
+      console.log(res);
+      temp.avatar_location = URL.createObjectURL(res.data); 
+      this.setState({player:temp, avatarEdit:false});
+    }).catch(error => {
+      if (error.response === undefined)
+        console.log(error);
+      else if (error.response.status === 401)
+        this.setState({logged:false});
+      else
+        console.log(error);
+    });
   }
 
   avatarFormat(editing:boolean, loc:string) {
@@ -169,6 +216,7 @@ export default class PlayerProfile extends React.Component {
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
         <div className='place_name'>
           {this.nameFormat(this.state.nameEdit, this.state.player.name)}
+        {this.state.errormsg === null ? <></> : <p className='warning-p'>{this.state.errormsg}</p>}
         </div>
         <div className='place_avatar'>
           {this.avatarFormat(this.state.avatarEdit, this.state.player.avatar_location)}
