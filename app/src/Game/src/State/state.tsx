@@ -70,7 +70,8 @@ export const useStore = create((set,get) => {
   setProfile: (newp:Profile) => set((state:any) => ({
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
-
+  
+  Otime: (num:number) => set((state:any)=>({time : num})),
   // ne marcha po
   Setcx: (num:number) => set((state:any)=>({cx : num})),
   Setcy: (num:number) => set((state:any)=>({cy : num})),
@@ -117,7 +118,7 @@ export const useStore = create((set,get) => {
 
   // Pour le time
   //addTime: () => set((s:any) => ({s.time: s.time + 1})),
-  SetTime: (num:number) => set((s:any) => ({time: num})),
+
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),

@@ -18,9 +18,12 @@ import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles } from "@react-three/drei";
+import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
+
+
+//import Timer from '../time'
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -55,8 +58,6 @@ function Ocean() {
     }),
     [waterNormals]
   )
-
-  console.log(ref)
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
   // @ts-ignore
   return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]} />
@@ -79,7 +80,6 @@ const CameraControls = () => {
   const controls: any = useRef();
   useFrame((state) => controls.current.update());
 
-  console.log(camera);
   // 3. Initializing the Orbit Control
   return <orbitControls
     ref={controls}
@@ -126,8 +126,9 @@ export default function World(props: any) {
   var camposy = useStore((s:any) => s.cy);
   var camposz = useStore((s:any) => s.cz);
 
+  var t = useStore((s:any) => s.time);
   const map = useStore((s: any) => s.bgdChoice)
-  return (
+  return (  
     <Canvas
     camera={{ position: [camposx, camposy, camposz]}}>
     <CameraControls />
@@ -163,6 +164,7 @@ export default function World(props: any) {
     <Box2 position={[0, 0, -5]} />
     <Plane position={[0, -0.5, 0]} />
   </Canvas>
+
   )
 
 }

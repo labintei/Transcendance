@@ -65,7 +65,7 @@ export class GameGateway{
        var time = 0;
        var score = [0,0];
        var j = setInterval(() => {
-        console.log(this.gameservice.IsInside(client));
+        //console.log(this.gameservice.IsInside(client));
 
         var newscore = this.gameservice.getScore(l[0]);
         if(score != newscore)

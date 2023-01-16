@@ -1,18 +1,18 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import Menu from './Menu/menu';
 import { socket } from '../../App' ;
-
+import Timer from './time';
 
 export default function PongGame(props: any) {
-
-  //constructor(){
-  
+/*
   const [time, setTime] = useState(0);
   const [score, setScore]  = useState([0,0]);
-
+*/
+  
+  var tim = 0;
   var isGameFinished = 0; 
 
   // marche po
@@ -28,13 +28,26 @@ export default function PongGame(props: any) {
   const SetReady:any = useStore((s:any) => s.SetReady);
 
 
+  //const t:any = useStore((s:any) => s.time);
+  //const setT:any = useStore((s:any) => s.Otime);
+
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
 
   // je dois donc le faire qu une seule fois
 
+/*
+  async function Maiseuh()
+  {  
+    return await time;
+  } 
 
+  function hein()
+  {
+    return time;
+  }
+*/
   useEffect(() => {
     
     console.log('START');
@@ -56,66 +69,56 @@ export default function PongGame(props: any) {
         h3(-9);
       }
       
-    })// me semble ok
+    })
     return () => {
       socket.off('start');
       socket.emit('endgame');
-      //socket.disconnect();
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
 
   
-  /*async function Useasyncf(f:any , data:any) 
-  {
-    await f(data);
-  }*/
-
-  //soc.on('connect', async () => {
   useEffect(() => {
+    console.log('1');
     socket.on('newpos', (data) => {Setx(data[0]);Setz(data[1]);B(data[2]);C(data[3]);});
-  //  socket.on('time', (data) => {setTime(data)});
-  //  socket.on('score', (data) => {setScore([data[0],data[1]])})
     return () => {
-      //socket.off('time');
       socket.off('newpos');
-      //socket.off('time');
-      //socket.disconnect();
     }
   },[B,C,Setx,Setz])
 
+
   useEffect(() => {
-    socket.on('time', (data) => {
-    //  (async () => {
-        //const test = awa
-        /*await setTime(data);
-      })();*/
-      // marche pas
-      
-      /*setTime(data)*/
-      //fetchTimer().then((time) => setTimeout(data))
-      setTime(data);
-    });
-    socket.on('score', (data) => {setScore([data[0],data[1]])})
+    console.log('2')
+    /*socket.on('time', (data) => {
+     // tim++;
+      console.log(data);
+      setT(data);
+
+    });*/
+    socket.on('score', (data) => {/*setScore([data[0],data[1]])*/})
     return () => {
-      socket.off('time');
+      //socket.off('time');
       socket.off('score');
       //socket.disconnect();
     }
-  },[setTime,setScore,time,score])
+  },[/*setT*/])
 
   const restartGame = function(){
     window.location.href = window.location.href;
   }
 
+
+  //       Time:<Timer time={useStore((s:any) => s.time)}/>
+
+  //  Time:<Timer/>
   return (
     <div className="App" tabIndex={0} >
-    {<World/>}
+    <World/>
     <div className='score'>
       <div className='elem'>
       Time:
-      {<div>{time}</div>}
+      <Timer/>
       Score: 
-      {<div>{score[0]} - {score[1]}</div>}
+      {/*<div>{score[0]} - {score[1]}</div>*/}
     </div>
     </div>
     <div className={'endGameContainer ' + (isGameFinished ? "showEndGame" : "")}>
@@ -124,7 +127,7 @@ export default function PongGame(props: any) {
         Rejouer
       </div>
     </div>
-    {  <Menu/> }
+    <Menu/> 
     </div>
     );
 }

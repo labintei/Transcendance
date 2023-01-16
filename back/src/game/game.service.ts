@@ -80,9 +80,11 @@ export class GameService {
                 {
                     if(value.ready === true)
                     {
-                      var ft_login1 = (value.player1.request as any).user;
-                      var ft_login2 = (value.player2.request as any).user;
-                      list.push([key, ft_login1, ft_login2]);
+                        var ft_login;
+                        var ft_login2;
+                      User.findOneBy({socket: value.player1.id}).then( u => ft_login = u.username);
+                      User.findOneBy({socket: value.player2.id}).then( u => ft_login2 = u.username)
+                      list.push([key, ft_login, ft_login2]);
                      }
                 }
             }
