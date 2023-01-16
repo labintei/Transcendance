@@ -6,36 +6,43 @@ interface WebSocketWrapper {
   children: React.ReactNode;
 }
 
-export const getLoginContext = React.createContext((arg : boolean) => {});
-export const getSocketContext = React.createContext<Socket | undefined>(undefined);
+const backend_url = process.env.REACT_APP_BACKEND_URL || '';
+const socket = io(backend_url, { 
+  autoConnect: false,
+  withCredentials: true});
+
+const defaultLogin = { 
+  set: (arg: boolean) => {},
+  status: false,
+};
+
+export const getLoginContext = React.createContext(defaultLogin);
+export const getSocketContext = React.createContext(socket);
 
 export default function WebSocketWrapper( props : WebSocketWrapper ) {
   const [login, setLogin] = useState<boolean>(false);
-  const [socket, setSocket] = useState<Socket>();
-
-  const backend_url = process.env.REACT_APP_BACKEND_URL || '';
-
 
   useEffect(() => {
-    if (login === false && socket === undefined) {
-      isLogged();
-      return ;
-    }
+    isLogged();
+  }, []);
 
+  useEffect(() => {
     if (login === false) {
-      socket?.disconnect()
-      setSocket(undefined);
+      if (socket.connected)
+        socket.disconnect();
       return ;
     }
 
-    console.log("trying to connect");
-    setSocket(io(backend_url, { withCredentials: true }));
-    console.log("connected :)");
-  }, [login]);
+    if (!socket.connected) {
+      socket.connect();
+      console.log("Websocket connected :)");
 
-  function testWrapper() {
-    console.log("hello from wrapper");
-  }
+      socket.on('ping', () => {
+        socket.emit('pong');
+        console.count('pong');
+      })
+    }
+  }, [login]);
 
   function setLogged(arg : boolean) {
     setLogin(arg)
@@ -52,10 +59,10 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
   }
 
   return (
-    <getLoginContext.Provider value={setLogged}>
-      <getSocketContext.Provider value={socket}>
+    <getSocketContext.Provider value={socket}>
+      <getLoginContext.Provider value={{set: setLogged, status: login}}>
         { props.children }
-      </getSocketContext.Provider>
-    </getLoginContext.Provider>
+      </getLoginContext.Provider>
+    </getSocketContext.Provider>
   );
 }
