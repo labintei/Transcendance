@@ -7,7 +7,7 @@ import { Navigate } from 'react-router-dom';
 type Person = {
     id: number
     name: string;
-    status: number;
+    status: string;
     avatar_location: string;
     rank: number;
     friend: boolean;
@@ -58,7 +58,7 @@ export default class PersonList extends React.Component {
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
-        if (error.response.status === 401)
+        if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
         console.log(error)
       });
@@ -73,11 +73,13 @@ export default class PersonList extends React.Component {
         let listftmp: Array<Person> = [];
         let id = 0;
         for (var person of friends) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
+                if (person.status !== undefined)
+                  one.status = person.status;
                 if (person.avatarURL !== undefined && person.avatarURL !== null && '' !== person.avatarURL)
                 {
                   if (acceptedimg.includes(person.avatarURL))
@@ -114,10 +116,12 @@ export default class PersonList extends React.Component {
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
+                if (person.status !== undefined)
+                  one.status = person.status;
                 if (person.relatedships !== undefined && person.relatedships[0] !== undefined)
                 {
                   let ships:Array<{status:string}> = person.relatedships;
@@ -154,15 +158,6 @@ export default class PersonList extends React.Component {
       });
   }
 
-  render_status(status:number) {
-    if (status === 0)
-      return ("Offline")
-    else if (status === 1)
-      return ("Online")
-    else
-      return ("In Match")
-  }
-
   get_friend_status(isf:boolean) {
     if (!isf)
       return ("add-f-button")
@@ -178,7 +173,7 @@ export default class PersonList extends React.Component {
             <li key={person.id}>
               <img alt="avatar" className="avatar" src={person.avatar_location}></img>
               <p>{person.name}</p>
-              <p>{this.render_status(person.status)}</p>
+              <p>{person.status}</p>
               <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button"></button>
               <img alt="friend" className="friend" src="https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/people-group-team-peoples-friend-512.png"/>
               <button onClick={() => this.friendManage(person.id, flist)} id={this.get_friend_status(person.friend)}></button>

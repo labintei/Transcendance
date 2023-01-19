@@ -66,7 +66,7 @@ export default class LevelList extends React.Component {
                       }).then(res => {
                         one.avatar_location = URL.createObjectURL(res.data);
                       }).catch(error => {
-                        if (error.response.status === 401)
+                        if (error.response.status === 401 || error.response.status === 403)
                           this.setState({logged:false});
                       });
                   else
@@ -90,9 +90,11 @@ export default class LevelList extends React.Component {
     if (score === 1)
       return ("Champion")
     if (score === 2)
-      return ("2")
+      return ("2nd")
+    else if (score === 3)
+      return ("3rd")
     else
-      return (score)
+      return (score + "th")
   }
 
   div_score(rank:number) {
@@ -137,9 +139,9 @@ export default class LevelList extends React.Component {
         {
           this.state.listl.map(prank =>
               <li key={prank.id} className={this.div_score(prank.rank)}>
-                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span className={this.renderStatus(prank.status)}></span></div>
-                <p>{prank.name}</p>
                 <p>{this.render_score(prank.rank)}</p>
+                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span title={prank.status} className={this.renderStatus(prank.status)}></span></div>
+                <p>{prank.name}</p>
                 {this.challenge_available(prank.status, prank.id, prank.name)}
               </li>
             )

@@ -92,7 +92,7 @@ export default class MatchList extends React.Component {
                       one.avatar_loc = URL.createObjectURL(res.data);
                       this.state.avatars.set(one.name, one.avatar_loc);
                     }).catch(error => {
-                      if (error.response.status === 401)
+                      if (error.response.status === 401 || error.response.status === 403)
                         this.setState({logged:false});
                     });
                   else
