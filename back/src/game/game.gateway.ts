@@ -10,6 +10,7 @@ import { async } from 'rxjs';
 // A enlever
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { getCustomRepositoryToken } from '@nestjs/typeorm';
+import { threadId } from 'worker_threads';
 // a enlever
 
 
@@ -18,11 +19,22 @@ import { getCustomRepositoryToken } from '@nestjs/typeorm';
   credentials: true,
 })
 
-export class GameGateway{
-
+export class GameGateway implements OnGatewayDisconnect {
+/*
   constructor(
     private gameservice: GameService
-    ) {}
+    ) {}*/
+
+  constructor(@Inject(GameService) private gameservice: GameService) {}
+
+
+  async handleDisconnect(client:Socket)
+  {
+    console.log('DISCONNECTION GAME GATEWAY');
+    console.log(this.gameservice.IsinGame(client));
+    this.gameservice.DisconnectionGame(client);
+  }
+
 
   @SubscribeMessage('testlaulau')
   async marchepo(client:Socket)
@@ -121,7 +133,8 @@ export class GameGateway{
   @SubscribeMessage('getlist')
   async getlist(client:Socket)
   {
-    client.emit('getlist', this.gameservice.Getlist());
+    var j = await this.gameservice.Getlist();
+    client.emit('getlist', j);
   }
 
 
@@ -146,6 +159,26 @@ export class GameGateway{
     }
     console.log(l.socket);// id est bien associe au user
 
+  }
+
+  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
+  {
+    stream.map((s) => {s.emit('pos', data);});
+	}
+
+  @SubscribeMessage('startstream')
+  async startstream(client:Socket, data:number)
+  {
+    console.log('StartStream');
+    if(this.gameservice.startstream(client, data))
+    {
+      // je vais creer un render
+      var render_stream;
+      render_stream =  setInterval(() => {
+        GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+      }, 160)
+    }
+    //client.emit('getlist',this.gameservice.Getlist());
   }
 
 

@@ -69,7 +69,7 @@ export class GameService {
         //this.dispo = new Array();
     }
 
-    Getlist(): Array<[number,string,string]>
+    async Getlist(): Promise<Array<[number,string,string]>>
     {
         let list: Array<[number,string,string]> = [];
         if(this.s)
@@ -82,8 +82,13 @@ export class GameService {
                     {
                         var ft_login;
                         var ft_login2;
-                      User.findOneBy({socket: value.player1.id}).then( u => ft_login = u.username);
-                      User.findOneBy({socket: value.player2.id}).then( u => ft_login2 = u.username)
+                      ft_login = await User.findOneBy({socket: value.player1.id});
+                      ft_login2 = await User.findOneBy({socket: value.player2.id});
+                      
+                        if(!ft_login)
+                            ft_login = 'visitor';
+                        if(!ft_login2)
+                            ft_login2 = 'visitor';
                       list.push([key, ft_login, ft_login2]);
                      }
                 }

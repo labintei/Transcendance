@@ -115,8 +115,6 @@ export default function PongGame(props: any) {
     <World/>
     <div className='score'>
       <div className='elem'>
-      Time:
-      <Timer/>
       Score: 
       {/*<div>{score[0]} - {score[1]}</div>*/}
     </div>

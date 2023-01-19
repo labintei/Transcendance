@@ -16,11 +16,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
   private static io: Server = null;
   public n:number;
-  constructor(
+  /*constructor(
     private gameservice: GameService
-    ) {
-      
-  }// n utilise pas le meme game service
+    ) {}*/
+
+  constructor(@Inject(GameService) private gameservice: GameService) {}
 
   afterInit(server: Server) {
     SocketGateway.io = server;
@@ -66,10 +66,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleDisconnect(client: Socket) {// ne doit pas etre liee au meme game service
-    this.n--
+    /*this.n--
     console.log('Deconnection ' + this.n);
     console.log(this.gameservice.IsinGame(client));
-    this.gameservice.DisconnectionGame(client);
+    this.gameservice.DisconnectionGame(client);*/
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     //console.log('Websocket Client Connected  ici : ' + (client.request as any).user);
     if(user)
@@ -127,12 +127,12 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
 
 
   // je dois le faire ici
-  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
+  /*public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
   {
     stream.map((s) => {s.emit('pos', data);});
-	}
+	}*/
 
-
+/*
   @SubscribeMessage('startstream')
   async startstream(client:Socket, data:number)
   {
@@ -146,7 +146,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       }, 160)
     }
     //client.emit('getlist',this.gameservice.Getlist());
-  }
+  }*/
 /*
 
   @SubscribeMessage('testlaulau')
