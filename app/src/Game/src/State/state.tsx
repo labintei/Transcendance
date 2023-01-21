@@ -9,16 +9,13 @@ type Profile = {
   inMatch:boolean
 }
 
-
 // define the store
 export const useStore = create((set,get) => {
 
   return {
   set,
   get,
-  //interface: Game_Data = {},
   map: "space",
-  //gameReady:false,
   gameReady:false,
   votes: 0,
   score: [0,0],
@@ -27,26 +24,14 @@ export const useStore = create((set,get) => {
     right: false,
     escape: false
   },
-  data: {//je met toute mes init
-    id: 0,
-    nb_player: 0,
-    player1 : null,
-    //player1: socket,
-    player1_x : 0,
-    player2_x : 0,
-  },
-
-  // position par default
 
   cx : 0,
   cy : 3,
   cz : 7,
 
+  role : 0,
+  id : 0,
 
-  // Variable socket
-  role : 0,//par default
-  id : 0,//pardefault
-  //room : [0,0],
 
   sphere_x: 0,// initalisatio
   sphere_z: 0,
@@ -61,6 +46,10 @@ export const useStore = create((set,get) => {
   zdir:0,
 
   time: 0,
+  t : 0,
+
+  s: 0,
+  sbis: 0,
 
   bgdChoice: 0,
   padColor: "#ffffff",
@@ -76,14 +65,9 @@ export const useStore = create((set,get) => {
   Setcx: (num:number) => set((state:any)=>({cx : num})),
   Setcy: (num:number) => set((state:any)=>({cy : num})),
   Setcz: (num:number) => set((state:any)=>({cz : num})),
-  getAll: () => this,
-/*  eys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
   
-    useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
-    return null
-  }
-*/
-  //Getcamerapos:number[] : (s:any) => {return [s.]};
+  setscore: (num:number) => set((state:any)=>({s : num})),
+  setscorebis: (num:number) => set((state:any)=>({sbis : num})),
 
   SetReady: (num:number) => set((s:any)=>({gameReady: true})),
 
@@ -92,33 +76,16 @@ export const useStore = create((set,get) => {
 
   SetId: (num:number) => set((state:any)=>({ id : num})),
   SetRole: (num:number) => set((state:any)=>({ role : num})),
-  //SetRoom: (num:number, num1:number) => set ((s:any) => ({room: [s.room[0]:num]; room: [s.room[0]:num]}))
 
-  //player1Move: (num:number) => set((state:Game_Data)=>({state,data.player1_x = num})),
-  // marche pas 
-  player1Move: (num:number) => set((state:any)=>({data : [state.data.player1_x = num]})),
-  player2Move: (num:number) => set((state:any)=>({data : [state.data.player2_x = num]})),
-
-  // mes fonctions
 
   Updatex_angle: (num:number) => set((s:any)=>({x_angle:num})),
   Updatez_dir: (num:number) => set((s:any)=>({z_dir:num})),
 
-
-  // ne fonctionne pas
   
+  setbis: (num:number) => set((s:any) => ({t : num})),
+
   Player1: (numt:number) => set((s:any)=>({p1x:numt})),
   Player2: (numt:number) => set((s:any)=>({p2x:numt})),
-
-
-  //Player2: (num:number) => set((s:any)=>({player2_x:num})),
-  Spherex: (numx:number) => set((s:any) => ({sphere_x:numx})),
-  Spherey: (numy:number) => set((s:any) => ({spherez:numy})),
-  Spherenew: (numx:number, numy:number) => set((s:any) => ({sphere_x:numx,sphere_z:numy})),
-
-  // Pour le time
-  //addTime: () => set((s:any) => ({s.time: s.time + 1})),
-
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),

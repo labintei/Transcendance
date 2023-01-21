@@ -69,6 +69,14 @@ export class GameService {
         //this.dispo = new Array();
     }
 
+
+    isFinish(data:number)
+    {
+        if(this.s.get(data).score1 >= 5 || this.s.get(data).score2 >= 5)
+            return true;
+        return false;
+    }
+
     async Getlist(): Promise<Array<[number,string,string]>>
     {
         let list: Array<[number,string,string]> = [];
@@ -95,6 +103,19 @@ export class GameService {
             }
         }
         return list
+    }
+
+    DisconnectionGameId(id:number)
+    {
+        var room = this.s.get(id);
+        if(room)
+        {
+            clearInterval(room.render);
+            clearInterval(room.timer);
+            var id = room.room_id;
+            this.dispo.delete(id);
+            this.s.delete(id);
+        }
     }
 
     DisconnectionGame(client:Socket): Socket[]// renvoit les deux clients
@@ -193,7 +214,7 @@ export class GameService {
         var room = this.s.get(data);
         if(room)
             return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
-        return ([0,0,0,0])// valeur par default tout a 0
+        return ([0,0,0,0,0,0,0])// valeur par default tout a 0
     }
 
     sphere(room:Game): number[]
@@ -249,9 +270,9 @@ export class GameService {
         if(side < 0.5)
             room.xangle *= -1;
         console.log(room.xangle.toFixed(3));
-        return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
+        return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
       }   
-    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
+    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
 }
     /*
     enum UserStatus {
@@ -343,16 +364,13 @@ export class GameService {
     }*/
 
 
-
-    setTimer(id:number)// pas utile pour mettre le timer
+    addtime(data:number)
     {
-        var i = setInterval(() => {
-            this.s.get(id).time += 1;
-            console.log('Time ' + String(this.s.get(id).time));// penser a clear l interval
-        }, 1000)
-        //    while(this.s.get(id))
-        
+        var room = this.s.get(data);
+        if(room)
+            room.time= room.time + 1;
     }
+
 
     player2x_right(id:number)
     {

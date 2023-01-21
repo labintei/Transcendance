@@ -72,24 +72,21 @@ export class GameGateway implements OnGatewayDisconnect {
             room[0].emit('newpos', a);
         if(room[1] != null)
           room[1].emit('newpos', a);
-       }, 100);
+       }, 160);
        
        var time = 0;
        var score = [0,0];
        var j = setInterval(() => {
-        //console.log(this.gameservice.IsInside(client));
-
-        var newscore = this.gameservice.getScore(l[0]);
-        if(score != newscore)
+        if(this.gameservice.isFinish(l[0]))
         {
-          room[0].emit('score', newscore);
-          room[1].emit('score', newscore);
+          if(room[0])
+            room[0].emit('endgame');
+          if(room[1])
+            room[1].emit('endgame');
+          this.gameservice.DisconnectionGameId(l[0]);
         }
-        if(room[0] != null)
-          room[0].emit('time', time);
-        if(room[1] != null)
-          room[1].emit('time', time);
-        time++;
+        else
+          this.gameservice.addtime(l[0])
       }, 1000);
       //
       this.gameservice.SetTimer(l[0],j);
