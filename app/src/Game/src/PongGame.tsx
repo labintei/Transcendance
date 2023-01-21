@@ -49,18 +49,6 @@ export default function PongGame(props: any) {
 
   // je dois donc le faire qu une seule fois
 
-/*
-  async function Maiseuh()
-  {  
-    return await time;
-  } 
-
-  function hein()
-  {
-    return time;
-  }
-*/
-
   useEffect(() => 
   {
     socket.emit('start_game');   

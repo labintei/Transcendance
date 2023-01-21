@@ -77,6 +77,7 @@ export class GameService {
         return false;
     }
 
+
     async Getlist(): Promise<Array<[number,string,string]>>
     {
         let list: Array<[number,string,string]> = [];
@@ -491,6 +492,78 @@ export class GameService {
     {
         if(this.stream)
             return this.stream.get(data);// par default sera a 0
+    }
+
+// MATCH ENTITIES
+/*
+@PrimaryGeneratedColumn('uuid')
+id: number;
+
+@CreateDateColumn()
+time: Date;
+
+@Column({
+  type: 'enum',
+  enum: MatchStatus,
+  default: MatchStatus.MATCHED
+})
+status: MatchStatus;
+
+@Column('smallint')
+score1: number;
+
+@Column('smallint')
+score2: number;
+
+@ManyToOne(() => User, { onDelete: "SET NULL" })
+@JoinColumn({ name: 'user1' })
+user1: User;
+
+@ManyToOne(() => User, { onDelete: "SET NULL" })
+@JoinColumn({ name: 'user2' })
+user2: User;
+*/
+
+
+    async CreateMatchID(data:number)// plus xp
+    {
+        console.log('MATCH history');
+        var room = this.s.get(data);
+        if(room)
+        {
+            // ne find pas les bons users
+            // surement mauvaise association entre username et client
+            var u1 = await User.findOneBy({socket: room.player1.id});// cherche user1
+            var u2 = await User.findOneBy({socket: room.player2.id});// cherche user2
+            if(u1 == null && u2 == null)// si les deux joueurs sont des visitor
+            {
+                console.log('Tout les deux null');
+                return;
+            }
+            // j ai directement les playeurs
+            var match = Match.create();
+            match.user1 = u1;
+            match.user2 = u2;
+            if(u1)
+            {
+                if(room.score1 > room.score2)
+                    u1.gainXP(100);
+                if(room.score1 < room.score2)
+                    u1.looseXP(50);
+            }
+            if(u2)
+            {
+                if(room.score2 > room.score1)
+                    u2.gainXP(100);
+                if(room.score2 < room.score1)
+                    u2.looseXP(50);
+            }
+            match.score1 = room.score1;
+            match.score2 = room.score2;
+            await Match.save(match);
+            var listMatch = await Match.find();
+            console.log(listMatch);
+        }
     }
 
 }

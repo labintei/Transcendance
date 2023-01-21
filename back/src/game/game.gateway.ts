@@ -83,6 +83,7 @@ export class GameGateway implements OnGatewayDisconnect {
             room[0].emit('endgame');
           if(room[1])
             room[1].emit('endgame');
+          this.gameservice.CreateMatchID(l[0]);
           this.gameservice.DisconnectionGameId(l[0]);
         }
         else
