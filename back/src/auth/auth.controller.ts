@@ -98,10 +98,10 @@ export class AuthController
     return "Token is valid for this 2FA Secret.";
   }
 
-  @Get('2FAuri')
+  @Get('2FASecret')
   @UseGuards(SessionGuard)
   async generate2FASecret(@Request() req) {
-    return authenticator.keyuri(req.user, "Transcendence3D", authenticator.generateSecret(20));
+    return authenticator.generateSecret(20);
   }
 
   @Get('logout')
