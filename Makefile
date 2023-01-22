@@ -71,11 +71,12 @@ hostname			:	envcheck
 
 #	cleans compilated dev data
 clean				:	stop
-	rm -rf $(FRONT)/package-lock.json
-	rm -rf $(BACK)/package-lock.json
-	rm -rf $(FRONT)/node_modules
-	rm -rf $(BACK)/node_modules
-	rm -rf $(BACK)/dist
+	-rm -rf $(FRONT)/package-lock.json
+	-rm -rf $(BACK)/package-lock.json
+	-rm -rf $(FRONT)/node_modules
+	-rm -rf $(BACK)/node_modules
+	-rm -rf $(FRONT)/dist
+	-rm -rf $(BACK)/dist
 
 #	cleans container builds
 cclean			: stop

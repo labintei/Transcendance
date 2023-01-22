@@ -74,6 +74,12 @@ export class AuthController
     return "Success";
   }
 
+  @Get('2FASecret')
+  @UseGuards(SessionGuard)
+  async generate2FASecret() {
+    return authenticator.generateSecret();
+  }
+
   @Get('logout')
   @UseGuards(SessionGuard)
   async logout(@Request() req, @Response({ passthrough: true }) res): Promise<any> {
