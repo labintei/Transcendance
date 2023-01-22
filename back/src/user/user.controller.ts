@@ -15,8 +15,11 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
-    const me = await User.find({
-      select: User.defaultFilter,
+    const me = await User.findOne({
+      select: {
+        ...User.defaultFilter,
+        twoFASecret: true
+      } ,
       relations: {
         relationships: {
           related: true
@@ -26,7 +29,9 @@ export class UserController
         ft_login: req.user
       }
     });
-    return me[0];
+    if (me.twoFASecret)
+      me.twoFASecret = "Activated";
+    return me;
   }
 
   @Patch()
