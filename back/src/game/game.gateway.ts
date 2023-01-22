@@ -1,6 +1,6 @@
-import { MESSAGES } from '@nestjs/core/constants';
-import { MessageBody, ConnectedSocket, OnGatewayInit ,OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WebSocketGateway,WsException, WebSocketServer , } from '@nestjs/websockets';
+import { SubscribeMessage, WebSocketGateway, WebSocketServer , } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+<<<<<<< HEAD
 import { GameService , Game} from 'src/game/game.service'
 import {Match} from 'src/entities/match.entity';
 import {User} from 'src/entities/user.entity';
@@ -184,4 +184,23 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
 
+=======
+
+WebSocketGateway()
+export class GameGateway {
+
+  @WebSocketServer() private io: Server;
+
+  async error(client: Socket, msg: string = ''): Promise<any> {
+    await client.emit('error', msg);
+    return null;
+  }
+
+  @SubscribeMessage('game')
+  async game(client: Socket){
+    console.log("recu back'");
+    this.io.emit('wait_game');
+  }
+
+>>>>>>> master
 }
