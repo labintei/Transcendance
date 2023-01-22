@@ -28,7 +28,17 @@ export class BlockedsController
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username): Promise<UserRelationship> {
-    const related = await User.findOneBy({username: username});
+    const related = await User.findOne({
+      relations: {
+        relatedships: true
+      },
+      where: {
+        username: username,
+        relatedships: {
+          ownerLogin: req.user
+        }
+      }
+    });
     if (!related)
       throw new NotFoundException('Username not found.');
     return UserRelationship.create({
@@ -49,7 +59,7 @@ export class BlockedsController
     });
     if (!relationship)
       throw new NotFoundException('No blocked user found with this username.')
-    relationship.remove();
+    await relationship.remove();
   }
 
 }
