@@ -16,3 +16,7 @@ button:hover {
     background-color: #1ac586;
     color:black;
 }
+
+input {
+    font-size: 20px;
+}

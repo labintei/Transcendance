@@ -122,7 +122,7 @@ export default class PlayerProfile extends React.Component {
           minLength={2}
           maxLength={24}
           onChange={event => {this.setState({query: event.target.value})}}
-          onKeyPress={event => {
+          onKeyDown={event => {
                     if (event.key === 'Enter') {
                       this.changeName()
                     }
