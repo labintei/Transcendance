@@ -16,10 +16,6 @@ export class UserController
   @Get()
   async getMe(@Request() req): Promise<User> {
     const me = await User.findOne({
-      select: {
-        ...User.defaultFilter,
-        twoFASecret: true
-      } ,
       relations: {
         relationships: {
           related: true
@@ -38,7 +34,10 @@ export class UserController
   async updateMe(@Request() req): Promise<UpdateResult> {
     const toUpdate = {
       username: req.body.username,
-      twoFASecret: req.body.twoFASecret
+      twoFASecret: req.body.twoFASecret,
+      bgdChoice: req.body.bgdChoice,
+      padColor: req.body.padColor,
+      ballColor: req.body.ballColor
     };
     if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
