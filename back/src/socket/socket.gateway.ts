@@ -16,7 +16,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleConnection(client: Socket) {
-    /*const user = await User.findOneBy({ft_login: (client.request as any).user});
+    const user = await User.findOneBy({ft_login: (client.request as any).user});
     client.data.login = user.ft_login;
 		await SocketGateway.userDisconnect(user);
     user.socket = client.id;
@@ -37,35 +37,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     });
     SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
-    this.ping(client);*/
-    const user = await User.findOneBy({ft_login: (client.request as any).user});
-    
-    console.log('CONNECTION : ' + (client.request as any).user);
-    if(user)
-    {
-      client.data.login = user.ft_login;
-      user.socket = client.id;
-      user.status = User.Status.ONLINE;
-      await user.save();
-      //console.log('Websocket Client Connected  ici : ' + user.ft_login);
-      const joinedList = await Channel.find({
-       relations: {
-          users: true
-        },
-        select: Channel.defaultFilter,
-        where: {
-         users: {
-           userLogin: user.ft_login,
-           joined: true
-         }
-        }      
-      });
-      //SocketGateway.userJoinRooms(user, SocketGateway.channelsToRooms(joinedList));
-    }
-    client.data.pingOK = true;
     this.ping(client);
-    console.log('ENDCONNECTION');
-
   }
 
   async handleDisconnect(client: Socket) {

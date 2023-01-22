@@ -44,7 +44,7 @@ export class UserController
 
   @Get(':username')
   async getUserAndRelationshipStatus(@Request() req, @Param('username') username): Promise<any> {
-    /*const related = await User.findOne({
+    const related = await User.findOne({
       select: User.defaultFilter,
       where: {
         username: username
@@ -61,19 +61,6 @@ export class UserController
 				relatedLogin: related.ft_login
 			}
 		});
-    return related;*/
-    const related = await User.findOne({
-      select: User.defaultFilter,
-      relations: {
-        relatedships: true
-      },
-      where: {
-        username: username,
-        relatedships: {
-          ownerLogin: req.user
-        }
-      }
-    });
     return related;
   }
 
