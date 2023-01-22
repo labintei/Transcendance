@@ -6,6 +6,7 @@ import sky from "../Assets/Sky.png"
 import space from "../Assets/Space.png"
 
 export default function Menu() {
+    // TODO: We do not have to keep esc push to see the menu
 
     const getEscape: any = useStore((state: any) => state.controls.escape);
     const setEscape:any = useStore((state:any) => state.setEscape);

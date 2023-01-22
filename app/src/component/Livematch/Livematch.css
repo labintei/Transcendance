@@ -40,34 +40,23 @@
   color: white;
 }
 
-.endGameContainer{
-  opacity: 0;
-  pointer-events: none;
-  transition: all 1s;
+.menuContainer{
+  background: rgb(182, 197, 179);
+  padding: 50px;
   position: fixed;
+  right: 20px;
+  top: 100px;
   width: 30%;
-  font-size: 20px;
-  height: auto;
-  color:white;
-  background: rgba(0, 0, 0, 0.452);
-  text-align: center;
-  padding: 25px;
-  top: 20%;
-  left: 50vw;
-  transform: translate(-50%);
+  height: 80%;
+  overflow-x: hidden;
+  overflow-y: scroll;
 }
-
-.showEndGame{
-  opacity: 1;
-  pointer-events: all;
-}
-
-.btnRestartGame{
-  background-color: rgb(87, 20, 61);
-  padding: 15px;
-  padding-left: 25px;
-  padding-right: 25px;
-  width: auto;
+.btnMatch{
   display: inline-block;
+  background: rgb(10, 139, 86);
+  color:white;
+  padding: 20px;
+  width: 100%;
   border-radius: 5px;
+  margin-bottom: 20px;
 }

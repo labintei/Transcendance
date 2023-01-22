@@ -1,6 +1,5 @@
 import { createRef } from 'react';
 import create from 'zustand';
-//import { socket, Game_data } from "../PongGame"
 
 type Profile = {
   uname:string,
@@ -9,13 +8,16 @@ type Profile = {
   inMatch:boolean
 }
 
+
 // define the store
 export const useStore = create((set,get) => {
 
   return {
   set,
   get,
+  //interface: Game_Data = {},
   map: "space",
+  //gameReady:false,
   gameReady:false,
   votes: 0,
   score: [0,0],
@@ -25,13 +27,18 @@ export const useStore = create((set,get) => {
     escape: false
   },
 
+
+  // position par default
+
   cx : 0,
   cy : 3,
   cz : 7,
 
-  role : 0,
-  id : 0,
 
+  // Variable socket
+  role : 0,//par default
+  id : 0,//pardefault
+  //room : [0,0],
 
   sphere_x: 0,// initalisatio
   sphere_z: 0,
@@ -46,10 +53,6 @@ export const useStore = create((set,get) => {
   zdir:0,
 
   time: 0,
-  t : 0,
-
-  s: 0,
-  sbis: 0,
 
   bgdChoice: 0,
   padColor: "#ffffff",
@@ -59,33 +62,28 @@ export const useStore = create((set,get) => {
   setProfile: (newp:Profile) => set((state:any) => ({
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
-  
-  Otime: (num:number) => set((state:any)=>({time : num})),
+
   // ne marcha po
   Setcx: (num:number) => set((state:any)=>({cx : num})),
   Setcy: (num:number) => set((state:any)=>({cy : num})),
   Setcz: (num:number) => set((state:any)=>({cz : num})),
+/*  eys(['ArrowRight', 'd', 'D'], (right:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, right } })))
   
-  setscore: (num:number) => set((state:any)=>({s : num})),
-  setscorebis: (num:number) => set((state:any)=>({sbis : num})),
-
-  SetReady: (num:number) => set((s:any)=>({gameReady: true})),
+    useKeys(['Escape'], (escape:boolean) => set((state:any) => ({ ...state, controls: { ...state.controls, escape } })))
+    return null
+  }
+*/
+  //Getcamerapos:number[] : (s:any) => {return [s.]};
 
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
   Setz: (num:number) => set((state:any)=>({sphere_z : num})),
 
-  SetId: (num:number) => set((state:any)=>({ id : num})),
-  SetRole: (num:number) => set((state:any)=>({ role : num})),
-
-
-  Updatex_angle: (num:number) => set((s:any)=>({x_angle:num})),
-  Updatez_dir: (num:number) => set((s:any)=>({z_dir:num})),
-
-  
-  setbis: (num:number) => set((s:any) => ({t : num})),
-
   Player1: (numt:number) => set((s:any)=>({p1x:numt})),
   Player2: (numt:number) => set((s:any)=>({p2x:numt})),
+
+  // Pour le time
+  //addTime: () => set((s:any) => ({s.time: s.time + 1})),
+  SetTime: (num:number) => set((s:any) => ({time: num})),
 
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),
