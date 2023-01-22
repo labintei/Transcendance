@@ -1,9 +1,26 @@
-import { Controller, ForbiddenException, Get, Request, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { Controller, ForbiddenException, Get, Param, Request, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Oauth42Guard } from './oauth42.guard';
 import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
+
+
+function throwOrRedir(res, redir, error)
+{
+  if (redir)
+    return res.redirect(redir);
+  else
+    throw error;
+}
+
+function returnOrRedir(res, redir, val)
+{
+  if (redir)
+    return res.redirect(redir);
+  else
+    return val;
+}
 
 @Controller('auth')
 export class AuthController
@@ -43,51 +60,55 @@ export class AuthController
   @UseGuards(Oauth42Guard)
   async loginWith42(@Request() req, @Response({ passthrough: true }) res) {
     const redir = req.query.redirectURL;
-    if (redir)
-      return res.redirect(redir);
     if (req.session === undefined)
-      throw new UnauthorizedException("42 API refused connection.");
+      return throwOrRedir(res, redir, new UnauthorizedException("42 API refused connection."));
     const me = await User.findOneBy({ft_login: req.user});
     if (me.status === User.Status.BANNED) {
       req.session.destroy();
-      throw new UnauthorizedException("You are banned from this server.");
+      return throwOrRedir(res, redir, new UnauthorizedException("You are banned from this server."));
     }
     req.session.twoFASecret = me.twoFASecret;
-    return "Success";
+    return returnOrRedir(res, redir, "Success");
   }
 
   @Get('2FA')
   @UseGuards(SessionGuard)
   async validate2FA(@Request() req, @Response({ passthrough: true }) res) {
     const redir = req.query.redirectURL;
-    if (redir)
-      return res.redirect(redir);
-    if (!req.session.twoFASecret)
-      return "2FA is either already validated or not activated on your profile."
-    else {
+    if (req.session.twoFASecret)
+    {
       if (req.query.twoFAToken === undefined)
-        throw new ForbiddenException('missing query parameter : <twoFAToken>');
+        return throwOrRedir(res, redir, new ForbiddenException('missing query parameter : <twoFAToken>'));
       if (!authenticator.check(req.query.twoFAToken, req.session.twoFASecret))
-        throw new ForbiddenException("2FA token is invalid.");
+        return throwOrRedir(res, redir, new ForbiddenException("2FA token is invalid."));
       req.session.twoFASecret = null;
     }
-    return "Success";
+    else
+      returnOrRedir(res, redir, "2FA is either already validated or not activated on your profile.");
+    return returnOrRedir(res, redir, "Success");
   }
 
-  @Get('2FASecret')
+  @Get('2FA/:secret')
   @UseGuards(SessionGuard)
-  async generate2FASecret() {
-    return authenticator.generateSecret();
+  async validate2FASecret(@Request() req, @Param('secret') secret) {
+    if (req.query.twoFAToken === undefined)
+      throw new ForbiddenException('missing query parameter : <twoFAToken>');
+    if (!authenticator.check(req.query.twoFAToken, secret))
+      throw new ForbiddenException("Token doesn't validate this secret");
+    return "Token is valid for this 2FA Secret.";
+  }
+
+  @Get('2FAuri')
+  @UseGuards(SessionGuard)
+  async generate2FASecret(@Request() req) {
+    return authenticator.keyuri(req.user, "Transcendence3D", authenticator.generateSecret(20));
   }
 
   @Get('logout')
   @UseGuards(SessionGuard)
   async logout(@Request() req, @Response({ passthrough: true }) res): Promise<any> {
     req.session.destroy();
-    const redir = req.query.redirectURL;
-    if (redir)
-      return res.redirect(redir);
-    return "You are now logged out.";
+    returnOrRedir(res, req.query.redirectURL, "You are now logged out.");
   }
 
 }
