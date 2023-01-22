@@ -41,7 +41,6 @@ export class FriendsController
     });
     if (!related)
       throw new NotFoundException('Username not found.');
-    if (related)
     return UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,
