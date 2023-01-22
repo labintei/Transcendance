@@ -8,6 +8,7 @@ import React, { useEffect } from 'react';
 export default function Livematch(props:any){
   // Array<[number,string,string]>
     const [roomList,setRoomList] = useState([])
+    const [previousid,setPreviousid] = useState(0);
     // One Time
     useEffect(() => {
     
@@ -15,7 +16,7 @@ export default function Livematch(props:any){
       socket.emit('getlist');
       //socket.emit('startstream', 0);
       return () => {
-        socket.off('get_first');
+        socket.off('get_list');
         socket.disconnect();
       }
     }, [])
@@ -25,9 +26,13 @@ export default function Livematch(props:any){
     const Setx:any = useStore((s:any)=> s.Setx);
     const Setz:any = useStore((s:any) => s.Setz);
     const startStream = function(ev:any){
+      // il faut annuler l ancien stream
+      socket.emit('endstream',previousid);// prend le client precedent et le vire du stream
       console.log(ev.target)
       console.log(ev.target.getAttribute("data-roomid"))
+      // normalement devrais lancer le bon id
       socket.emit("startstream", ev.target.getAttribute("data-roomid") * 1)
+      setPreviousid(ev.target.getAttribute("data-roomid") * 1);
     }
     useEffect(() => {
 

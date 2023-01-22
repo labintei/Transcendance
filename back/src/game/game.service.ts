@@ -438,6 +438,22 @@ export class GameService {
     }
 
 
+    endStream(client:Socket, id:number)
+    {
+        //public stream: Map<number, Array<Socket>>;
+        if(id != -1)
+        {   // index of retourne l index ala first match value
+            const i = this.stream.get(id).indexOf(client, 0);// a partir de l element 0
+            if(i > -1)
+            {
+                this.stream.get(id).splice(i,1);// splice efface un element a partir de index
+            }
+            if(this.stream.get(id) === null)// si le stream est null efface l index
+            {
+                this.stream.delete(id);
+            }
+        }
+    }
 
     async endGame(client: Socket, id: number)// je ne sait pas si j implemente directement le score a la fin ou pendant
     {
@@ -472,11 +488,9 @@ export class GameService {
 
     startstream(client:Socket, data:number): boolean
     {
-        // retourne un booleen si un stream a ete creer ou non
-        //s[0] === client s[1] === room associate devra etre associe a data
         if(this.stream && this.stream.get(data))// si le stream existe deja
         {
-            this.stream.get(0).push(client); // ajoute le client a la liste de stream   
+            this.stream.get(data).push(client);//ajoute le client a la liste de stream   
             return false;
         }
         else
@@ -485,7 +499,7 @@ export class GameService {
             i.push(client);
             this.stream.set(data, i);
             return true;
-        }// creer le stream
+        }
     }
 
     getStream(data:number)
@@ -493,37 +507,6 @@ export class GameService {
         if(this.stream)
             return this.stream.get(data);// par default sera a 0
     }
-
-// MATCH ENTITIES
-/*
-@PrimaryGeneratedColumn('uuid')
-id: number;
-
-@CreateDateColumn()
-time: Date;
-
-@Column({
-  type: 'enum',
-  enum: MatchStatus,
-  default: MatchStatus.MATCHED
-})
-status: MatchStatus;
-
-@Column('smallint')
-score1: number;
-
-@Column('smallint')
-score2: number;
-
-@ManyToOne(() => User, { onDelete: "SET NULL" })
-@JoinColumn({ name: 'user1' })
-user1: User;
-
-@ManyToOne(() => User, { onDelete: "SET NULL" })
-@JoinColumn({ name: 'user2' })
-user2: User;
-*/
-
 
     async CreateMatchID(data:number)// plus xp
     {

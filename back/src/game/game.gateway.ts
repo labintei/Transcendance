@@ -6,7 +6,7 @@ import {Match} from 'src/entities/match.entity';
 import {User} from 'src/entities/user.entity';
 //import {Room} from 'src/game/room.interface'
 import { Inject } from '@nestjs/common';
-import { async } from 'rxjs';
+import { async, subscribeOn } from 'rxjs';
 // A enlever
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { getCustomRepositoryToken } from '@nestjs/typeorm';
@@ -168,15 +168,19 @@ export class GameGateway implements OnGatewayDisconnect {
   async startstream(client:Socket, data:number)
   {
     console.log('StartStream');
-    if(this.gameservice.startstream(client, data))
+    if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
     {
-      // je vais creer un render
       var render_stream;
       render_stream =  setInterval(() => {
         GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
       }, 160)
     }
-    //client.emit('getlist',this.gameservice.Getlist());
+  }
+
+  @SubscribeMessage('endstream')
+  async endstream(client:Socket, data:number)
+  {
+    this.gameservice.endStream(client, data);
   }
 
 
