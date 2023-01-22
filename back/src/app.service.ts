@@ -19,35 +19,35 @@ export class AppService implements OnModuleInit {
       {
         ft_login: 'iromanova',
         username: 'aroma',
-        avatarURL: '',
+        avatarURL: 'storm_trooper.png',
         level:  3,
         xp: 657
       },
       {
         ft_login: 'lbintein',
         username: 'labintei',
-        avatarURL: 'jpg',
+        avatarURL: 'storm_trooper.png',
         level:  5,
         xp: 628
       },
       {
         ft_login: 'omarecha',
         username: 'bmarechafaux',
-        avatarURL: 'png',
+        avatarURL: 'storm_trooper.png',
         level:  2,
         xp: 0
       },
       {
         ft_login: 'edjubert',
         username: 'edjavid',
-        avatarURL: '',
+        avatarURL: 'storm_trooper.png',
         level:  3,
         xp: 231
       },
       {
         ft_login: 'lraffin',
         username: 'jraffin',
-        avatarURL: 'png',
+        avatarURL: 'storm_trooper.png',
         level:  1,
         xp: 630
       },
