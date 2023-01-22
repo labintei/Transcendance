@@ -21,13 +21,25 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     status: true
   },
   relatedships: {
+    owner: {
+      username: true
+    },
     status: true
-  }
+  },
+	channels: {
+		status: true,
+		joined: true,
+		statusEnd: true,
+		channel: {
+			status: true,
+			name: true
+		},
+	}
 };
 
 const usernamePattern = new RegExp('^$', );
 
-export enum UserStatus {
+enum UserStatus {
   ONLINE = "Online",
   OFFLINE = "Offline",
   MATCHING = "Matching",

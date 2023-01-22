@@ -2,70 +2,22 @@ import React from 'react';
 import axios from 'axios';
 import './LoginPage.css';
 
-import { io} from "socket.io-client";
-import { socket } from 'App';
-
-
-const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-
-var y = 56;
-
-var c = {}
-
-export const soc = io(secu_url, {
-  withCredentials: true,
-  extraHeaders: {
-    l : "pizza",
-    auth : "",
-  },
-  query: {
-    auth: c,
-    other: {y},
-    test: 42
-  }
-})
-
-soc.on("connect_error", () => {
-
-
-  soc.io.opts.transports = ["polling", "websocket"];
-});
-
-soc.on('connect', async () => {
-  const donnes = await axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login)
-  socket.emit('useremit', donnes);
-})
-
-
-
 enum LogStatus {
   NotLogged,
   twoFA,
-  Logged,
+  Logged
 }
 
 export default class LoginPage extends React.Component {
-  
-  //const [auth, setauth] = React.useState(0);
-
-  state = {
-    logged:LogStatus.NotLogged,
-    //auth: ,
-  }
+  state = {logged:LogStatus.NotLogged}
  
+
   constructor (props:any) {
     super(props);
-    //soc.request
-
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
     }).then(res => {
-      console.log('Au niveau du login : ');
-      console.log(res.data.ft_login);
-      c = res.data.ft_login
-      console.log(c);
       this.setState({logged:LogStatus.Logged})
-      soc.emit('verif', res.data.ft_login);
     }).catch(error => {
       console.log(error);
       if (error.status === 401)
@@ -73,7 +25,6 @@ export default class LoginPage extends React.Component {
       if (error.status === 403)
         this.setState({logged:LogStatus.twoFA})
     });
-  
   }
 
   styleImgAsDiv(src:string) {
@@ -81,6 +32,16 @@ export default class LoginPage extends React.Component {
       backgroundImage: 'url(' + src + ')',
     };
     return (divStyle)
+  }
+
+  requestLogin() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "auth/42", {
+      withCredentials: true
+    }).then(res => {
+      
+    }).catch(error => {
+      console.log(error);
+    });
   }
 
   requestLogout() {
@@ -94,7 +55,6 @@ export default class LoginPage extends React.Component {
     });
   }
 
-  
   render() {
     return (
         <>

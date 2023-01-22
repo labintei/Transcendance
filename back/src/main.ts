@@ -8,59 +8,41 @@ import * as expressSession from 'express-session';
 import * as passport from 'passport';
 import * as cookieParser from 'cookie-parser';
 import * as cookie from 'cookie';
-import { WsException } from '@nestjs/websockets';
 
 const session_cookie_name = 'trans-cookie';
 const sessionSecret = pseudoRandomBytes(64).toString('base64');
 const sessionStore = new expressSession.MemoryStore();
 const corsOptions = {
-	origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
-	credentials: true
+  origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
+  credentials: true
 };
 
 class SessionIOAdapter extends IoAdapter {
   createIOServer(port: number, options?: ServerOptions): any {
     const io: Server = super.createIOServer(port, {cors: corsOptions, ...options});
-    
-    io.on("connect_error", (err) => {
-      console.log("error due to " + err.message);
-    })
 
     io.use((socket, next) => {
-      console.log('USE');
-      /*
-      console.log('USE');
-      console.log('REQ HANDSHAKE AUTH : ' + (socket.handshake.query.auth));
-      console.log('REQ HANDSHAKE OTHER : ' + (socket.handshake.query.other));
-      console.log('REQ HANDSHAKE HEADERS : ');
-      console.log(socket.handshake.headers);*/
-
       const req = socket.request as Request;
 
       //  ********** FOR DEVELOPMENT ONLY **********
       //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      req.user = 'visitor'; return next();
+      //req.user = 'jraffin'; return next();
 
       let sessionID;
-      console.log('1')
       if (req.headers.cookie) {
         const cookies = cookie.parse(req.headers.cookie);
         sessionID = cookieParser.signedCookie(cookies[session_cookie_name], sessionSecret);
       }
       sessionStore.get(sessionID, (err, session: any) => {
-        if (err){
+        if (err)
           return next(err);
-        }
-        if (!session?.passport?.user){
+        if (!session?.passport?.user)
           return next(new Error('Not logged in : you need to get 42 API authorization.'));
-        }
         req.user = session.passport.user;
-        if (session.twoFASecret){
-          return next(new Error('Partially logged in : you need to validate a 2FA token.'));
-        }
+        if (session.twoFASecret)
+        return next(new Error('Partially logged in : you need to validate a 2FA token.'));
         return next();
       });
-
     });
     return io;
   }

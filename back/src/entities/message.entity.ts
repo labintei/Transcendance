@@ -4,11 +4,14 @@ import { User } from './user.entity';
 import { SocketGateway } from 'src/socket/socket.gateway';
 
 const messageDefaultFilter: FindOptionsSelect<Message> = {
-  id: true,
   time: true,
   content: true,
-	sender: User.defaultFilter,
-	channel: Channel.defaultFilter
+  sender: {
+    username:true
+  },
+  channel: {
+    id: true
+  }
 };
 
 @Entity('message')
@@ -32,16 +35,16 @@ export class Message extends BaseEntity {
   @JoinColumn({ name: 'channel' })
   channel: Channel;
 
-	//	Virtual field to specify a direct message recipient.
-	recipient: User
+  //  Virtual field to specify a direct message recipient.
+  recipient: User
 
-	async send(): Promise<Message> {
-		delete this.id;
-		delete this.time;
-		await this.save();
-		SocketGateway.channelEmit(this.channel, 'msg', this);
-		return this;
-	}
+  async send(): Promise<Message> {
+    delete this.id;
+    delete this.time;
+    await this.save();
+    SocketGateway.channelEmit(this.channel, 'msg', this);
+    return this;
+  }
 }
 
 export namespace Message {

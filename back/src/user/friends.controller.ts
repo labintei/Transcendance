@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Patch, Put, Request, UseGuards } from '@nestjs/common';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -13,10 +13,10 @@ export class FriendsController
   @Get()
   async getFriends(@Request() req): Promise<User[]> {
     return User.find({
+      select: User.defaultFilter,
       relations: {
         relatedships: true
       },
-      select: User.defaultFilter,
       where: {
         relatedships: {
           ownerLogin: req.user,
@@ -28,10 +28,14 @@ export class FriendsController
 
   @Put(':username')
   async setAsFriend(@Request() req, @Param('username') username): Promise<UserRelationship> {
-    const related = await User.findOneBy({username: username});
+    const related = await User.findOne({
+			where: { 
+				username: username
+			}
+		});
     if (!related)
       throw new NotFoundException('Username not found.');
-    return UserRelationship.create({
+    return await UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,
       status: UserRelationship.Status.FRIEND
@@ -49,7 +53,7 @@ export class FriendsController
     });
     if (!relationship)
       throw new NotFoundException('No friend found with this username.')
-    relationship.remove();
+    await relationship.remove();
   }
 
 }

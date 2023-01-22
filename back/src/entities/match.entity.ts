@@ -2,33 +2,12 @@ import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, Jo
 import { User } from './user.entity';
 
 const matchDefaultFilter: FindOptionsSelect<Match> = {
-  id: true,
   time: true,
   status: true,
   score1: true,
   score2: true,
-  user1: {
-    username: true,
-    status: true,
-    avatarURL: true,
-    level: true,
-    xp: true,
-    victories: true,
-    defeats: true,
-    draws: true,
-    rank: true
-  },
-  user2: {
-    username: true,
-    status: true,
-    avatarURL: true,
-    level: true,
-    xp: true,
-    victories: true,
-    defeats: true,
-    draws: true,
-    rank: true
-  }
+  user1: User.defaultFilter,
+  user2: User.defaultFilter
 }
 
 enum MatchStatus {
@@ -40,7 +19,7 @@ enum MatchStatus {
 @Entity('match')
 export class Match extends BaseEntity {
 
-  @PrimaryGeneratedColumn('uuid')
+  @PrimaryGeneratedColumn()
   id: number;
 
   @CreateDateColumn()
@@ -59,22 +38,13 @@ export class Match extends BaseEntity {
   @Column('smallint')
   score2: number;
 
-  @ManyToOne(() => User, { onDelete: "SET NULL" })
+	@ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user1' })
   user1: User;
 
   @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user2' })
   user2: User;
-
-  // a rajouter dans Master
-
-  async delete(id : number)
-  {
-
-    
-  }
-
 
   async resolve() {
     this.status = Match.Status.ENDED;

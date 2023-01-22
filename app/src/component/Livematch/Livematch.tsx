@@ -1,7 +1,8 @@
 import './Livematch.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import { socket } from '../../App' ;
+//import { socket } from '../../App' ;
+import { socket} from '../../Game/src/PongGame'
 import { useState } from 'react';
 import React, { useEffect } from 'react';
 

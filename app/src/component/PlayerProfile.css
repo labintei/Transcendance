@@ -29,6 +29,13 @@ margin:0; padding:0;
   margin-right:24px;
 }
 
+.warning-p {
+  margin-top: 2px;
+  font-weight: bold;
+  font-size: 14px;
+  color: rebeccapurple;
+}
+
 #stats-list > li > p {
   font-size: 24px;
   line-height: 64px;

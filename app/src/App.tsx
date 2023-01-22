@@ -2,24 +2,6 @@ import React from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 
-import {soc} from './component/LoginPage'
-
-
-export const socket = soc; 
-export const user = {};
-// 
-/*
-export const soc = io(secu_url, {
-  auth: {
-    token: "123"
-  },
-})
-*/
-// https://socket.io/fr/docs/v4/client-options/
-// options authentification auth/query/forceNew/multiplex/...
-// peut creer un manager ... pas utile n seul client
-
-
 function App () {
   const navigate = useNavigate();
   const location = useLocation();

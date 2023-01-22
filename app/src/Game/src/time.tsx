@@ -4,8 +4,8 @@ import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import Menu from './Menu/menu';
-import { socket } from '../../App' ;
-
+//import { socket } from '../../App' ;
+import {socket} from './PongGame'; 
 
 
 export default function Timer(props:any) {

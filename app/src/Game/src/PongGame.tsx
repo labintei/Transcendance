@@ -3,9 +3,25 @@ import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import Menu from './Menu/menu';
-import { socket } from '../../App' ;
+//import { socket } from '../../App' ;
 import Timer from './time';
 import { start } from 'repl';
+import { io} from "socket.io-client";
+
+const secu_url = process.env.REACT_APP_BACKEND_URL || '';
+
+export const socket = io(secu_url, {withCredentials: true});
+
+socket.on("connect_error", () => {
+  socket.io.opts.transports = ["polling", "websocket"];
+});
+
+socket.on('connect', async () => {
+  console.log('CONNECT');
+  //const donnes = await axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login)
+  //socket.emit('useremit', donnes);
+})
+
 
 export default function PongGame(props: any) {
 /*

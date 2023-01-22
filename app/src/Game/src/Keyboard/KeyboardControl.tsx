@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
 import { useStore } from '../State/state'
 //import { socket } from '../PongGame'
-
-import { socket } from '../../../App' ;
+import {socket} from '../PongGame' 
+//import { socket } from '../../../App' ;
 
 const pressed = [false]
 

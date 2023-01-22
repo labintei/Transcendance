@@ -1,6 +1,6 @@
 import { PassportStrategy } from '@nestjs/passport';
 import { HttpService } from '@nestjs/axios';
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { Strategy } from 'passport-oauth2';
 import { lastValueFrom } from 'rxjs';
 import { User } from 'src/entities/user.entity';
@@ -34,7 +34,7 @@ export class Oauth42Strategy extends PassportStrategy(Strategy, 'oauth42')
 		));
     let user = await User.findOneBy({ft_login: data.login});
     if (!user)
-      user = await User.createFrom42Login(data.login, data.image_url);// cet endroit la qu il creer le user
+      user = await User.createFrom42Login(data.login, data.image_url);
     return data.login;
   }
 }

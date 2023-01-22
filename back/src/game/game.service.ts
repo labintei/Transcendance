@@ -4,13 +4,21 @@ import { RouterModule } from "@nestjs/core";
 import { Socket} from "socket.io";
 import session from "express-session";
 import { Match } from 'src/entities/match.entity';
-import { User, UserStatus } from 'src/entities/user.entity';// j exporte l enum
+import { User/*, UserStatus */} from 'src/entities/user.entity';// j exporte l enum
 
 
 import { match } from "assert";
 import { find } from "rxjs";
 import { getManager, NoVersionOrUpdateDateColumnError } from "typeorm";
 import { SqljsEntityManager } from "typeorm/entity-manager/SqljsEntityManager";
+
+enum UserStatus {
+    ONLINE = "Online",
+    OFFLINE = "Offline",
+    MATCHING = "Matching",
+    PLAYING = "Playing",
+    BANNED = "Banned"
+}
 
 
 // public io: Server = null
