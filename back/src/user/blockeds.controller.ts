@@ -1,12 +1,11 @@
 import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
-import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
+import { ILike } from 'typeorm';
 
 @Controller('blockeds')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class BlockedsController
 {
 
@@ -28,7 +27,7 @@ export class BlockedsController
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username): Promise<UserRelationship> {
-    const other = await User.findOneBy({username: username});
+    const other = await User.findOneBy({username: ILike(username.replace(/([%_])/g, "\\$1"))});
     if (!other)
       throw new NotFoundException('Username not found.');
     if (other.ft_login == req.user)
@@ -53,7 +52,7 @@ export class BlockedsController
     const relationship = await UserRelationship.findOneBy({
       ownerLogin: req.user,
       related: {
-        username: username
+        username: ILike(username.replace(/([%_])/g, "\\$1"))
       },
       status: UserRelationship.Status.BLOCKED
     });

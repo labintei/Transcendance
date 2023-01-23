@@ -1,12 +1,10 @@
 import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/common";
-import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
-import { Between } from "typeorm";
+import { Between, ILike } from "typeorm";
 
 @Controller('ranking')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class RankingController {
 
   @Get()
@@ -44,7 +42,7 @@ export class RankingController {
 
   @Get('user/:username')
   async getUserRank(@Param('username') username, @Query('count') count): Promise<number | User[]> {
-    const user = await User.findOneBy({username: username});
+    const user = await User.findOneBy({username: ILike(username.replace(/([%_])/g, "\\$1"))});
     if (count === undefined)
       return user.rank;
     let howMany = Number(count);

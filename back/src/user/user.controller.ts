@@ -1,15 +1,11 @@
-import { Controller, Delete, Get, NotAcceptableException, NotFoundException, Param, Patch, Post, PreconditionFailedException, Request, Res, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { diskStorage } from 'multer';
-import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
+import { Controller, Delete, ConflictException, Get, NotFoundException, Param, Patch, PreconditionFailedException, Request, UseGuards } from '@nestjs/common';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { UpdateResult } from 'typeorm';
+import { ILike, UpdateResult } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class UserController
 {
 
@@ -39,10 +35,15 @@ export class UserController
       padColor: req.body.padColor,
       ballColor: req.body.ballColor
     };
-    if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
-      throw new NotAcceptableException("No updatable field in request body.");
-    if (toUpdate.username?.length > 24)
-      throw new PreconditionFailedException("Username too long.")
+    if (toUpdate.username)
+    {
+      if (toUpdate.username.length > 24)
+        throw new PreconditionFailedException("Username too long.")
+      const exists = await User.findOneBy({username: ILike(toUpdate.username.replace(/([%_])/g, "\\$1"))});
+      if (exists && exists.ft_login !== req.user)
+        throw new ConflictException("This Username is already taken.")
+    }
+    console.log()
     return User.update(req.user, toUpdate);
   }
 
@@ -51,7 +52,7 @@ export class UserController
     const related = await User.findOne({
       select: User.defaultFilter,
       where: {
-        username: username
+        username: ILike(username.replace(/([%_])/g, "\\$1"))
       }
     });
     if (!related)
