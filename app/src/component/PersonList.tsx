@@ -78,7 +78,7 @@ export default class PersonList extends React.Component {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
-                if (person.avatarURL !== undefined && person.avatarURL !== null && '' !== person.avatarURL)
+                if (person.avatarURL && person.avatarURL !== '')
                 {
                   if (acceptedimg.includes(person.avatarURL))
                     await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {

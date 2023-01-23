@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Patch, Put, Request, UseGuards } from '@nestjs/common';
+import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { LogAsJraffin } from 'src/auth/logAsJraffin.dummyGuard';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
@@ -41,7 +41,6 @@ export class FriendsController
     });
     if (!related)
       throw new NotFoundException('Username not found.');
-    if (related)
     return UserRelationship.create({
       ownerLogin: req.user,
       relatedLogin: related.ft_login,

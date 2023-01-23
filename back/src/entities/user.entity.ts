@@ -74,7 +74,7 @@ export class User extends BaseEntity {
   twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })
-  level: number;ionship
+  level: number;
 
   @Column({ type: 'int', default: 0 })
   xp: number
@@ -88,9 +88,18 @@ export class User extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   draws: number;
 
-  @Column({ type: 'int', default: 0})
+  @Column({ type: 'int', default: 0 })
   @Index()
   rank: number;
+
+  @Column({ type: 'int', default: 0 })
+  bgdChoice: number;
+
+  @Column({ type: 'varchar', length: 7, default: "#FFFFFF" })
+  padColor: string;
+
+  @Column({ type: 'varchar', length: 7, default: "#FFFFFF" })
+  ballColor: string;
 
   @Column({ nullable: true })
   socket: string;

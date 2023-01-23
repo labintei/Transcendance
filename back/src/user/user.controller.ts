@@ -15,8 +15,7 @@ export class UserController
 
   @Get()
   async getMe(@Request() req): Promise<User> {
-    const me = await User.find({
-      select: User.defaultFilter,
+    const me = await User.findOne({
       relations: {
         relationships: {
           related: true
@@ -26,14 +25,19 @@ export class UserController
         ft_login: req.user
       }
     });
-    return me[0];
+    if (me.twoFASecret)
+      me.twoFASecret = "Activated";
+    return me;
   }
 
   @Patch()
   async updateMe(@Request() req): Promise<UpdateResult> {
     const toUpdate = {
       username: req.body.username,
-      twoFASecret: req.body.twoFASecret
+      twoFASecret: req.body.twoFASecret,
+      bgdChoice: req.body.bgdChoice,
+      padColor: req.body.padColor,
+      ballColor: req.body.ballColor
     };
     if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");

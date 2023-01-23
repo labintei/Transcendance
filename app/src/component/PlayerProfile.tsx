@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerProfile.css';
-import {defaultavatar} from "./const";
+import { acceptedimg,  defaultavatar } from "./const";
 import { useStore } from 'Game/src/State/state';
 import { Navigate } from 'react-router-dom';
 
@@ -73,7 +73,7 @@ export default class PlayerProfile extends React.Component {
       player = { ...this.state.player};
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
-    }).then(res => {
+    }).then(async res => {
       const data = res.data;
       console.log(res);
       if (data.username !== undefined && data.level !== undefined) {
@@ -84,6 +84,21 @@ export default class PlayerProfile extends React.Component {
           player.victories = data.victories;
           player.draws = data.draws;
         }
+        if (data.avatarURL && data.avatarURL !== '')
+          {
+            if (acceptedimg.includes(data.avatarURL))
+              await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
+                  withCredentials: true,
+                  responseType:'blob'
+                }).then(res => {
+                  player.avatar_location = URL.createObjectURL(res.data);
+                }).catch(error => {
+                  if (error.response.status === 401)
+                    this.setState({logged:false});
+                });
+              else
+                player.avatar_location = data.avatarURL;
+          }
         if (data.avatarURL !== undefined){
           axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
             withCredentials: true,
