@@ -153,6 +153,8 @@ export default function LoginPage() {
       : logged === LogStatus.NotLogged ?
         <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
       : // LogStatus.2FA
+        <>
+        <h3>Enter 2FA token :</h3>
         <input type="text" size={4}
           onChange={event => {
             let query = event.target.value;
@@ -166,7 +168,7 @@ export default function LoginPage() {
               validate2FA();
             }
           }}
-        />
+        /></>
       }
       <br></br>
       {
