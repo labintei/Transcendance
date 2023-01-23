@@ -2,7 +2,6 @@ import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/commo
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
 import { UserRelationship } from "src/entities/userrelationship.entity";
-import { ILike, IsNull, Not } from "typeorm";
 
 @Controller('search')
 @UseGuards(TransGuard)

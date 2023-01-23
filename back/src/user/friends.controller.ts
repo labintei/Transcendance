@@ -1,4 +1,4 @@
-import { Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
+import { ConflictException, Controller, Delete, Get, NotFoundException, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
@@ -32,6 +32,13 @@ export class FriendsController
       throw new NotFoundException('Username not found.');
     if (other.ft_login == req.user)
       throw new NotFoundException('You cannot friend yourself.');
+    const blockedbyother = await UserRelationship.findOneBy({
+      ownerLogin: other.ft_login,
+      relatedLogin: req.user,
+      status: UserRelationship.Status.BLOCKED
+    });
+    if (blockedbyother)
+      throw new ConflictException('You are blocked by this user.');
     let relationship = await UserRelationship.findOneBy({
       ownerLogin: req.user,
       relatedLogin: other.ft_login
@@ -58,7 +65,7 @@ export class FriendsController
     });
     if (!relationship)
       throw new NotFoundException('No friend found with this username.')
-    await relationship.remove();
+    return await relationship.remove();
   }
 
 }
