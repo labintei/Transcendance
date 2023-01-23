@@ -4,7 +4,7 @@ import { Channel } from 'src/entities/channel.entity';
 import { User } from 'src/entities/user.entity';
 
 const chanRoomPrefix = "channel_";
-const pingTimeout = 60000;//10000;
+const pingTimeout = 600000;//10000;
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -18,7 +18,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   async handleConnection(client: Socket) {
     const user = await User.findOneBy({ft_login: (client.request as any).user});
     client.data.login = user.ft_login;
-		await SocketGateway.userDisconnect(user);
+		//await SocketGateway.userDisconnect(user);
     user.socket = client.id;
     user.status = User.Status.ONLINE;
     await user.save();
