@@ -8,7 +8,7 @@ type PRank = {
     id: number
     name: string;
     rank: number;
-    status: number;
+    status: string;
     avatar_location: string;
 }
 
@@ -49,12 +49,13 @@ export default class LevelList extends React.Component {
         let listtmp: Array<PRank> = [];
         let i = 1;
         for (var prank of pranks) {
-            let one: PRank = {id: 0, name: '', rank: 50, avatar_location:defaultavatar, status:0};
+            let one: PRank = {id: 0, name: '', rank: 50, avatar_location:defaultavatar, status:""};
             if (prank.username !== undefined && prank.level !== undefined) {
                 one.id = i;
                 one.name = prank.username;
                 one.rank = i++;
-                one.status = prank.id % 3;
+                if (prank.status !== undefined)
+                  one.status = prank.status;
                 if (prank.avatarURL !== undefined && prank.avatarURL !== null && '' !== prank.avatarURL)
                 {
                   if (acceptedimg.includes(prank.avatarURL))
@@ -88,9 +89,9 @@ export default class LevelList extends React.Component {
     if (score === 1)
       return ("Champion")
     if (score === 2)
-      return ("2")
+      return ("2nd")
     else
-      return (score)
+      return (score + "th")
   }
 
   div_score(rank:number) {
@@ -104,22 +105,13 @@ export default class LevelList extends React.Component {
       return ("low-rank")
   }
 
-  challenge_available(status:number, id:number) {
-    if (status === 1)
+  challenge_available(status:string, id:number) {
+    if (status === "Online")
       return (
         <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
       )
     else
         return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
-  }
-
-  renderStatus (s:number) {
-    if (s === 0) {
-      return ("Offline")
-    } else if (s === 1)
-      return ("Online")
-    else
-      return ("Playing")
   }
 
   styleImgAsDiv(src:string) {
@@ -137,9 +129,9 @@ export default class LevelList extends React.Component {
         {
           this.state.listl.map(prank =>
               <li key={prank.id} className={this.div_score(prank.rank)}>
-                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span className={this.renderStatus(prank.status)}></span></div>
-                <p>{prank.name}</p>
                 <p>{this.render_score(prank.rank)}</p>
+                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span title={prank.status} className={prank.status}></span></div>
+                <p>{prank.name}</p>
                 {this.challenge_available(prank.status, prank.id)}
               </li>
             )

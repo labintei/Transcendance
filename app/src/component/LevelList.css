@@ -98,7 +98,6 @@ position: relative;
 #level-list > li > button, #level-list > li > img, #level-list > li > div{
     margin-top: auto;
     margin-bottom: auto;
-    margin-left: auto;
     margin-right: 10px;
     border: none;
     align-self: right;

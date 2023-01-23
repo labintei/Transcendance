@@ -58,6 +58,13 @@ width: 30%;
     background-image: url("https://cdn4.iconfinder.com/data/icons/essentials-72/24/039_-_Cross-256.png");
 }
 
+#block-button {
+    background-image: url("https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678075-sign-ban-512.png");
+}
+
+#unblock-button {
+    background-image: url("https://cdn0.iconfinder.com/data/icons/small-n-flat/24/678134-sign-check-512.png");
+}
 /*
 this instructions are to force the dimensions of image and its container <a>
 */
