@@ -1,4 +1,3 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { Channel } from './channel.entity';
@@ -38,8 +37,6 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     },
   }
 };
-
-const usernamePattern = new RegExp('^$', );
 
 enum UserStatus {
   ONLINE = "Online",
@@ -153,17 +150,6 @@ export class User extends BaseEntity {
       user.xp -= amount;
     else
       user.xp = 0;
-    return user.save();
-  }
-
-  static async changeUsername(user: User, newUsername: string): Promise<User> {
-    if (user.username === newUsername)
-      return user;
-    if (!usernamePattern.test(newUsername))
-      throw new BadRequestException("Invalid username");
-    if (await User.findOneBy({username: newUsername}))
-      throw new ConflictException("Username " + newUsername + " already exists in database.");
-    user.username = newUsername;
     return user.save();
   }
 
