@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-import {defaultavatar} from "./const";
+import {acceptedimg, defaultavatar} from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Match = {
@@ -33,18 +33,21 @@ export default class MatchList extends React.Component {
       if (data.username !== undefined) {
         usrname = data.username;
       }
-      if (data.avatarURL !== undefined){
-        axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
-          withCredentials: true,
-          responseType:'blob'
-        }).then(res => {
-          this.setState({username:usrname, avatar_loc:URL.createObjectURL(res.data)});
-        }).catch(error => {
-          if (error.response.status === 401)
-            this.setState({logged:false});
-          else
-            this.setState({username:usrname});
-        });
+      if (data.avatarURL && data.avatarURL !== ''){
+        if (acceptedimg.includes(data.avatarURL))
+          axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
+            withCredentials: true,
+            responseType:'blob'
+          }).then(res => {
+            this.setState({username:usrname, avatar_loc:URL.createObjectURL(res.data)});
+          }).catch(error => {
+            if (error.response.status === 401)
+              this.setState({logged:false});
+            else
+              this.setState({username:usrname});
+          });
+        else
+          this.setState({username:usrname, avatar_loc:data.avatarURL});
       } else
         this.setState({username:usrname});
       this.getMatches();

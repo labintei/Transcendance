@@ -85,34 +85,23 @@ export default class PlayerProfile extends React.Component {
           player.draws = data.draws;
         }
         if (data.avatarURL && data.avatarURL !== '')
-          {
-            if (acceptedimg.includes(data.avatarURL))
-              await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
-                  withCredentials: true,
-                  responseType:'blob'
-                }).then(res => {
-                  player.avatar_location = URL.createObjectURL(res.data);
-                }).catch(error => {
-                  if (error.response.status === 401)
-                    this.setState({logged:false});
-                });
-              else
-                player.avatar_location = data.avatarURL;
+        {
+          if (acceptedimg.includes(data.avatarURL))
+            await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
+                withCredentials: true,
+                responseType:'blob'
+              }).then(res => {
+                player.avatar_location = URL.createObjectURL(res.data);
+                this.setState({player:player});
+              }).catch(error => {
+                if (error.response.status === 401)
+                  this.setState({logged:false});
+              });
+          else {
+            player.avatar_location = data.avatarURL;
           }
-        if (data.avatarURL !== undefined){
-          axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
-            withCredentials: true,
-            responseType:'blob'
-          }).then(res => {
-            player.avatar_location = URL.createObjectURL(res.data);
-            this.setState({player:player});
-          }).catch(error => {
-            if (error.response.status === 401)
-              this.setState({logged:false});
-            else if (player !== this.state.player)
-              this.setState({player:player});
-          });
-        } else if (player !== this.state.player)
+        }
+        if (player !== this.state.player)
           this.setState({player:player});
       }
     }).catch(error => {
