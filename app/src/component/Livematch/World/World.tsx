@@ -2,7 +2,7 @@
 import { CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import * as React from 'react'
-import { useRef, useState } from 'react'
+import { useRef } from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -14,16 +14,16 @@ import i3 from "../World/Components/Skybox/corona_up.png"
 import i4 from "../World/Components/Skybox/corona_dn.png"
 import i5 from "../World/Components/Skybox/corona_rt.png"
 import i6 from "../World/Components/Skybox/corona_lf.png"
-import KeyboardControls from "../Keyboard/KeyboardControl"
+
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
+import { Sky} from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 
+//import SocketControl from "../ChangeState/ChangeState";
 
-//import Timer from '../time'
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -58,6 +58,8 @@ function Ocean() {
     }),
     [waterNormals]
   )
+
+  console.log(ref)
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
   // @ts-ignore
   return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]} />
@@ -79,7 +81,6 @@ const CameraControls = () => {
   // Ref to the controls, so that we can update them on every frame using useFrame
   const controls: any = useRef();
   useFrame((state) => controls.current.update());
-
   // 3. Initializing the Orbit Control
   return <orbitControls
     ref={controls}
@@ -126,13 +127,11 @@ export default function World(props: any) {
   var camposy = useStore((s:any) => s.cy);
   var camposz = useStore((s:any) => s.cz);
 
-  var t = useStore((s:any) => s.time);
   const map = useStore((s: any) => s.bgdChoice)
-  return (  
+  return (
     <Canvas
     camera={{ position: [camposx, camposy, camposz]}}>
     <CameraControls />
-    <KeyboardControls />
     <ambientLight intensity={0.5} />
     <directionalLight position={[0, 0, 5]} color="red" />
     <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
@@ -164,7 +163,6 @@ export default function World(props: any) {
     <Box2 position={[0, 0, -5]} />
     <Plane position={[0, -0.5, 0]} />
   </Canvas>
-
   )
 
 }
