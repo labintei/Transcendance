@@ -88,9 +88,9 @@ export default class LevelList extends React.Component {
     if (score === 1)
       return ("Champion")
     if (score === 2)
-      return ("2")
+      return ("2nd")
     else
-      return (score)
+      return (score + "th")
   }
 
   div_score(rank:number) {
@@ -137,9 +137,9 @@ export default class LevelList extends React.Component {
         {
           this.state.listl.map(prank =>
               <li key={prank.id} className={this.div_score(prank.rank)}>
-                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span className={this.renderStatus(prank.status)}></span></div>
-                <p>{prank.name}</p>
                 <p>{this.render_score(prank.rank)}</p>
+                <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span title={this.renderStatus(prank.status)} className={this.renderStatus(prank.status)}></span></div>
+                <p>{prank.name}</p>
                 {this.challenge_available(prank.status, prank.id)}
               </li>
             )

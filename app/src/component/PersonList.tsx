@@ -11,11 +11,10 @@ type Person = {
     avatar_location: string;
     rank: number;
     friend: boolean;
+    blocked: boolean;
 }
 
 type State = {
-  pwait:number
-  waiting:boolean
   listp:Array<Person>
   listf:Array<Person>
   logged:boolean
@@ -23,7 +22,7 @@ type State = {
 }
 
 export default class PersonList extends React.Component {
-  state:State= {pwait:0, listp:[], waiting:false, listf:[], logged:true, query:""};
+  state:State= {listp:[], listf:[], logged:true, query:""};
 
   constructor(props:any) {
     super(props);
@@ -37,6 +36,30 @@ export default class PersonList extends React.Component {
 
   challengeClicked(id:number) {
     console.log(id);
+  }
+
+  blockManage(id: number, friendlist: boolean): void {
+    let person:Person = (friendlist ? this.state.listf[id] : this.state.listp[id]);
+    if (person.blocked) {
+      axios.delete(process.env.REACT_APP_BACKEND_URL + "blockeds/" + person.name, {
+        withCredentials: true
+      }).then(() => {
+        this.doSearch();
+      }).catch(error => {
+        console.log(error);
+        console.log(this.state);
+      });
+    } else {
+      axios.put(process.env.REACT_APP_BACKEND_URL + "blockeds/" + person.name, {}, {
+        withCredentials: true
+      }).then(() => {
+        this.doSearch();
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          this.setState({logged:false});
+        console.log(error)
+      });
+    }
   }
 
   friendManage(id:number, friendlist:boolean) {
@@ -58,7 +81,7 @@ export default class PersonList extends React.Component {
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
-        if (error.response.status === 401)
+        if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
         console.log(error)
       });
@@ -73,7 +96,7 @@ export default class PersonList extends React.Component {
         let listftmp: Array<Person> = [];
         let id = 0;
         for (var person of friends) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
@@ -99,7 +122,7 @@ export default class PersonList extends React.Component {
         }
         this.setState({listf: listftmp, logged:true});
       }).catch(error => {
-        if (error.response.status === 401)
+        if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
         console.log(error)
       });
@@ -114,7 +137,7 @@ export default class PersonList extends React.Component {
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false};
+            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
@@ -122,7 +145,7 @@ export default class PersonList extends React.Component {
                 {
                   let ships:Array<{status:string}> = person.relatedships;
                   one.friend = ships[0].status === "Friend";
-                  console.log(one.friend);
+                  one.blocked = ships[0].status === "Blocked";
                 }
                 else
                   one.friend = false;
@@ -135,7 +158,7 @@ export default class PersonList extends React.Component {
                         }).then(res => {
                           one.avatar_location = URL.createObjectURL(res.data);
                         }).catch(error => {
-                          if (error.response.status === 401)
+                          if (error.response.status === 401 || error.response.status === 403)
                             this.setState({logged:false});
                         });
                     else
@@ -149,7 +172,7 @@ export default class PersonList extends React.Component {
         console.log(this.state);
       }).catch(error => {
         console.log(error);
-        if (error.response.status === 401)
+        if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
       });
   }
@@ -163,13 +186,6 @@ export default class PersonList extends React.Component {
       return ("In Match")
   }
 
-  get_friend_status(isf:boolean) {
-    if (!isf)
-      return ("add-f-button")
-    else
-      return ("remove-f-button")
-  }
-
   render_list(list:Array<Person>, flist:boolean) {
     return (
       <ul id="person-list">
@@ -178,10 +194,23 @@ export default class PersonList extends React.Component {
             <li key={person.id}>
               <img alt="avatar" className="avatar" src={person.avatar_location}></img>
               <p>{person.name}</p>
-              <p>{this.render_status(person.status)}</p>
+              <>{person.blocked ?
+                <p>Blocked</p>
+              :
+                <p>{this.render_status(person.status)}</p>
+              }</>
               <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button"></button>
-              <img alt="friend" className="friend" src="https://cdn4.iconfinder.com/data/icons/basic-ui-2-line/32/people-group-team-peoples-friend-512.png"/>
-              <button onClick={() => this.friendManage(person.id, flist)} id={this.get_friend_status(person.friend)}></button>
+              { person.blocked ?
+              <><button onClick={() => this.friendManage(person.id, flist)} id={person.friend ? "remove-f-button" : "add-f-button"}></button>
+                <button onClick={() => this.blockManage(person.id, flist)} id="unblock-button"></button>
+                </>
+              : person.friend ?
+                <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button"></button>
+              :
+                <><button onClick={() => this.friendManage(person.id, flist)} id="add-f-button"></button>
+                <button onClick={() => this.blockManage(person.id, flist)} id="block-button"></button>
+                </>
+              }
             </li>
           )
         }
@@ -207,28 +236,11 @@ export default class PersonList extends React.Component {
       )
   }
 
-  change_waiting() {
-    if (this.state.waiting)
-    {
-      this.setState({waiting:false})
-      console.log("Start matching")
-    }
-    else
-    {
-      this.setState({waiting:true})
-      console.log("Stop Matching")
-    }
-
-  }
-
   render() {
     console.log(this.state);
     return (
         <>
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
-        <h2>People waiting for a opponent : {this.state.pwait}</h2>
-        <h2>{(this.state.waiting ? "Matching you with people..." : "Challenge them !")}</h2>
-        <button className="matching-button" onClick={() => this.change_waiting()}>{(this.state.waiting ? "Stop" : "Start") + " Matching"}</button>
         <h3>Friends :</h3>
         {
           this.render_friend(this.state.listf)
@@ -238,7 +250,7 @@ export default class PersonList extends React.Component {
           placeholder="Search users"
           minLength={3}
           onChange={event => {this.setState({query: event.target.value})}}
-          onKeyPress={event => {
+          onKeyDown={event => {
                     if (event.key === 'Enter') {
                       this.doSearch()
                     }

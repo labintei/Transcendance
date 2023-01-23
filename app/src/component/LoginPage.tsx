@@ -36,19 +36,12 @@ export default function LoginPage() {
       console.log(error);
       login.set(false);
       console.log(error.response.status);
-      if (error.response.status == 401)
+      if (error.response.status === 401)
         setLogged(LogStatus.NotLogged);
-      if (error.response.status == 403)
+      if (error.response.status === 403)
         setLogged(LogStatus.twoFA);
     });
   }, []);
-
-  function styleImgAsDiv(src: string) {
-    const divStyle = {
-      backgroundImage: 'url(' + src + ')',
-    };
-    return (divStyle)
-  }
 
   function requestLogout() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "auth/logout", {
@@ -69,7 +62,7 @@ export default function LoginPage() {
     }).then(() => {
       setUsing(false);
     }).catch(error => {
-      if (error.status == 401 || error.status == 403) {
+      if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
         login.set(false);
       }
@@ -88,14 +81,14 @@ export default function LoginPage() {
         setOpenWindow(false);
         setUsing(true);
       }).catch(error => {
-        if (error.status == 401 || error.status == 403) {
+        if (error.response.status === 401 || error.response.status === 403) {
           setLogged(LogStatus.NotLogged);
           login.set(false);
         }
         console.log(error);
       });
     }).catch(error => {
-      if (error.status == 401 || error.status == 403) {
+      if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
         login.set(false);
       }
@@ -112,7 +105,7 @@ export default function LoginPage() {
       setUsing(true);
       login.set(true);
     }).catch(error => {
-      if (error.status == 401 || error.status == 403) {
+      if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
         login.set(false);
       }
@@ -138,7 +131,7 @@ export default function LoginPage() {
         }
       });
     }).catch(error => {
-      if (error.status == 401 || error.status == 403) {
+      if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
         login.set(false);
       }
@@ -168,7 +161,10 @@ export default function LoginPage() {
               validate2FA();
             }
           }}
-        /></>
+        /><br/><br/>
+        <button onClick={validate2FA}>Validate</button>
+        <button onClick={requestLogout}>Cancel</button>
+        </>
       }
       <br></br>
       {
@@ -187,7 +183,7 @@ export default function LoginPage() {
           <div>
             <h3>Two-Factor Authentication (2FA)</h3>
             <p>Scan QRCode</p>
-            <img src={secret.otpauth_url}></img>
+            <img src={secret.otpauth_url} alt="qrcode"></img>
             <p>Or enter this Code into your app :</p>
             <h4>{secret.base32}</h4>
             <p>To change the settings please validate the authentication code</p>
@@ -206,7 +202,8 @@ export default function LoginPage() {
                   enable2FA();
                 }
               }}
-            /><br/><br/>
+            /><br/>
+            <button onClick={enable2FA}>Validate</button><br/><br/>
             <button onClick={() => setOpenWindow(false)}>Cancel</button>
           </div>
       }
