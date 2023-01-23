@@ -7,7 +7,7 @@ import { Navigate } from 'react-router-dom';
 type Person = {
     id: number
     name: string;
-    status: number;
+    status: string;
     avatar_location: string;
     rank: number;
     friend: boolean;
@@ -96,11 +96,13 @@ export default class PersonList extends React.Component {
         let listftmp: Array<Person> = [];
         let id = 0;
         for (var person of friends) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
+                if (person.status !== undefined)
+                  one.status = person.status;
                 if (person.avatarURL && person.avatarURL !== '')
                 {
                   if (acceptedimg.includes(person.avatarURL))
@@ -137,10 +139,13 @@ export default class PersonList extends React.Component {
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
-            let one: Person = {id: id, name: '', status: 0, avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
             if (person.level !== undefined && person.username !== undefined) {
+                console.log(person);
                 one.rank = person.level;
                 one.name = person.username;
+                if (person.status !== undefined)
+                  one.status = person.status;
                 if (person.relatedships !== undefined && person.relatedships[0] !== undefined)
                 {
                   let ships:Array<{status:string}> = person.relatedships;
@@ -177,15 +182,6 @@ export default class PersonList extends React.Component {
       });
   }
 
-  render_status(status:number) {
-    if (status === 0)
-      return ("Offline")
-    else if (status === 1)
-      return ("Online")
-    else
-      return ("In Match")
-  }
-
   render_list(list:Array<Person>, flist:boolean) {
     return (
       <ul id="person-list">
@@ -197,18 +193,22 @@ export default class PersonList extends React.Component {
               <>{person.blocked ?
                 <p>Blocked</p>
               :
-                <p>{this.render_status(person.status)}</p>
+                <p>{person.status}</p>
               }</>
-              <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button"></button>
+              <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button" title='challenge'></button>
               { person.blocked ?
-              <><button onClick={() => this.friendManage(person.id, flist)} id={person.friend ? "remove-f-button" : "add-f-button"}></button>
-                <button onClick={() => this.blockManage(person.id, flist)} id="unblock-button"></button>
+              <><button 
+                  onClick={() => this.friendManage(person.id, flist)}
+                  id={person.friend ? "remove-f-button" : "add-f-button"}
+                  title={person.friend ? "remove friend" : "add friend"}
+                ></button>
+                <button onClick={() => this.blockManage(person.id, flist)} id="unblock-button" title="unblock"></button>
                 </>
               : person.friend ?
-                <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button"></button>
+                <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button" title="remove friend"></button>
               :
-                <><button onClick={() => this.friendManage(person.id, flist)} id="add-f-button"></button>
-                <button onClick={() => this.blockManage(person.id, flist)} id="block-button"></button>
+                <><button onClick={() => this.friendManage(person.id, flist)} id="add-f-button" title="add friend"></button>
+                <button onClick={() => this.blockManage(person.id, flist)} id="block-button" title="block"></button>
                 </>
               }
             </li>
