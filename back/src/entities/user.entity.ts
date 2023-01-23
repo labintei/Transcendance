@@ -70,7 +70,7 @@ export class User extends BaseEntity {
   @Column({ nullable: true })
   avatarURL: string;
 
-  @Column({ nullable: true })
+  @Column({ nullable: true, length: 32 })
   twoFASecret: string;
 
   @Column({ type: 'int', default: 1 })
