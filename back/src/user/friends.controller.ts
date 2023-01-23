@@ -31,6 +31,8 @@ export class FriendsController
     const other = await User.findOneBy({username: username});
     if (!other)
       throw new NotFoundException('Username not found.');
+    if (other.ft_login == req.user)
+      throw new NotFoundException('You cannot friend yourself.');
     let relationship = await UserRelationship.findOneBy({
       ownerLogin: req.user,
       relatedLogin: other.ft_login
