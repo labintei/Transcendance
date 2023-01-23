@@ -28,24 +28,24 @@ export class BlockedsController
 
   @Put(':username')
   async setAsBlocked(@Request() req, @Param('username') username): Promise<UserRelationship> {
-    const related = await User.findOne({
-      relations: {
-        relatedships: true
-      },
-      where: {
-        username: username,
-        relatedships: {
-          ownerLogin: req.user
-        }
-      }
-    });
-    if (!related)
+    const other = await User.findOneBy({username: username});
+    if (!other)
       throw new NotFoundException('Username not found.');
-    return UserRelationship.create({
+    if (other.ft_login == req.user)
+      throw new NotFoundException('You cannot block yourself.');
+    let relationship = await UserRelationship.findOneBy({
       ownerLogin: req.user,
-      relatedLogin: related.ft_login,
-      status: UserRelationship.Status.BLOCKED
-    }).save();
+      relatedLogin: other.ft_login
+    });
+    if (relationship)
+      relationship.status = UserRelationship.Status.BLOCKED;
+    else
+      relationship = await UserRelationship.create({
+        ownerLogin: req.user,
+        relatedLogin: other.ft_login,
+        status: UserRelationship.Status.BLOCKED
+      });
+    return relationship.save();
   }
 
   @Delete(':username')

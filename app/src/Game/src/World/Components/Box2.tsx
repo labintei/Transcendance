@@ -1,4 +1,4 @@
-import React, { RefObject, useEffect, useRef, useState } from "react"
+import React, { RefObject, useState } from "react"
 import { useFrame } from '@react-three/fiber'
 import { useSpring, animated, config } from '@react-spring/three'
 import { useStore } from '../../State/state'
@@ -17,17 +17,12 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
   const [active, setActive] = useState(false);
 
   const myMesh = React.useRef() as RefObject<any>;
-  const getDirection: any = useStore((state: any) => state.controls);
 
+  const data = useStore((s:any) => s.p2x);
 
-  useFrame((state, delta) => {
-    if (getDirection.left === true) {
-      box.current.position.x -= 0.2
-      
-    }
-    if (getDirection.right === true)
-    box.current.position.x += 0.2
-
+  // va l envoyer en double pas bon bail
+  useFrame(() => {
+    box.current.position.x = data / 10;
   })
 
   const { scale } = useSpring({

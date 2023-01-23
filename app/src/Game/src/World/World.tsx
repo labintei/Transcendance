@@ -4,7 +4,6 @@ import * as THREE from 'three'
 import * as React from 'react'
 import { useRef, useState } from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
-import Box from './Components/Box1'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ReactThreeFiber } from '@react-three/fiber'
@@ -19,9 +18,12 @@ import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles } from "@react-three/drei";
+import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
+
+
+//import Timer from '../time'
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -56,8 +58,6 @@ function Ocean() {
     }),
     [waterNormals]
   )
-
-  console.log(ref)
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
   // @ts-ignore
   return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]} />
@@ -85,10 +85,11 @@ const CameraControls = () => {
     ref={controls}
     args={[camera, domElement]}
     // enableZoom={false}
+    /*
     maxAzimuthAngle={Math.PI / 4}
     maxPolarAngle={Math.PI}
     minAzimuthAngle={-Math.PI / 4}
-    minPolarAngle={0}
+    minPolarAngle={0}*/
     enableDamping={true}
   />;
 };
@@ -116,46 +117,54 @@ function SkyBox() {
   return null;
 }
 
+// changer la position de la Camera si role === 2
+
+
 export default function World(props: any) {
 
-  // const getDirection:any = useStore((state:any) => state.controls);
+  var camposx = useStore((s:any) => s.cx);
+  var camposy = useStore((s:any) => s.cy);
+  var camposz = useStore((s:any) => s.cz);
+
+  var t = useStore((s:any) => s.time);
   const map = useStore((s: any) => s.bgdChoice)
-  // console.log(getDirection)
-  return (
+  return (  
     <Canvas
-      camera={{ position: [0, 3, 7] }}>
-      <CameraControls />
-      <KeyboardControls />
-      <ambientLight intensity={0.5} />
-      <directionalLight position={[0, 0, 5]} color="red" />
-      <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
-      <pointLight position={[-10, -10, -10]} />
-      <Box1 position={[0, 0, 5]} />
-      <Sphere />
+    camera={{ position: [camposx, camposy, camposz]}}>
+    <CameraControls />
+    <KeyboardControls />
+    <ambientLight intensity={0.5} />
+    <directionalLight position={[0, 0, 5]} color="red" />
+    <spotLight position={[10, 10, 10]} angle={0.15} penumbra={1} />
+    <pointLight position={[-10, -10, -10]} />
+    <Box1 position={[0, 0, 5]} />
+    <Sphere />
 
-      { map === 0 && 
-      <SkyBox /> 
-      }
-      { map === 1 &&
-      <>
-      <Ocean />
-       <Sky
-        sunPosition={[0, 1, 8]}
-        inclination={10}
-        azimuth={125}
-        rayleigh={60}
-        turbidity={100}
-        mieCoefficient={0.1}
-        mieDirectionalG={0.8}
-        distance={3000}
-        {...props}
-      />
-      </>
+    { map === 0 && 
+    <SkyBox /> 
+    }
+    { map === 1 &&
+    <>
+    <Ocean />
+     <Sky
+      sunPosition={[0, 1, 8]}
+      inclination={10}
+      azimuth={125}
+      rayleigh={60}
+      turbidity={100}
+      mieCoefficient={0.1}
+      mieDirectionalG={0.8}
+      distance={3000}
+      {...props}
+    />
+    </>
 
-      }
+    }
 
-      <Box2 position={[0, 0, -5]} />
-      <Plane position={[0, -0.5, 0]} />
-    </Canvas>
+    <Box2 position={[0, 0, -5]} />
+    <Plane position={[0, -0.5, 0]} />
+  </Canvas>
+
   )
+
 }

@@ -49,7 +49,6 @@ export class UserRelationship extends BaseEntity {
         "relationship.related = user.ft_login AND relationship.owner = :ownerLogin AND relationship.status = :status",
         { ownerLogin: owner.ft_login, status: status })
       .getMany();
-    console.log(list);
     const relationships = await UserRelationship.find({
       relations: {
           related: true
