@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import create from 'zustand';
+import { create } from 'zustand';
 
 type Profile = {
   uname:string,
@@ -10,11 +10,12 @@ type Profile = {
 
 
 // define the store
-export const useStore = create((set,get) => {
-
+export const useStore = create((set/*,get*/) => ({
+  /*
   return {
   set,
   get,
+  */
   //interface: Game_Data = {},
   map: "space",
   //gameReady:false,
@@ -100,6 +101,4 @@ export const useStore = create((set,get) => {
   setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]})),
   setMap: (name:any) => set((state:any) => ({map: name}))
  }
-}
-
-);
+));

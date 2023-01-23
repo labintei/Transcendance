@@ -1,5 +1,5 @@
 import { createRef } from 'react';
-import create from 'zustand';
+import { create }  from 'zustand';
 //import { socket, Game_data } from "../PongGame"
 
 type Profile = {
@@ -10,11 +10,11 @@ type Profile = {
 }
 
 // define the store
-export const useStore = create((set,get) => {
+export const useStore = create((set,get) => ({
 
-  return {
+  /*return {
   set,
-  get,
+  get,*/
   map: "space",
   gameReady:false,
   votes: 0,
@@ -102,6 +102,4 @@ export const useStore = create((set,get) => {
   setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]})),
   setMap: (name:any) => set((state:any) => ({map: name}))
  }
-}
-
-);
+));
