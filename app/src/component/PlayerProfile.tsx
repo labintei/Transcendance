@@ -94,7 +94,7 @@ export default class PlayerProfile extends React.Component {
                 player.avatar_location = URL.createObjectURL(res.data);
                 this.setState({player:player});
               }).catch(error => {
-                if (error.response.status === 401)
+                if (error.response.status === 401 || error.response.status === 403)
                   this.setState({logged:false});
               });
           else {
@@ -148,11 +148,11 @@ export default class PlayerProfile extends React.Component {
       temp.name = this.state.query;
       this.setState({player:temp, nameEdit:false, errormsg:null});
     }).catch(error => {
-      if (error.response.status === 500){
+      if (error.response.status === 409){
         this.setState({errormsg:this.state.query + " is already taken."})
       } else if (error.response.status === 412) {
         this.setState({errormsg:"Name is too long (24 characters max)."});
-      } else if (error.response.status === 401)
+      } else if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
       console.log(error)
     })
@@ -178,14 +178,14 @@ export default class PlayerProfile extends React.Component {
     }).catch(error => {
       if (error.response === undefined)
         console.log(error);
-      else if (error.response.status === 401)
+      else if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
       else
         console.log(error);
     });
   }
 
-  avatarFormat(editing:boolean, loc:string) {
+  avatarFormat(editing:boolean) {
     if (editing)
       return (<>
         <input type="file"
@@ -197,6 +197,7 @@ export default class PlayerProfile extends React.Component {
             }}>
         </input>
         <button className='send-button' onClick={() => this.changeAvatar()}>Send image</button>
+        <button onClick={() => this.setState({avatarEdit:false})}>Cancel</button>
         </>)
     else
         return (
@@ -223,7 +224,7 @@ export default class PlayerProfile extends React.Component {
         {this.state.errormsg === null ? <></> : <p className='warning-p'>{this.state.errormsg}</p>}
         </div>
         <div className='place_avatar'>
-          {this.avatarFormat(this.state.avatarEdit, this.state.player.avatar_location)}
+          {this.avatarFormat(this.state.avatarEdit)}
         </div>
         <h3>Rank {this.state.player.rank}</h3>
         <ul id="stats-list">
