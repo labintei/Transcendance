@@ -41,7 +41,7 @@ export class UserController
     };
     if (toUpdate.username === undefined && toUpdate.twoFASecret === undefined)
       throw new NotAcceptableException("No updatable field in request body.");
-    if (toUpdate.username.length > 24)
+    if (toUpdate.username?.length > 24)
       throw new PreconditionFailedException("Username too long.")
     return User.update(req.user, toUpdate);
   }

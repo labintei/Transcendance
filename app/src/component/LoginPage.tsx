@@ -16,6 +16,8 @@ export default function LoginPage() {
     otpauth_url: "",
     base32: "",
   });
+  const [username, setUsername] = useState("default");
+  const [otp, setOtp] = useState("");
   const [otpTest, setOtpTest] = useState("");
   const [usingotp, setUsing] = useState(false);
   const [openWindow, setOpenWindow] = useState(false);
@@ -26,14 +28,17 @@ export default function LoginPage() {
       withCredentials: true
     }).then(res => {
       setUsing(res.data.twoFASecret !== undefined && res.data.twoFASecret !== null);
+      if (res.data.ft_login !== undefined)
+        setUsername(res.data.ft_login);
       setLogged(LogStatus.Logged);
       login.set(true);
     }).catch(error => {
       console.log(error);
       login.set(false);
-      if (error.status == 401)
+      console.log(error.response.status);
+      if (error.response.status == 401)
         setLogged(LogStatus.NotLogged);
-      if (error.status == 403)
+      if (error.response.status == 403)
         setLogged(LogStatus.twoFA);
     });
   }, []);
@@ -73,12 +78,14 @@ export default function LoginPage() {
   }
 
   function enable2FA() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "auth/2FA/" + otpTest, {
-      withCredentials: true
-    }).then(() => {
-      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {twoFAEnabled:true}, {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "auth/2FA/" + secret.base32, {
+      withCredentials: true,
+      params: { twoFAToken: otpTest }
+    }).then(res => {
+      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {twoFASecret:secret.base32}, {
         withCredentials: true
       }).then(() => {
+        setOpenWindow(false);
         setUsing(true);
       }).catch(error => {
         if (error.status == 401 || error.status == 403) {
@@ -96,30 +103,70 @@ export default function LoginPage() {
     });
   }
 
-  function generate2FA() {
-    let twoFA:string = "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ";
-    let otpurl:string = "EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQEYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ";
-    qrcode.toDataURL(otpurl, (err:any, imageUrl:string) => {
-      if (err)
-        console.log('Error with QR');
-      else {
-        setSecret({
-          otpauth_url: imageUrl,
-          base32: twoFA
-        });
-        setOpenWindow(true);
+  function validate2FA() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "auth/2FA", {
+      withCredentials: true,
+      params: { twoFAToken: otp }
+    }).then(res => {
+      setLogged(LogStatus.Logged);
+      setUsing(true);
+      login.set(true);
+    }).catch(error => {
+      if (error.status == 401 || error.status == 403) {
+        setLogged(LogStatus.NotLogged);
+        login.set(false);
       }
+      console.log(error);
+    });
+  }
+
+  function generate2FA() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "auth/2FASecret", {
+      withCredentials: true
+    }).then(res => {
+      let twoFA:string = res.data;
+      let otpurl:string = "otpauth://totp/" + username + "?secret=" + twoFA + "&issuer=Pong3D";
+      qrcode.toDataURL(otpurl, (err:any, imageUrl:string) => {
+        if (err)
+          console.log('Error with QR');
+        else {
+          setSecret({
+            otpauth_url: imageUrl,
+            base32: twoFA
+          });
+          setOpenWindow(true);
+        }
+      });
+    }).catch(error => {
+      if (error.status == 401 || error.status == 403) {
+        setLogged(LogStatus.NotLogged);
+        login.set(false);
+      }
+      console.log(error);
     });
   }
 
   return (
     <>
-      { logged == LogStatus.Logged ?
+      { logged === LogStatus.Logged ?
         <button onClick={() => requestLogout()}>Log Out</button>
-      : logged == LogStatus.NotLogged ?
+      : logged === LogStatus.NotLogged ?
         <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
       : // LogStatus.2FA
-        <input type="text" placeholder="Enter twoFA">TwoFA not synced yet :</input>
+        <input type="text" size={4}
+          onChange={event => {
+            let query = event.target.value;
+            if (query.length <= 6 && query.match("^[0-9]*$"))
+              setOtp(query);
+            else
+              event.target.value = otp;
+          }}
+          onKeyDown={event => {
+            if (event.key === 'Enter') {
+              validate2FA();
+            }
+          }}
+        />
       }
       <br></br>
       {
