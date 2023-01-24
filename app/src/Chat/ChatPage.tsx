@@ -30,12 +30,6 @@ export default function Chat() {
     };
   }, []);
 
-  if (!socket.connected) {
-    return (
-        <p>You are not logged in.</p>
-    );
-  }
-
   const loadMessageChannel = (key : number) => (event : any) => {
     event.preventDefault();
 
