@@ -4,6 +4,7 @@ import { getSocketContext } from 'WebSocketWrapper';
 import ChannelMessage from './ChannelMessage';
 import ChannelSidebar from './ChannelSidebar';
 import MessageInput from './MessageInput';
+import { Navigate } from 'react-router-dom';
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
@@ -22,15 +23,10 @@ export default function Chat() {
     socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
 
     // This code will run when component unmount
-    // need to remove
     return () => {
-      // socket.off('ping');
       socket.off('error');
-      socket.off('connect');
-      socket.off('disconnect');
       socket.off('msg');
       socket.off('getChannels');
-      // socket.disconnect();
     };
   }, []);
 
@@ -54,20 +50,23 @@ export default function Chat() {
   }
 
   return (
-    <div className="chat">
-      <div className="header"><h1>Chat</h1></div>
-      <ChannelSidebar
-        socket={socket}
-        onChannelClick={loadMessageChannel}
-      />
-      <ChannelMessage
-        socket={socket}
-        channelKey={channelKey}
-      />
-      <MessageInput
-        socket={socket}
-        channelKey={channelKey}
-      />
-    </div>
+    <>
+      { !socket.connected ? <Navigate to="/login"></Navigate> : <></>}
+      <div className="chat">
+        <div className="header"><h1>Chat</h1></div>
+        <ChannelSidebar
+          socket={socket}
+          onChannelClick={loadMessageChannel}
+        />
+        <ChannelMessage
+          socket={socket}
+          channelKey={channelKey}
+        />
+        <MessageInput
+          socket={socket}
+          channelKey={channelKey}
+        />
+      </div>
+    </>
   );
 }
