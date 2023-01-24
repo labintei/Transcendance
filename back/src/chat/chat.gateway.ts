@@ -40,13 +40,13 @@ export class ChatGateway {
         return message.send();
       }
       else if (data.channel) {
-        const channel = await Channel.findOneBy(data.channel as FindOptionsWhere<Channel>);
-        if (!channel)
+        message.channel = await Channel.findOneBy(data.channel as FindOptionsWhere<Channel>);
+        if (!message.channel)
           throw new WsException("Message channel was not found !");
-        if (channel.status === Channel.Status.DIRECT)
+        if (message.channel.status === Channel.Status.DIRECT)
           throw new WsException("You cannot send a channel message to a direct channel.");
         const chanUser = await ChannelUser.findOneBy({
-          channel: channel,
+          channel: message.channel,
           user: user
         } as FindOptionsWhere<ChannelUser>);
         if (!chanUser || !chanUser.canSpeak())

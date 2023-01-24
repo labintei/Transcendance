@@ -10,7 +10,7 @@ import { io} from "socket.io-client";
 
 const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 
-export const socket = io(secu_url, {withCredentials: true});
+export const socket = io(secu_url, {withCredentials: true, autoConnect: false});
 
 socket.on("connect_error", () => {
   socket.io.opts.transports = ["polling", "websocket"];
