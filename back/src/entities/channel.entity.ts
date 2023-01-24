@@ -90,7 +90,6 @@ export class Channel extends BaseEntity {
   }
 
   static async getDirectChannel(owner: User, other: User, isSenderSide: boolean): Promise<Channel> {
-
     if ((await User.countBy([owner, other] as FindOptionsWhere<User>)) != 2)
       throw new Error("wrong user parameters.")
     let channel = await Channel.createQueryBuilder("channel")
@@ -106,31 +105,6 @@ export class Channel extends BaseEntity {
     await this.createDirectChannel(other, owner, !isSenderSide);
     return await this.createDirectChannel(owner, other, isSenderSide);
   }
-
-  // async ban(user: User): Promise<ChannelUser> {
-  //   const channel = this as Channel;
-
-  //   let chanUser = await ChannelUser.findOneBy({
-  //     channel: channel,
-  //     user: user
-  //   } as FindOptionsWhere<ChannelUser>);
-  //   if (!chanUser || !chanUser.joined)
-  //     throw new NotFoundException("User is not a member of this channel.");
-  //   chanUser.status = ChannelUser.Status.BANNED;
-  //   chanUser.joined = false;
-  //   return chanUser.save();
-  // }
-
-  // async unban(user: User): Promise<ChannelUser> {
-  //   const channel = this as Channel;
-  //   const chanUser = await ChannelUser.findOneBy({
-  //     channel: channel,
-  //     user: user
-  //   } as FindOptionsWhere<ChannelUser>);
-  //   if (chanUser?.status === ChannelUser.Status.BANNED)
-  //     return chanUser.remove();
-  //   return chanUser;
-  // }
 
   static async publicList(): Promise<Channel[]> {
     return Channel.find({

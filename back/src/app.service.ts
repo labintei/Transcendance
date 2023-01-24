@@ -2,6 +2,7 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Match } from './entities/match.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
+import { UserSocket } from './entities/usersocket.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
@@ -10,8 +11,9 @@ export class AppService implements OnModuleInit {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
     await this.generateExamples();
-
-    await User.reinitSockets();
+    
+    await User.clearOnlines();
+    await Match.clearOngoing();
   }
 
   async generateExamples() {

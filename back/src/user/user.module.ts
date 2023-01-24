@@ -5,6 +5,7 @@ import { BlockedsController } from './blockeds.controller';
 import { RankingController } from './ranking.controller';
 import { SearchController } from './search.controller';
 import { AvatarController } from './avatar.controller';
+import { MatchController } from './match.controller';
 
 @Module({
   controllers: [
@@ -13,7 +14,8 @@ import { AvatarController } from './avatar.controller';
     FriendsController,
     BlockedsController,
     RankingController,
-    AvatarController
+    AvatarController,
+    MatchController
   ]
 })
 export class UserModule {}

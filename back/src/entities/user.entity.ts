@@ -2,6 +2,7 @@ import { SocketGateway } from 'src/socket/socket.gateway';
 import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
+import { UserSocket } from './usersocket.entity';
 import { UserRelationship } from './userrelationship.entity';
 
 const userDefaultFilter: FindOptionsSelect<User> = {
@@ -110,6 +111,9 @@ export class User extends BaseEntity {
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
 
+  @OneToMany(() => UserSocket, (socket) => (socket.user))
+  sockets: UserSocket[];
+
   /** MEMBER METHODS */
 
   public get xpAmountForNextLevel(): number {
@@ -201,13 +205,10 @@ export class User extends BaseEntity {
     `);
   }
 
-  static async reinitSockets() {
-    User.update({}, {
-      status: User.Status.OFFLINE,
-      socket: null
-    });
+  static async clearOnlines() {
+    User.update({}, { status: User.Status.OFFLINE });
+    UserSocket.delete({});
   }
-
 }
 
 export namespace User {
