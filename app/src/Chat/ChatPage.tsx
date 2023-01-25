@@ -22,7 +22,6 @@ import {
   Button,
   AddUserButton
 } from '@chatscope/chat-ui-kit-react';
-import { hasProps } from '@react-spring/core/dist/declarations/src/helpers';
 
 import avatar_temp from './logo192.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -77,16 +76,16 @@ export default function Chat() {
 
     socket.on('joinedList', (data) => {
       console.log("hello");
-      setChannels(data)
+      setChannels(data);
+      if (data.length !== 0)
+        setCurrentChannel(data[0]);
     });
 
-    socket.on('getMsgs', (data) => { setMessages(data)});
+    socket.on('getMsgs', (data) => { setMessages(data) });
 
     socket.emit('joinedList');
-
     // This code will run when component unmount
     return () => {
-      socket.off('error');
       socket.off('msg');
       socket.off('getChannels');
       socket.off('joinedList');
@@ -100,8 +99,7 @@ export default function Chat() {
         channel: { id: channel.id },
         from: null,
         count: 10
-      });
-    }
+      })};
 
     return (
       <>
@@ -119,25 +117,26 @@ export default function Chat() {
 
   function RenderInvitedConversations() {
     const joinInvited = (channel: Channel) => (e: any) => {
-      // socket.emit('')
-
-    }
+      setCurrentChannel(channel);
+      socket.emit('joinChannel', channel, (data : Channel) => {
+        setChannels([...channels, data]);
+      })};
 
     return (
       <>
-        {/* {channels.map((channel, index) => {
+        {invitedChannels.map((channel, index) => {
           return (
             <Conversation
               key={index}
               name={channel.name}
               onClick={joinInvited(channel)}/>
-          )})} */}
+          )})}
       </>
     )
   }
 
   function RenderChatContainer() {
-    console.log("renderChatContainer", channels.length)
+    console.count("renderChatContainer")
     if (channels.length === 0)
     {
       return (
@@ -157,9 +156,23 @@ export default function Chat() {
             userName={currentChannel.name}
             info="I'm blue dabudidabuda"/>
           <ConversationHeader.Actions>
-            <AddUserButton title="Add as a friend"/>
-            <Button style={{fontSize: "1.4em"}} icon={<FontAwesomeIcon icon={faUserSlash}/>}/>
-            <Button style={{fontSize: "1.4em"}} icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}/>
+            <AddUserButton
+              style={{fontSize: "1.4em"}}
+              title={currentChannel.status === "Direct" ? "Add as friend" : "Invite a friend"}
+              // if already friend, change button to faUserMinus
+              />
+            {currentChannel.status !== "Direct" ? <></> :
+            <Button
+              style={{fontSize: "1.4em"}}
+              icon={<FontAwesomeIcon icon={faUserSlash}/>}
+              title="Block this person"
+              />}
+            {currentChannel.status === "Direct" ? <></> :
+            <Button
+              style={{fontSize: "1.4em"}}
+              icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}
+              title="Leave this conversation"
+              />}
           </ConversationHeader.Actions>
         </ConversationHeader>
 
@@ -267,10 +280,6 @@ export default function Chat() {
     })
   }
 
-  const test = () => (e: any) => {
-    console.log("a", e);
-  }
-
   return (
     <div style={{
       height: "600px",
@@ -290,7 +299,7 @@ export default function Chat() {
             <RenderInvitedConversations/>
           </ExpansionPanel>
         </Sidebar>
-          <RenderChatContainer/>
+        <RenderChatContainer/>
       </MainContainer>
     </div>
   );
