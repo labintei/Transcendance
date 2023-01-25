@@ -75,7 +75,7 @@ export default function Chat() {
     socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
 
     socket.on('joinedList', (data) => {
-      console.log("hello");
+      console.log("[WS] joinedList  ");
       setChannels(data);
       if (data.length !== 0)
         setCurrentChannel(data[0]);
@@ -137,6 +137,13 @@ export default function Chat() {
 
   function RenderChatContainer() {
     console.count("renderChatContainer")
+
+    const leaveChannel = (e: any) => {
+      console.log("leaving channel", currentChannel.name)
+      socket.emit('leaveChannel', currentChannel, () => {
+        socket.emit('joinedList')
+      })}
+
     if (channels.length === 0)
     {
       return (
@@ -172,6 +179,7 @@ export default function Chat() {
               style={{fontSize: "1.4em"}}
               icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}
               title="Leave this conversation"
+              onClick={leaveChannel}
               />}
           </ConversationHeader.Actions>
         </ConversationHeader>
