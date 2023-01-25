@@ -39,7 +39,6 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
 
       socket.on('ping', () => {
         socket.emit('pong');
-        console.count('pong');
       })
     }
   }, [login]);
