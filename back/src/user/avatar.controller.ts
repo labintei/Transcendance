@@ -1,5 +1,7 @@
-import { Controller, Get, Param, Post, Res, UploadedFile, UseGuards, UseInterceptors, Request } from "@nestjs/common";
+import { Controller, Get, Param, Post, Res, UploadedFile, UseGuards, UseInterceptors, Request, NotFoundException, PreconditionFailedException } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
+import { existsSync } from "fs";
+import { rm } from "fs/promises"
 import { diskStorage } from "multer";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
@@ -15,8 +17,8 @@ const editFileName = (req, file, callback) => {
 };
 
 const imageFileFilter = (req, file, callback) => {
-    if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
-        return callback(new Error('Only image files are allowed!'), false);
+    if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
+        return callback(new PreconditionFailedException('Only image files are allowed!'), false);
     }
     callback(null, true);
 };
@@ -29,9 +31,18 @@ export class AvatarController
 
     @Get()
     async getMy(@Request() req, @Res() res) {
-        let me = await User.findOneBy({ft_login:req.user});
-        let filename:string = req.user + "-avatar." + me.avatarURL;
-        return res.sendFile(filename, {root: "./img"});
+        let fileExt = "png";
+        let filename:string = req.user + "-avatar.";
+        if (!existsSync("img/" + filename + fileExt)) {
+            fileExt = "jpg";
+            if (!existsSync("img/" + filename + fileExt)) {
+                fileExt = "jpeg";
+                if (!existsSync("img/" + filename + fileExt)) {
+                    throw new NotFoundException("No images linked to this login.")
+                }
+            }
+        }
+        return res.sendFile(filename + fileExt, {root: "./img"});
     }
 
     @Post()
@@ -40,20 +51,43 @@ export class AvatarController
         destination:'./img',
         filename: editFileName,
         }),
-        fileFilter: imageFileFilter
+        fileFilter: imageFileFilter,
+        limits: {fileSize: 1024*1024}
     }))
     async uploadAvatar(@UploadedFile() file: Express.Multer.File, @Request() req, @Res() res) {
         const name:string[] = file.originalname.split('.');
         let fileExtName:string = name.at(-1);
-        await User.update(req.user, {avatarURL:fileExtName});
+        let fileExt = "png";
+        let filename:string = req.user + "-avatar.";
+        if (fileExtName === "png" || !existsSync("img/" + filename + fileExt)) {
+            fileExt = "jpg";
+            if (fileExtName === "jpg" || !existsSync("img/" + filename + fileExt)) {
+                fileExt = "jpeg";
+                if (fileExtName === "jpeg" || !existsSync("img/" + filename + fileExt)) {
+                    fileExt = fileExtName;
+                }
+            }
+        }
+        if (fileExt !== fileExtName)
+            rm("img/" + filename + fileExt);
+        await User.update(req.user, {avatarURL:process.env.REACT_APP_BACKEND_URL + "avatar/" + req.user});
         return res.sendFile(file.filename, {root: file.destination});
     }
 
-    @Get(':username')
-    async getUserAvatar(@Res() res, @Param('username') username) {
-        let user = await User.findOneBy({username:username});
-        let filename:string = user.ft_login + "-avatar." + user.avatarURL;
-        return res.sendFile(filename, {root: "./img"});
+    @Get(':login')
+    async getUserAvatar(@Res() res, @Param('login') login) {
+        let fileExt = "png";
+        let filename:string = login + "-avatar.";
+        if (!existsSync("img/" + filename + fileExt)) {
+            fileExt = "jpg";
+            if (!existsSync("img/" + filename + fileExt)) {
+                fileExt = "jpeg";
+                if (!existsSync("img/" + filename + fileExt)) {
+                    throw new NotFoundException("No images linked to this login.")
+                }
+            }
+        }
+        return res.sendFile(filename + fileExt, {root: "./img"});
     }
 
 }

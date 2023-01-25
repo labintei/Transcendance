@@ -3,6 +3,10 @@ html {
   background-color: rgb(162, 184, 164) !important;
 }
 
+img {
+  object-fit: cover;
+}
+
 body {
   margin: 0;
   padding: 0;
