@@ -1,15 +1,5 @@
-import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
 import { User } from "./user.entity";
-
-const userRelationshipDefaultFilter: FindOptionsSelect<UserRelationship> = {
-  owner: {
-    username: true
-  },
-  related: {
-    username: true
-  },
-  status: true
-};
 
 enum UserRelationshipStatus {
   FRIEND = "Friend",
@@ -68,5 +58,4 @@ export class UserRelationship extends BaseEntity {
 
 export namespace UserRelationship {
   export import Status = UserRelationshipStatus;
-  export const defaultFilter = userRelationshipDefaultFilter;
 }

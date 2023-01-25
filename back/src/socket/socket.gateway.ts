@@ -35,7 +35,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log('Websocket Client Connected : ' + client.data.login);
     const joinedList = await Channel.joinedList(client.data.login);
     for (let channel of joinedList)
-      SocketGateway.channelEmit(channel, 'updateUser', user);
+      SocketGateway.channelEmit(channel.id, 'updateUser', user);
     console.log('Joining rooms : ');
     console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
@@ -64,7 +64,7 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
     for (let channel of joinedList)
-      SocketGateway.channelEmit(channel, 'updateUser', user);
+      SocketGateway.channelEmit(channel.id, 'updateUser', user);
   }
 
   async ping(client: Socket) {
@@ -90,8 +90,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     return this.io;
   }
 
-  public static async channelEmit(channel: Channel, event: string, content: any): Promise<boolean> {
-    return this.getIO().in(chanRoomPrefix + channel.id).emit(event, content);
+  public static async channelEmit(channelId: number, event: string, content: any): Promise<boolean> {
+    return this.getIO().in(chanRoomPrefix + channelId).emit(event, content);
   }
  
   public static async userDisconnect(user: User): Promise<void> {

@@ -27,15 +27,6 @@ const userDefaultFilter: FindOptionsSelect<User> = {
       username: true
     },
     status: true
-  },
-  channels: {
-    rights: true,
-    status: true,
-    rightsEnd: true,
-    channel: {
-      status: true,
-      name: true
-    },
   }
 };
 
@@ -133,7 +124,7 @@ export class User extends BaseEntity {
   async emitUpdate() {
     const joinedList = await Channel.joinedList(this.ft_login);
     for (let channel of joinedList)
-      SocketGateway.channelEmit(channel, 'updateUser', this);
+      channel.emitUpdate();
   }
 
   /** STATIC METHODS */

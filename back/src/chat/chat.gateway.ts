@@ -25,37 +25,34 @@ export class ChatGateway {
   //  For a direct message, omit channel and set the message <recipient> property as a partial User ( with a user login for example )
   //
   @SubscribeMessage('sendMsg')
-  async sendMsg(client: Socket, data: Message): Promise<Message[]> {
+  async sendMsg(client: Socket, data: Message): Promise<Message> {
     try {
-      const user = await User.findOneBy({ft_login: client.data.login});
-      let message = Message.create(data);
-      message.sender = user;
-      console.log(data);
-      if (data.recipient) {
-        const recipient = await User.findOneBy(data.recipient as FindOptionsWhere<User>);
-        if (!recipient)
+      data.senderLogin = client.data.login;
+      console.log("[sendMsg] : " + JSON.stringify(data));
+      if (data.recipientLogin) {
+        if (!await User.findOneBy({ft_login: data.recipientLogin}))
           throw new WsException("Direct message recipient was not found !");
-        message.channel = await Channel.getDirectChannel(recipient, user, false);
-        await message.send();
-        message.channel = await Channel.getDirectChannel(user, recipient, true);
-        return message.send();
+        data.channelId = await Channel.getDirectChannelId(data.senderLogin, data.recipientLogin);
       }
-      else if (data.channel) {
-        message.channel = await Channel.findOneBy(data.channel as FindOptionsWhere<Channel>);
-        if (!message.channel)
-          throw new WsException("Message channel was not found !");
-        if (message.channel.status === Channel.Status.DIRECT)
+      else if (data.channelId) {
+        const channel = await Channel.findOneBy({id: data.channelId});
+        if (!channel)
+          throw new WsException("Message destination channel was not found !");
+        if (channel.status === Channel.Status.DIRECT)
           throw new WsException("You cannot send a channel message to a direct channel.");
-        const chanUser = await ChannelUser.findOneBy({
-          channel: message.channel,
-          user: user
-        } as FindOptionsWhere<ChannelUser>);
+        const chanUser = await ChannelUser.findOneBy({channelId: data.channelId, userLogin: client.data.login});
         if (!chanUser || !chanUser.canSpeak())
-          throw new WsException("You cannot speak in channel " + chanUser?.channel?.name + " !");
-        return message.send();
+          throw new WsException("You cannot speak in this channel.");
       }
       else
         throw new WsException("Invalid message submitted");
+      const message = await Message.create({
+        content: data.content,
+        senderLogin: data.senderLogin,
+        channelId: data.channelId
+      }).save();
+      SocketGateway.channelEmit(message.channelId, 'msgs', message);
+      return message;
     }
     catch (e) {
       this.err(client, 'sendMsg', e);
@@ -147,39 +144,9 @@ export class ChatGateway {
     }
   }
 
-  @SubscribeMessage('deleteChannel')
-  async deleteChannel(client: Socket, data: Channel): Promise<Channel> {
-    try {
-      data.id = Number(data.id);
-      if (!Number.isInteger(data.id) || data.id < 0)
-        throw new WsException("Invalid channel id");
-      let channel = await Channel.findOne({
-        select: Channel.defaultFilter,
-        where: {
-          id: data.id,
-          name: data.name
-        }
-      });
-      if (!channel)
-        throw new WsException("Channel was not found.");
-      const chanUser = await ChannelUser.findOneBy({ channelId: data.id, userLogin: client.data.login });
-      if (!chanUser || !chanUser.isOwner())
-        throw new WsException("You are not the owner of this channel.");
-      await channel.remove();
-      channel.emitDelete();
-      this.io.socketsLeave(SocketGateway.channelsToRooms([channel]));
-      return channel;
-    }
-    catch (e) {
-      this.err(client, 'editChannel', e);
-      return null;
-    }
-  }
-
   @SubscribeMessage('joinChannel')
   async joinChannel(client: Socket, data: Channel): Promise<Channel> {
     try {
-      
       if (!data.id && !data.name)
         throw new WsException("You must provide the channel id or name.");
       const channel = await Channel.findOneBy({ id: data.id, name: data.name });
@@ -241,6 +208,8 @@ export class ChatGateway {
       const channel = await Channel.findOneBy({ id: data.id, name: data.name });
       if (!channel)
         throw new WsException("Channel was not found.");
+      if (channel.status === Channel.Status.DIRECT)
+        throw new WsException("You cannot leave a direct Channel.");
       const chanUser = await ChannelUser.findOne({
         relations: {
           channel: true
@@ -250,7 +219,7 @@ export class ChatGateway {
           userLogin: client.data.login
         } as FindOptionsWhere<ChannelUser>
       });
-      if (!chanUser || chanUser.status === ChannelUser.Status.DIRECT_ALTER)
+      if (!chanUser)
         throw new WsException("User is not a member of this channel.");
       chanUser.status = null;
       if (!chanUser.rights)
@@ -288,51 +257,38 @@ export class ChatGateway {
     return list;
   }
 
-  @SubscribeMessage('getMsgs')
-  async getMsg(client: Socket, data: {channel: Channel, from: string, count: number}): Promise<Message[]> {
+  /*  TODO  TODO  TODO
+  @SubscribeMessage('directList')
+  async directList(client: Socket): Promise<Channel[]> {
+    const list = await Channel.directList(client.data.login);
+    client.emit('invitedList', list);
+    return list;
+  }*/
+
+  @SubscribeMessage('getChannel')
+  async getChannel(client: Socket, data: {channelId: number}): Promise<Channel> {
     try {
-      const channel = await Channel.findOneBy({ id: data.channel.id, name: data.channel.name });
+      const channel = await Channel.getChannel(data.channelId);
       if (!channel)
-        throw new WsException("Channel "+ data.channel.name +"(" + data.channel.id + ") was not found.");
-      const chanUser = await ChannelUser.findOne({
-        relations: {
-          channel: true
-        },
-        where: {
-          channel: channel,
-          userLogin: client.data.login
-        } as FindOptionsWhere<ChannelUser>
-      });
-      if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
-        throw new WsException("User is not a member of this channel.");
-      const from = data.from ? new Date(data.from) : undefined;
-      const count = data.count ? Number(data.count) : undefined;
-      const list = await Message.find({
-        select: Message.defaultFilter,
-        relations: {
-          sender: true
-        },
-        where: {
-          channel: channel,
-          time: from ? LessThanOrEqual(from) : undefined
-        } as FindOptionsWhere<Message>,
-        order: {
-          time: "DESC"
-        },
-        take: count ? count : undefined
-      });
-      client.emit('msgs', list);
-      return list;
+        throw new WsException("ChannelId " + data.channelId + " was not found.");
+      if (!await ChannelUser.findOneBy({
+        channelId: channel.id,
+        userLogin: client.data.login,
+        status: ChannelUser.Status.JOINED
+      }))
+        throw new WsException("You are not a member of this Channel.");
+      client.emit('channel', channel);
+      return channel;
     }
     catch (e) {
-      this.err(client, 'getMsg', e);
+      this.err(client, 'getChannel', e);
     }
   }
 
   @SubscribeMessage('setPermissions')
   async setPermissions(client: Socket, data: ChannelUser) {
     try {
-      const channel = await Channel.findOneBy({ id: data.channel.id, name: data.channel.name });
+      const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
         throw new WsException("Channel was not found.");
       if (channel.status === Channel.Status.DIRECT)

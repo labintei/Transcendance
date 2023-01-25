@@ -1,15 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere } from 'typeorm';
 import { User } from './user.entity';
 
-const matchDefaultFilter: FindOptionsSelect<Match> = {
-  time: true,
-  status: true,
-  score1: true,
-  score2: true,
-  user1: User.defaultFilter,
-  user2: User.defaultFilter
-}
-
 enum MatchStatus {
   NEW = "New",
   ONGOING = "Ongoing",
@@ -103,5 +94,4 @@ export class Match extends BaseEntity {
 
 export namespace Match {
   export import Status = MatchStatus;
-  export const defaultFilter = matchDefaultFilter;
 }
