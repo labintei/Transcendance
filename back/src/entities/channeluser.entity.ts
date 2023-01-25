@@ -1,24 +1,6 @@
 import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { User } from "./user.entity";
 import { Channel } from "./channel.entity";
-
-const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
-  rights: true,
-  status: true,
-  rightsEnd: true,
-  channel: {
-    id: true,
-    status: true,
-    name: true
-  },
-  user: {
-    ft_login: true,
-    username: true,
-    status: true,
-    level: true,
-    xp: true
-  }
-};
+import { User } from "./user.entity";
 
 enum ChannelUserRights {
   OWNER = "Owner",
@@ -29,8 +11,7 @@ enum ChannelUserRights {
 
 enum ChannelUserStatus {
   INVITED = "Invited",
-  JOINED = "Joined",
-  DIRECT_ALTER = "Direct Message Alter"
+  JOINED = "Joined"
 }
 
 @Entity('channel_user')
@@ -87,5 +68,4 @@ export class ChannelUser extends BaseEntity {
 export namespace ChannelUser {
   export import Status = ChannelUserStatus;
   export import Rights = ChannelUserRights;
-  export const defaultFilter = channelUserDefaultFilter;
 }

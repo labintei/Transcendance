@@ -3,18 +3,6 @@ import { Channel } from './channel.entity';
 import { User } from './user.entity';
 import { SocketGateway } from 'src/socket/socket.gateway';
 
-const messageDefaultFilter: FindOptionsSelect<Message> = {
-  id: true,
-  time: true,
-  content: true,
-  sender: {
-    username:true
-  },
-  channel: {
-    id: true
-  }
-};
-
 @Entity('message')
 export class Message extends BaseEntity {
 
@@ -28,6 +16,12 @@ export class Message extends BaseEntity {
   @Column()
   content: string;
 
+  @Column({ name: 'sender' })
+  senderLogin: string;
+
+  @Column({ name: 'channel' })
+  channelId: number;
+
   @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'sender' })
   sender: User;
@@ -37,17 +31,6 @@ export class Message extends BaseEntity {
   channel: Channel;
 
   //  Virtual field to specify a direct message recipient.
-  recipient: User
-
-  async send(): Promise<Message[]> {
-    delete this.id;
-    delete this.time;
-    await this.save();
-    SocketGateway.channelEmit(this.channel, 'msgs', [this]);
-    return [this];
-  }
-}
-
-export namespace Message {
-  export const defaultFilter = messageDefaultFilter;
+  recipientLogin: string
+  
 }
