@@ -5,6 +5,9 @@
   "dependencies": {
     "@chatscope/chat-ui-kit-react": "^1.9.9",
     "@chatscope/chat-ui-kit-styles": "^1.4.0",
+    "@fortawesome/fontawesome-svg-core": "^6.2.1",
+    "@fortawesome/free-solid-svg-icons": "^6.2.1",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@react-spring/three": "^9.5.5",
     "@react-three/drei": "^9.32.7",
     "@react-three/fiber": "^8.8.7",

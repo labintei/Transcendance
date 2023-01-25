@@ -17,9 +17,16 @@ import {
   Message,
   MessageInput,
   MessageSeparator,
-  Sidebar
+  Sidebar,
+  ConversationHeader,
+  Button,
+  AddUserButton
 } from '@chatscope/chat-ui-kit-react';
 import { hasProps } from '@react-spring/core/dist/declarations/src/helpers';
+
+import avatar_temp from './logo192.png';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
@@ -30,15 +37,32 @@ interface Message {
   sender: { username : string };
 }
 
-interface Channel {
-  status: string;
-  name: string;
+interface User {
+
 }
 
+interface Channel {
+  id: number;
+  status: string;
+  password: string;
+  name: string;
+  users: User[];
+  messages: Message[];
+}
+
+const temp_msg : Message[] = [
+  {time: new Date(), content: "Hello World this is a test", sender: {username: "Bob"}},
+  {time: new Date(), content: "Hello World this is another test", sender: {username: "Bob"}},
+  {time: new Date(), content: "Hello World this is still a test", sender: {username: "Bob"}},
+];
+
+const empty_chan = {id: 0, status: "", name: ""} as Channel;
+
 export default function Chat() {
-  const [currentChannel, setCurrentChannel] = useState("");
+  const [currentChannel, setCurrentChannel] = useState<Channel>(empty_chan);
   const [channels, setChannels] = useState<Channel[]>([]);
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [invitedChannels, setInvitedChannels] = useState<Channel[]>([]);
+  const [messages, setMessages] = useState<Message[]>(temp_msg);
   // const [valueCreateChannel, setValueCreateChannel] = useState<string>();
 
   const socket = useContext(getSocketContext);
@@ -69,24 +93,51 @@ export default function Chat() {
     };
   }, []);
 
-  function renderConversations() {
+  function RenderConversations() {
+    const switchChannel = (channel: Channel) => (e: any) => {
+      setCurrentChannel(channel);
+      socket.emit('getMsgs', {
+        channel: { id: channel.id },
+        from: null,
+        count: 10
+      });
+    }
+
     return (
       <>
         {channels.map((channel, index) => {
-          const name = channel.name;
           return (
             <Conversation
               key={index}
-              active={name == currentChannel}
-              name={name}
-              onClick={switchChannel(name)}/>
+              active={channel.id === currentChannel.id}
+              name={channel.name}
+              onClick={switchChannel(channel)}/>
           )})}
       </>
     )
   }
 
-  function renderMessageList() {
-    console.log("renderMessageList", channels.length)
+  function RenderInvitedConversations() {
+    const joinInvited = (channel: Channel) => (e: any) => {
+      // socket.emit('')
+
+    }
+
+    return (
+      <>
+        {/* {channels.map((channel, index) => {
+          return (
+            <Conversation
+              key={index}
+              name={channel.name}
+              onClick={joinInvited(channel)}/>
+          )})} */}
+      </>
+    )
+  }
+
+  function RenderChatContainer() {
+    console.log("renderChatContainer", channels.length)
     if (channels.length === 0)
     {
       return (
@@ -99,33 +150,107 @@ export default function Chat() {
     }
 
     return (
-      <MessageList>
-        {messages.map((message, index) => {
-          return (
-            <Message
-              key={index}
-              model={{
-                message: message.content,
-                sentTime: message.time.getUTCDate().toString(),
-                sender: message.sender.username,
-                direction: "incoming",
-                position: "single"
-              }}
-            >
-            </Message>
-          )
-        })}
-      </MessageList>
+      <ChatContainer>
+        <ConversationHeader>
+          <Avatar src={avatar_temp} name={currentChannel.name} />
+          <ConversationHeader.Content
+            userName={currentChannel.name}
+            info="I'm blue dabudidabuda"/>
+          <ConversationHeader.Actions>
+            <AddUserButton title="Add as a friend"/>
+            <Button style={{fontSize: "1.4em"}} icon={<FontAwesomeIcon icon={faUserSlash}/>}/>
+            <Button style={{fontSize: "1.4em"}} icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}/>
+          </ConversationHeader.Actions>
+        </ConversationHeader>
+
+        <MessageList>
+          {messages.map((message, index) => {
+            return (
+              <Message
+                key={index}
+                model={{
+                  message: message.content,
+                  sentTime: message.time.getUTCDate().toString(),
+                  sender: message.sender.username,
+                  direction: "incoming",
+                  position: "single"
+                }}
+                // avatarPosition="tl"
+              >
+                <Message.Header sender={message.sender.username} />
+                <Avatar src={avatar_temp} />
+              </Message>
+            )
+          })}
+        </MessageList>
+
+        <MessageInput
+            attachButton={false}
+            onSend={sendMessage}
+            placeholder="Type message here ..." />
+      </ChatContainer>
     );
   }
 
-  function createChannel(channelName : string) {
-    console.log("create channel", channelName);
-    socket.emit("createChannel", {
-      name: channelName,
-      password: null,
-      status: "Public",
-    }, () => { socket.emit("joinedList")})
+  function RenderCreateChannel() {
+    const [check, setCheck] = useState({password: false, private: false});
+    let channelName: HTMLInputElement | null = null;
+    let password: HTMLInputElement | null = null;
+
+    function onSubmit(e : any) {
+      e.preventDefault();
+
+      const new_chan : Channel = {
+        status: "Public",
+        name: channelName!.value,
+      } as Channel;
+
+      if (check.password === true) {
+        new_chan.status = "Protected";
+        new_chan.password = password!.value;
+      }
+
+      if (check.private === true) {
+        new_chan.status = "Private";
+      }
+
+      socket.emit('createChannel', new_chan, () => {
+        socket.emit('joinedList');
+      });
+    }
+
+    return (
+      <form
+        onSubmit={onSubmit}
+      >
+        <input
+          type="input"
+          placeholder="Channel name"
+          ref={node => channelName = node}
+          required
+        />
+
+      <input type="checkbox" checked={check.password}
+        onChange={() => {setCheck({password: !check.password, private: false})
+        }} />
+        Password ?
+      {
+        check.password === false ? <></> :
+        <input
+          type="input"
+          placeholder="Password"
+          ref={node => password = node}
+          required
+        />
+      }
+
+      <input type="checkbox" checked={check.private}
+        onChange={() => {setCheck({password: false, private: !check.private})
+      }} />
+        Private
+      <Button>Create</Button>
+      </form>
+    );
   }
 
   function sendMessage(content : string) {
@@ -142,14 +267,8 @@ export default function Chat() {
     })
   }
 
-  const switchChannel = (name: string) => (e: any) => {
-    console.log(name, e);
-    setCurrentChannel(name);
-    socket.emit('getMsgs', {
-      channel: { name: name },
-      from: null,
-      count: 10
-    });
+  const test = () => (e: any) => {
+    console.log("a", e);
   }
 
   return (
@@ -161,25 +280,17 @@ export default function Chat() {
       { !socket.connected ? <Navigate to="/login"></Navigate> : <></> }
       <MainContainer>
         <Sidebar position="left" scrollable={false}>
-          <ExpansionPanel title="Create Channel" open={false}>
-            <MessageInput
-              attachButton={false}
-              sendButton={false}
-              onSend={createChannel}
-              placeholder="Type channel name here ..."/>
+          <ExpansionPanel title="Create Channel">
+            <RenderCreateChannel />
           </ExpansionPanel>
-        {renderConversations()}
+          <ExpansionPanel title="Conversations list" open={true}>
+            <RenderConversations />
+          </ExpansionPanel>
+          <ExpansionPanel title="Invited conversations list">
+            <RenderInvitedConversations/>
+          </ExpansionPanel>
         </Sidebar>
-        <Sidebar position="right" scrollable={false}>
-          <p>This is a sidebar.</p>
-        </Sidebar>
-        <ChatContainer>
-          {renderMessageList()}
-          <MessageInput
-            attachButton={false}
-            onSend={sendMessage}
-            placeholder="Type message here ..." />
-        </ChatContainer>
+          <RenderChatContainer/>
       </MainContainer>
     </div>
   );
