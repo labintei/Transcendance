@@ -1,10 +1,9 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Not, Any } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Not, Any, IsNull } from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import * as bcrypt from 'bcrypt';
-import { channel } from 'diagnostics_channel';
 
 const bcryptSaltRounds = 10;
 
@@ -40,17 +39,52 @@ export class Channel extends BaseEntity {
   @Column({ nullable: true, unique: true })
   name: string;
 
-  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.channel), { cascade: ["insert"] })
+  @OneToMany(() => ChannelUser, (chanusr) => (chanusr.channel), { onDelete: "CASCADE", cascade: ["insert"] })
   users: ChannelUser[];
 
   @OneToMany(() => Message, (msg) => (msg.channel))
   messages: Message[];
 
   async emitUpdate() {
-    if (this.status === Channel.Status.PUBLIC)
+    const fullChannel = await Channel.getChannelWithUsersAndMessages(this.id);
+    if (fullChannel.status === Channel.Status.PUBLIC)
       SocketGateway.getIO().emit('publicList', await Channel.publicList());
-    const channel = await Channel.getChannel(this.id);
-    SocketGateway.channelEmit(this.id, 'channel', channel);
+    SocketGateway.channelEmit(this.id, 'channel', fullChannel);
+  }
+
+  async getNewOwner(): Promise<ChannelUser> {
+    let newOwner = await ChannelUser.findOne({
+      where: {
+        channelId: this.id,
+        rights: ChannelUser.Rights.ADMIN,
+        status: ChannelUser.Status.JOINED
+      },
+      order: {
+        updated: "DESC"
+      }
+    });
+    if (!newOwner)
+      newOwner = await ChannelUser.findOne({
+        where: {
+          channelId: this.id,
+          rights: IsNull(),
+          status: ChannelUser.Status.JOINED
+        },
+        order: {
+          updated: "DESC"
+        }
+      });
+    if (!newOwner)
+      newOwner = await ChannelUser.findOne({
+        where: {
+          channelId: this.id,
+          status: ChannelUser.Status.JOINED
+        },
+        order: {
+          updated: "DESC"
+        }
+      });
+    return newOwner;
   }
 
   static async hashPassword(password: string): Promise<string> {
@@ -61,8 +95,8 @@ export class Channel extends BaseEntity {
     return bcrypt.compare(password, hash);
   }
 
-  static async getChannel(channelId: number): Promise<Channel> {
-    return Channel.findOne({
+  static async getChannelWithUsersAndMessages(channelId: number): Promise<Channel> {
+    const channel = await Channel.findOne({
       select: {
         ...Channel.defaultFilter,
         users: {
@@ -85,6 +119,8 @@ export class Channel extends BaseEntity {
         }
       }
     });
+    delete channel.password;
+    return channel;
   }
 
   static async getDirectChannelId(login1: string, login2: string): Promise<number> {
@@ -95,20 +131,23 @@ export class Channel extends BaseEntity {
       .andWhere("user1.userLogin = :ownerLogin", { login1 })
       .andWhere("user2.userLogin = :otherLogin", { login2 })
       .getOne();
-    if (!channel)
+    if (!channel) {
       channel = await Channel.create({
       status: Channel.Status.DIRECT,
       users: [
           {
             userLogin: login1,
-            status: ChannelUser.Status.INVITED
+            status: ChannelUser.Status.JOINED
           },
           {
             userLogin: login2,
-            status: ChannelUser.Status.INVITED
+            status: ChannelUser.Status.JOINED
           }
         ]
       }).save();
+      SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
+      SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
+    }
     return channel.id;
   }
 
@@ -152,12 +191,19 @@ export class Channel extends BaseEntity {
 
   static async directList(login: string): Promise<Channel[]> {
     return Channel.find({
-      select: Channel.defaultFilter,
+      select: {
+        ...Channel.defaultFilter,
+        users: {
+          user: User.defaultFilter
+        }
+      },
+      relations: {
+        users: true
+      },
       where: {
         status: Channel.Status.DIRECT,
         users: {
-          userLogin: login,
-          status: ChannelUser.Status.INVITED
+          userLogin: login
         }
       }
     });
