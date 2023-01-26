@@ -51,15 +51,13 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
-    console.log('GAME HEAR');
     var l = await this.gameservice.newGame(client);// renvoit room-id et true replace ou pas
-    console.log(l);
     if(l && (l[0] && l[1] == true))
     {
       console.log('reconnection a la game');
-      // marche pour l un des deux mais pas l autre
       var id_role = await this.gameservice.Idrole(client);
-      client.emit('start', [id_role]);
+      client.emit('start', id_role);// j avais rajoute une [] dessus ce qui faisait un tableau de tableau
+      await this.gameservice.delay(4000);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
@@ -67,20 +65,11 @@ export class GameGateway/* implements OnGatewayDisconnect */{
       return ;
     if(l && (l[0] && l[1] == false))
     {
-      console.log('COMMENCE GAME');
-
         var room = this.gameservice.getClients(l[0]);
-        console.log('ROOM ', room[0], room[1]);
         if(room[0])
           room[0].emit('start', [l[0],1]);
         if(room[1])
           room[1].emit('start', [l[0],2]);
-        if(room[0] === null)
-          console.log('Player1 null');
-        if(room[1] === null)
-          console.log('Player2 null');
-
-
         var i = setInterval(() => {
         var clients = this.gameservice.getClients(l[0]);
         var a = this.gameservice.sphereroom(l[0]);

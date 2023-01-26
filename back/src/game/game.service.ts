@@ -462,11 +462,13 @@ export class GameService {
             console.log('ID_ROLE NULL');
         if(id_role)
         {
-            var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
+            //var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
             if(id_role[1] === 1)
-             room.player1 = client;
+                this.s.get(id_role[0]).player1 = client;
+            //room.player1 = client;
             if(id_role[1] === 2)
-             room.player2 = client;
+                this.s.get(id_role[0]).player2 = client;
+            //room.player2 = client;
         }
     }
 
@@ -540,6 +542,10 @@ export class GameService {
                 return true;
         }
         return false;
+    }
+
+    delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
     async newGame(client:Socket): Promise<[number, boolean]>//Promise<number[]>

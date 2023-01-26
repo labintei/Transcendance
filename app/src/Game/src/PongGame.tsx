@@ -98,6 +98,7 @@ export default function PongGame(props: any) {
     console.log('START');
     
     socket.on('start', (data) => {
+      console.log(data);
       setRole(data[1]);
       setId(data[0]);
       SetReady();
@@ -117,7 +118,7 @@ export default function PongGame(props: any) {
     })
     return () => {
       socket.off('start');
-      socket.emit('endgame');
+      //socket.emit('endgame');
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
 
@@ -126,7 +127,7 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('newpos', (data) => {
-      console.log(vbis);
+      //console.log(vbis);
       if(vbis != data[4])
         v(data[4]);
       Setx(data[0]);
