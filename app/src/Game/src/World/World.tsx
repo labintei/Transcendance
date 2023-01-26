@@ -21,6 +21,7 @@ import Box2 from "./Components/Box2";
 import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
+import axios from "axios";
 
 
 const loader = new CubeTextureLoader();
@@ -118,12 +119,28 @@ function SkyBox() {
 
 export default function World(props: any) {
 
+  const [userData, setUserData] = useState<any>(null)
+
   var camposx = useStore((s:any) => s.cx);
   var camposy = useStore((s:any) => s.cy);
   var camposz = useStore((s:any) => s.cz);
 
   var t = useStore((s:any) => s.time);
   const map = useStore((s: any) => s.bgdChoice)
+
+  React.useEffect(() => {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then(async res => {
+      const data = res.data;
+      setUserData(data)
+      console.log(data)
+    })
+    .catch(error => {
+      console.log(error)
+    });
+  }, []);
+
   return (  
     <Canvas
     camera={{ position: [camposx, camposy, camposz]}}>
@@ -136,12 +153,10 @@ export default function World(props: any) {
     <Box1 position={[0, 0, 5]} />
     <Sphere />
 
-    { map === 0 && 
-    <>
-    <SkyBox />
-    </> 
+    {userData && userData?.bgdChoice === 0 && 
+    <SkyBox /> 
     }
-    { map === 1 &&
+    {userData && userData?.bgdChoice === 1 &&
     <>
     <Ocean />
      <Sky
@@ -156,9 +171,7 @@ export default function World(props: any) {
       {...props}
     />
     </>
-
     }
-
     <Box2 position={[0, 0, -5]} />
     <Plane position={[0, -0.5, 0]} />
   </Canvas>
