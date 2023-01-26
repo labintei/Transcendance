@@ -10,13 +10,14 @@ export class AppService implements OnModuleInit {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
     //await this.generateExamples();
-    await this.generateExamples();
     
     await User.clearOnlines();
     await Match.clearOngoing();
   }
 
   async generateExamples() {
+    if (await User.count())
+      return;
     await User.save([
       {
         ft_login: 'mromaniu',
@@ -69,6 +70,7 @@ export class AppService implements OnModuleInit {
         xp: 587
       }
     ]);
+    await User.refreshRanks();
     await UserRelationship.save([
       {
         ownerLogin: "jraffin",
@@ -88,18 +90,12 @@ export class AppService implements OnModuleInit {
     ]);
     await Match.save([
       {
-        id:0,
-        user1: {
-          ft_login: "jraffin"
-        },
-        user2: {
-          ft_login: "bmarecha"
-        },
+        user1Login: "jraffin",
+        user2Login: "bmarecha",
         score1: 12,
         score2: 100,
         status: Match.Status.ENDED
       }
     ]);
-    await User.refreshRanks();
   }
 }

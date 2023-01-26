@@ -39,8 +39,6 @@ export class SearchController {
         "relationship.status"
         ])
       .take(howMany);
-      
-      console.log(query.getQueryAndParameters());
       return await query.getMany();
   }
 

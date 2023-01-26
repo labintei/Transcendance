@@ -15,15 +15,13 @@ export class GameController {
       },
       where: [
         {
-          user1: {
-            ft_login: req.user
-          }
+          user1Login: req.user,
+          status: Match.Status.ENDED
         },
         {
-          user2: {
-            ft_login: req.user
-          }
-        }
+          user2Login: req.user,
+          status: Match.Status.ENDED
+        },
       ]
     });
   }
