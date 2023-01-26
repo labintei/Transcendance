@@ -144,7 +144,7 @@ export default function LoginPage() {
       { logged === LogStatus.Logged ?
         <button onClick={() => requestLogout()}>Log Out</button>
       : logged === LogStatus.NotLogged ?
-        <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "login"}>Log In</a></button>
+        <button><a href={process.env.REACT_APP_BACKEND_URL + "auth/42?redirectURL=" + process.env.REACT_APP_WEBSITE_URL + "profile"}>Log In</a></button>
       : // LogStatus.2FA
         <>
         <h3>Enter 2FA token :</h3>

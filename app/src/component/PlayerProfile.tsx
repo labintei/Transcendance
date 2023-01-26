@@ -66,6 +66,7 @@ function Customize(props: {pprof:PlayerProfile}) {
 
 export default class PlayerProfile extends React.Component {
   state:State;
+  editor:any;
 
   requestUser() {
     let player:Person = dflt;
@@ -86,20 +87,7 @@ export default class PlayerProfile extends React.Component {
         }
         if (data.avatarURL && data.avatarURL !== '')
         {
-          if (acceptedimg.includes(data.avatarURL))
-            await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
-                withCredentials: true,
-                responseType:'blob'
-              }).then(res => {
-                player.avatar_location = URL.createObjectURL(res.data);
-                this.setState({player:player});
-              }).catch(error => {
-                if (error.response.status === 401 || error.response.status === 403)
-                  this.setState({logged:false});
-              });
-          else {
             player.avatar_location = data.avatarURL;
-          }
         }
         if (player !== this.state.player)
           this.setState({player:player});
@@ -171,15 +159,15 @@ export default class PlayerProfile extends React.Component {
     axios.post(process.env.REACT_APP_BACKEND_URL + "avatar", formData, {
       withCredentials:true,
       responseType: 'blob'
-    }).then(res => {
-      console.log(res);
-      temp.avatar_location = URL.createObjectURL(res.data); 
-      this.setState({player:temp, avatarEdit:false});
+    }).then(() => {
+      window.location.reload();
     }).catch(error => {
       if (error.response === undefined)
         console.log(error);
       else if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
+      else if (error.response.status === 413)
+        this.setState({errormsg:"File Too Big"});
       else
         console.log(error);
     });
@@ -190,14 +178,14 @@ export default class PlayerProfile extends React.Component {
       return (<>
         <input type="file"
           id="avatar" name="avatar"
-          accept="image/png, image/jpeg"
+          accept="image/png, image/jpeg, image/jpg"
           onChange={event => {
             if (event.target.files != null)
               this.setState({query2: event.target.files[0]})
             }}>
         </input>
-        <button className='send-button' onClick={() => this.changeAvatar()}>Send image</button>
-        <button onClick={() => this.setState({avatarEdit:false})}>Cancel</button>
+        <button className='send-button' onClick={() => this.changeAvatar()}>Send image</button><br/><br/><br/><br/>
+        <button onClick={() => this.setState({avatarEdit:false, errormsg:null})}>Cancel</button>
         </>)
     else
         return (

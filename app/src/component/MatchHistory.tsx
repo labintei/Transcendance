@@ -17,7 +17,6 @@ type State = {
   logged: boolean,
   listp:Array<Match>,
   avatar_loc:string,
-  avatars:Map<string, string>,
   username:string
 }
 
@@ -34,19 +33,6 @@ export default class MatchList extends React.Component {
         usrname = data.username;
       }
       if (data.avatarURL && data.avatarURL !== ''){
-        if (acceptedimg.includes(data.avatarURL))
-          axios.get(process.env.REACT_APP_BACKEND_URL + "avatar", {
-            withCredentials: true,
-            responseType:'blob'
-          }).then(res => {
-            this.setState({username:usrname, avatar_loc:URL.createObjectURL(res.data)});
-          }).catch(error => {
-            if (error.response.status === 401)
-              this.setState({logged:false});
-            else
-              this.setState({username:usrname});
-          });
-        else
           this.setState({username:usrname, avatar_loc:data.avatarURL});
       } else
         this.setState({username:usrname});
@@ -58,7 +44,7 @@ export default class MatchList extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state= {listp:[], logged:true, avatar_loc:defaultavatar, username:"", avatars:new Map()};
+    this.state= {listp:[], logged:true, avatar_loc:defaultavatar, username:""};
     this.requestUser();
   }
 
@@ -86,20 +72,7 @@ export default class MatchList extends React.Component {
                 if ('' !== (isOne ? match.user2.avatarURL : match.user1.avatarURL) && 
                 null !== (isOne ? match.user2.avatarURL : match.user1.avatarURL))
                 {
-                  let already = this.state.avatars.get(one.name);
-                  if (already === undefined)
-                    await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
-                      withCredentials: true,
-                      responseType:'blob'
-                    }).then(res => {
-                      one.avatar_loc = URL.createObjectURL(res.data);
-                      this.state.avatars.set(one.name, one.avatar_loc);
-                    }).catch(error => {
-                      if (error.response.status === 401)
-                        this.setState({logged:false});
-                    });
-                  else
-                    one.avatar_loc = already;
+                    one.avatar_loc = (isOne ? match.user2.avatarURL : match.user1.avatarURL);
                 }
                 listtmp.push(one);
             }

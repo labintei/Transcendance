@@ -105,17 +105,6 @@ export default class PersonList extends React.Component {
                   one.status = person.status;
                 if (person.avatarURL && person.avatarURL !== '')
                 {
-                  if (acceptedimg.includes(person.avatarURL))
-                    await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
-                        withCredentials: true,
-                        responseType:'blob'
-                      }).then(res => {
-                        one.avatar_location = URL.createObjectURL(res.data);
-                      }).catch(error => {
-                        if (error.response.status === 401)
-                          this.setState({logged:false});
-                      });
-                    else
                       one.avatar_location = person.avatarURL;
                 }
                 listftmp.push(one);
@@ -154,22 +143,11 @@ export default class PersonList extends React.Component {
                 }
                 else
                   one.friend = false;
-                  if (person.avatarURL !== undefined && '' !== person.avatarURL)
-                  {
-                    if (acceptedimg.includes(person.avatarURL))
-                      await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
-                          withCredentials: true,
-                          responseType:'blob'
-                        }).then(res => {
-                          one.avatar_location = URL.createObjectURL(res.data);
-                        }).catch(error => {
-                          if (error.response.status === 401 || error.response.status === 403)
-                            this.setState({logged:false});
-                        });
-                    else
-                        one.avatar_location = person.avatarURL;
-                  }
-                  listtmp.push(one);
+                if (person.avatarURL !== undefined && '' !== person.avatarURL)
+                {
+                      one.avatar_location = person.avatarURL;
+                }
+                listtmp.push(one);
             }
             id++;
         }
