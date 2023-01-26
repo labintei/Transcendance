@@ -18,7 +18,7 @@ import { threadId } from 'worker_threads';
   credentials: true,
 })
 
-export class GameGateway implements OnGatewayDisconnect {
+export class GameGateway/* implements OnGatewayDisconnect */{
 /*
   constructor(
     private gameservice: GameService
@@ -26,13 +26,13 @@ export class GameGateway implements OnGatewayDisconnect {
 
   constructor(@Inject(GameService) private gameservice: GameService) {}
 
-
+/*
   async handleDisconnect(client:Socket)
   {
     console.log('DISCONNECTION GAME GATEWAY');
     console.log(this.gameservice.IsinGame(client));
     this.gameservice.DisconnectionGame(client);
-  }
+  }*/
 
 
   @SubscribeMessage('testlaulau')
@@ -48,29 +48,45 @@ export class GameGateway implements OnGatewayDisconnect {
 
   }
 
-
-
-  // ca me le disconnect pour une raison obscure
-
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
-    var l = await this.gameservice.newGame(client);// renvoit  une Promise
-    client.emit('start', l);// renvoit le role
-    if(this.gameservice.getReady(l[0]) === true)// si le game et ready et correspond a client2
+    console.log('GAME HEAR');
+    var l = await this.gameservice.newGame(client);// renvoit room-id et true replace ou pas
+    console.log(l);
+    if(l && (l[0] && l[1] == true))
     {
+      console.log('reconnection a la game');
+      var id_role = await this.gameservice.Idrole(client);
+      client.emit('start', [id_role]);
+      this.gameservice.ClientChange(id_role, client);
+      return ;
+    }
+    if(l && l[1] == true)
+      return ;
+    if(l && (l[0] && l[1] == false))
+    {
+      console.log('COMMENCE GAME');
+
         var room = this.gameservice.getClients(l[0]);
-        //var stream = this.gameservice.getStream(l[0]);// met a zero pour l instant
-        room[0].emit('recu');
-        room[1].emit('recu');
+        console.log('ROOM ', room[0], room[1]);
+        if(room[0])
+          room[0].emit('start', [l[0],1]);
+        if(room[1])
+          room[1].emit('start', [l[0],2]);
+        if(room[0] === null)
+          console.log('Player1 null');
+        if(room[1] === null)
+          console.log('Player2 null');
+
 
         var i = setInterval(() => {
+        var clients = this.gameservice.getClients(l[0]);
         var a = this.gameservice.sphereroom(l[0]);
-
-        if(room[0] != null)
-            room[0].emit('newpos', a);
-        if(room[1] != null)
-          room[1].emit('newpos', a);
+        if(clients[0] != null)
+            clients[0].emit('newpos', a);
+        if(clients[1] != null)
+            clients[1].emit('newpos', a);
        }, 160);
        
        var time = 0;
@@ -78,47 +94,48 @@ export class GameGateway implements OnGatewayDisconnect {
        var j = setInterval(() => {
         if(this.gameservice.isFinish(l[0]))
         {
-          if(room[0])
-            room[0].emit('endgame');
-          if(room[1])
-            room[1].emit('endgame');
+          var clients = this.gameservice.getClients(l[0]);
+          if(clients[0])
+            clients[0].emit('endgame');
+          if(clients[1])
+            clients[1].emit('endgame');
           this.gameservice.CreateMatchID(l[0]);
           this.gameservice.DisconnectionGameId(l[0]);
         }
         else
           this.gameservice.addtime(l[0])
       }, 1000);
-      //
       this.gameservice.SetTimer(l[0],j);
       this.gameservice.SetRender(l[0],i);
-      //this.gameservice.GetStream().emit;
+      return ;
     }
   }
 
   @SubscribeMessage('endgame')
   async endgame(client:Socket, data:number)
   {
+    //console.log(this.gameservice.IsinGame(client));
     console.log('SOCKET SERVER ON ENDGAME : ' +  this.gameservice.IsinGame(client));
     this.gameservice.DisconnectionGame(client);
   }
 
 
   @SubscribeMessage('left')
-  async left(client: Socket, c:any)//: Promise<number>
+  async left(client: Socket, c:any)//: Promise<number>id-room role 1 ou deux
   {
     if(c[0] === 1)// si le role correspond a 1
-      this.gameservice.player1x_right(c[1]);
+      this.gameservice.player1x_left(c[1]);
     if(c[0] === 2)
-      this.gameservice.player2x_left(c[1]);
+      this.gameservice.player2x_right(c[1]);
   }
 
   @SubscribeMessage('right')
   async right(client: Socket, c:any)//: Promise<number>
   {
     if(c[0] === 1)
-      this.gameservice.player1x_left(c[1]);
+      this.gameservice.player1x_right(c[1]);
     if(c[0] === 2)
-      this.gameservice.player2x_right(c[1]);
+      this.gameservice.player2x_left(c[1]);
   }
 
 

@@ -3,29 +3,37 @@ import { RouterModule } from "@nestjs/core";
 //import { Room } from 'src/game/room.interface';
 import { Socket} from "socket.io";
 import session from "express-session";
+import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
-import { User/*, UserStatus */} from 'src/entities/user.entity';// j exporte l enum
+import { User/*, UserStatus */, } from 'src/entities/user.entity';// j exporte l enum
 
 
 import { match } from "assert";
 import { find } from "rxjs";
-import { getManager, NoVersionOrUpdateDateColumnError } from "typeorm";
+import { FindOptionsWhere, getManager, NoVersionOrUpdateDateColumnError, OptimisticLockCanNotBeUsedError } from "typeorm";
 import { SqljsEntityManager } from "typeorm/entity-manager/SqljsEntityManager";
 
+/*
 enum UserStatus {
     ONLINE = "Online",
     OFFLINE = "Offline",
     MATCHING = "Matching",
     PLAYING = "Playing",
     BANNED = "Banned"
-}
+}*/
 
 
 // public io: Server = null
 //    this.
 
+// client.data.login
 
 export class Game {
+    public match: Match;
+    public user1: User;
+    public user2: User;
+    public user1_login: string;
+    public user2_login: string;
     public id: number;
     public room_id: number;
     public nb_player: number;
@@ -35,22 +43,15 @@ export class Game {
     public player1: Socket;
     public player2: Socket;
     
-    public player1_x: number;
-    public player2_x: number;
     public Box1x: number;
     public Box2x: number;
 
-    // ???
-    
     public sx: number;
     public sz: number;
     public zdir: number;
     public xangle: number;
-
     public time: number;
-
     public ready: boolean;
-
     public timer: any;
     public render: any;
 
@@ -62,20 +63,41 @@ export class Game {
     // mettre toutes les donnees necessaire
 }
 
+export class Invitation {
+    public user1:User;
+    public player1:Socket;
+    public user2:User;
+    public player2:Socket;
+    public connect1:boolean;
+    public connect2:boolean;
+}
+
 @Injectable()
 export class GameService {
  
     public stream: Map<number, Array<Socket>>;
     public s: Map<number, Game>;
     public invit: Map<number, Game>;
-    public dispo:  Set<number>;
+    
+    // je dois le l enlever
+    //public dispo:  Set<number>;
+    public dispoUser: Set<[User, Socket]>
+
+    // je vais partir de ce cas 0,1,2 
+    // bool1 client1 est invite / bool2 client2 est invite
+    public invitation: Set<Invitation>// user1 , user2 sont ils dans la room
+    //public roominvitation: Map()// sera serait et devra etre streamble
 
     constructor(){
         this.stream = new Map();
         this.s = new Map();
-        this.dispo = new Set()
+        //this.dispo = new Set();
+        this.dispoUser = new Set();
+        this.invitation = new Set();
         //this.dispo = new Array();
     }
+
+
 
 
     isFinish(data:number)
@@ -122,7 +144,7 @@ export class GameService {
             clearInterval(room.render);
             clearInterval(room.timer);
             var id = room.room_id;
-            this.dispo.delete(id);
+            //this.dispo.delete(id);
             this.s.delete(id);
         }
     }
@@ -144,7 +166,7 @@ export class GameService {
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
-                    this.dispo.delete(id);
+                    //this.dispo.delete(id);
                     this.s.delete(id);
                     return clients;
                 }
@@ -188,7 +210,7 @@ export class GameService {
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
-                    this.dispo.delete(id);
+                    //this.dispo.delete(id);
                     this.s.delete(id);
                     return true;
                 }
@@ -283,35 +305,133 @@ export class GameService {
       }   
     return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
 }
-    /*
-    enum UserStatus {
-     ONLINE = "Online",
-     OFFLINE = "Offline",
-     MATCHING = "Matching",
-     PLAYING = "Playing",
-     BANNED = "Banned"
-    }*/
 
-
-    async newGame(client:Socket): Promise<number[]>
+    async NotonlyBlock(user:User): Promise<[User,Socket]>
     {
-        console.log('START');
-        
-        if(this.dispo.size === 0)// aucune room dispo
+        console.log('CONTESTANT');
+        const iteratordispo = this.dispoUser.entries();//[User,Client]
+        for(var [key, value] of iteratordispo)
         {
-            // PAS CREER LE MATCH ICI
-            var room: Game = {
-            id: 0,
-            room_id: this.s.size,
-            nb_player: 1,
+            if(value[0])
+            {
+                /*
+                console.log(value[0]);
+                const blocked = await UserRelationship.findOneBy([
+                    {
+                        ownerLogin: user.ft_login,
+                        relatedLogin: value[0].ft_login
+                    },
+                    {
+                        ownerLogin: value[0].ft_login,
+                        relatedLogin: user.ft_login
+                    }
+                ] as FindOptionsWhere<UserRelationship>);
+                if(blocked.status != UserRelationship.Status.BLOCKED)*/
+                if(value[0] != user)
+                    return value;
+            }
+        }
+        return null;
+    }
+
+    ReplaceClient(user:User, client:Socket): boolean
+    {
+        for(var [key, value] of this.s.entries())// va passer sur toute les game
+        {
+            if(value && (user === value.user1 || user === value.user2))
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+/*
+    export class Invitation {
+        public user1:User;
+        public player1:Socket;
+        public user2:User;
+        public player2:Socket;
+        public connect1:boolean;
+        public connect2:boolean;
+    }
+*/
+//var room: Game = {
+
+
+
+    CreateInvitation(user1:User,user2:User)
+    {
+        const i : Invitation = {
+            user1: user1,
+            player1: null,
+            user2: user2,
+            player2: null,
+            connect1: false,
+            connect2: false,
+        } 
+        this.invitation.add(i);
+    }
+
+    ClientInvitationConnection(user:User,client:Socket)
+    {
+        if(this.invitation)
+        {
+            for(var [key, value] of this.invitation.entries())
+            {
+             if(value && (user === (value.user1) || user === value.user2))
+             {
+                 if(value.user1 == user)
+                 {
+                     value.player1 = client;
+                     value.connect1 = true;
+                 }
+                 if(value.user2 == user)
+                 {
+                     value.player2 = client;
+                     value.connect2 = true;
+                 }
+             }
+            }
+        }
+    }
+
+
+    Invitation(user:User): Invitation
+    {
+        for(var [key, value] of this.invitation.entries())// va passer sur toute les game
+        {
+            if(value && (user === (value.user1) || user === value.user2))
+                return value;
+        }
+        return null;
+    }
+
+    
+
+    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
+    {
+        console.log('LANCEMENT JEU');
+        const m = new Match();
+        m.score1 = 0;
+        m.score2 = 0;
+        m.user1 = contestant[0];
+        m.user2 = user;
+        await Match.save(m);//sauvegarde le match
+        var room: Game = {
+            match: m,
+            user1: contestant[0],
+            user2: user,
+            user1_login: contestant[0].ft_login,
+            user2_login: user.ft_login,
+            id: m.id,
+            room_id: m.id,
+            nb_player: 2,
             score1: 0,
             score2: 0,
-            player1: client,
-            player2: null,
-            player1_x: 1,
-            player2_x: 2,
+            player1: contestant[1],
+            player2: client,
             Box1x:0,
-            Box2x:0,         
+            Box2x:0,     
             sx: 0,
             sz: 0,
             zdir: 0.05,
@@ -322,40 +442,131 @@ export class GameService {
             render : null,
             }
             var l = Math.random();    
-            const u = await User.findOneBy({socket: client.id});
-            if(u)
-                u.status = UserStatus.MATCHING;// en train de matcher
+            User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
+            User.update(user.ft_login, {status:User.Status.PLAYING});     
             if (l < 0.5)
               room.zdir = -0.05;
             room.xangle = l * 0.5;
-            var l = this.s.size;
-            // set en dispo et creer la room
-            this.s.set(l , room);
-            this.dispo.add(l);
-            const s = [l, 1];
-            return s;
+            room.id = m.id;
+            room.room_id = m.id;
+            // cence effacer le contestant ici
+            this.dispoUser.delete(contestant);//efface le premier  des contestants
+            this.s.set(room.id , room);// donne la room id
+            console.log(room.id);
+            return room.id;
+    }
+
+    ClientChange(id_role: number[], client:Socket)
+    {
+        if(!id_role)
+            console.log('ID_ROLE NULL');
+        if(id_role)
+        {
+            var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
+            if(id_role[1] === 1)
+             room.player1 = client;
+            if(id_role[2] === 2)
+             room.player2 = client;
         }
-        else
-        {           
-            console.log(this.dispo);
-            var iterator = this.dispo.values();
-            var value = iterator.next().value;
-            var room = this.s.get(value);
-            if(room)// creer un cas d errur
+    }
+
+    async Idrole(client:Socket): Promise<number[]>
+    {
+        const user = await User.findOne({where: {ft_login: client.data.login}});
+        for(var [key, value] of this.s.entries())// va passer sur toute les game
+        {
+            if(value && (user.ft_login === value.user1.ft_login || user.ft_login === value.user2.ft_login))
             {
-                room.ready = true;
-                room.player2 = client;
-
-                var u1 = await User.findOneBy({socket: room.player1.id});// cherche user1
-                var u2 = await User.findOneBy({socket: room.player2.id});// cherche user2
-                u1 ? u1.status = UserStatus.PLAYING : u1;
-                u2 ? u2.status = UserStatus.PLAYING : u2;
-                this.dispo.delete(value);
-                return [room.room_id, 2];
+                if(user.ft_login === value.user1.ft_login)
+                    return [key, 1];
+                if(user.ft_login === value.user2.ft_login)
+                    return [key, 2];
             }
-            return [0,0];
         }
+        return null;
+    }
 
+
+    // genere un boolean si le client est replace avec la game associe
+
+
+    ReplaceMatched(user:User, client:Socket)
+    {
+        for(var [key, value] of this.dispoUser.entries())
+        {
+            if(value && value[0])
+            {
+                if(value[0] == user)
+                    value[1] = client;
+            }
+        }
+        return null;  
+    }
+
+    FindGame(user:User)
+    {
+        for(var [key, value] of this.s.entries())
+        {
+            if(value)
+                console.log(value);
+            if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
+            {
+                return key;
+            }
+        }
+        return null;  
+    }
+
+
+    async newGame(client:Socket): Promise<[number, boolean]>//Promise<number[]>
+    {
+        console.log('START');
+        const user = await User.findOne({where: {ft_login: client.data.login}});
+        if(user == null)
+        {
+            console.log('USER NULL');
+            return [null, false];
+        }
+        if(user.status == User.Status.PLAYING)// si le user est deja en train de jouer ... Marche pas parce que meme player
+        {
+            console.log('EST DEJA DANS UNE GAME');
+            console.log('FINDGAME ' + this.FindGame(user));
+            return [this.FindGame(user), true];
+        }
+        if(user.status == User.Status.MATCHING)
+        {
+            console.log('EST EN TRAIN DE MATCHER');
+            this.ReplaceMatched(user, client);
+            return [null, true];
+        }
+        if(this.Invitation(user))// le joueur est invitee
+        {
+            this.ClientInvitationConnection(user,client)
+            var invit = this.Invitation(user);
+            if(invit.connect1 && invit.connect2)
+            {
+                var n:number = await this.createGame([invit.user1, invit.player1], invit.user2, invit.player2);
+                this.invitation.delete(invit);
+                return [n, false];
+            }
+            return [null, false];
+            
+        }
+        const contestant = await this.NotonlyBlock(user);
+        if(contestant == null)// Pas de Dispo Ou personne uniquement block
+        {
+            // J ARRIVE QUAND MEME ICI ?
+            this.dispoUser.add([user, client]);
+            console.log('CONTESTANT NULL');
+            User.update(user.ft_login, {status: User.Status.MATCHING});
+            //user.status = User.Status.MATCHING;// mais le user en MATCHING
+            return null;
+        }
+        else// a un contestant creer le Match et le GAME EN MEME TEMPS
+        {
+            console.log('Classic Contest');
+            return [(await this.createGame(contestant, user, client)), false];
+        }
     }
 
     getReady(id:number): boolean
@@ -393,12 +604,12 @@ export class GameService {
 
     player1x_right(id:number)
     {
-        this.s.get(id).Box1x -= 0.6;
+        this.s.get(id).Box1x += 0.6;
     }
 
     player1x_left(id:number)
     {
-        this.s.get(id).Box1x += 0.6;
+        this.s.get(id).Box1x -= 0.6;
     }
 
     getRender(id:number):any
@@ -470,7 +681,7 @@ export class GameService {
         if(m.nb_player === 1)
         {
             match.remove();
-            this.dispo.delete(id);
+            //this.dispo.delete(id);
         }
         this.s.delete(id);
     }

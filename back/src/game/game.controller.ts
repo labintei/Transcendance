@@ -9,19 +9,22 @@ export class GameController {
   @Get('history')
   async gethistory(@Request() req): Promise<Match[]> {
     return Match.find({
+      select: Match.defaultFilter,
       relations: {
         user1:true,
         user2:true
       },
       where: [
         {
-          user1Login: req.user,
-          status: Match.Status.ENDED
+          user1: {
+            ft_login: req.user
+          }
         },
         {
-          user2Login: req.user,
-          status: Match.Status.ENDED
-        },
+          user2: {
+            ft_login: req.user
+          }
+        }
       ]
     });
   }
