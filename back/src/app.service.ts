@@ -88,6 +88,7 @@ export class AppService implements OnModuleInit {
     ]);
     await Match.save([
       {
+        id:0,
         user1: {
           ft_login: "jraffin"
         },
@@ -95,7 +96,7 @@ export class AppService implements OnModuleInit {
           ft_login: "bmarecha"
         },
         score1: 12,
-        score2: 0,
+        score2: 100,
         status: Match.Status.ENDED
       }
     ]);

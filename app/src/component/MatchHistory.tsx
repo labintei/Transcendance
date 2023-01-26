@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-import {acceptedimg, defaultavatar} from "./const";
+import {defaultavatar} from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Match = {

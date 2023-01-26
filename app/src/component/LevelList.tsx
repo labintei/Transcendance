@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import './LevelList.css';
 import { Navigate } from 'react-router-dom';
-import {defaultavatar, acceptedimg} from './const';
+import {defaultavatar} from './const';
 
 type PRank = {
     id: number

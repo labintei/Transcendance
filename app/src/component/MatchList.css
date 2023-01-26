@@ -51,7 +51,7 @@
     text-overflow: ellipsis;
     }
     #match-list > li > div > .score1, #match-list > li > div > .score2 {
-        width: 30px;
+        width: 62px;
         font-size: 36px;
     }
     #match-list > li > div > .score1 {
