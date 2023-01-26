@@ -4,17 +4,17 @@ import { Match } from 'src/entities/match.entity';
 
 @Controller('match')
 @UseGuards(TransGuard)
-export class GameController {
+export class MatchController {
 
-  @Get('history')
+  @Get("history")
   async gethistory(@Request() req): Promise<Match[]> {
     return Match.find({
       select: Match.defaultFilter,
-      relations: {
+      relations:{
         user1:true,
         user2:true
       },
-      where: [
+      where:[
         {
           user1: {
             ft_login: req.user
@@ -28,5 +28,5 @@ export class GameController {
       ]
     });
   }
-
+  
 }

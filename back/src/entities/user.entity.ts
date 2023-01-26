@@ -1,8 +1,8 @@
-import { BadRequestException, ConflictException } from '@nestjs/common';
 import { SocketGateway } from 'src/socket/socket.gateway';
 import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
+import { UserSocket } from './usersocket.entity';
 import { UserRelationship } from './userrelationship.entity';
 
 const userDefaultFilter: FindOptionsSelect<User> = {
@@ -38,8 +38,6 @@ const userDefaultFilter: FindOptionsSelect<User> = {
     },
   }
 };
-
-const usernamePattern = new RegExp('^$', );
 
 enum UserStatus {
   ONLINE = "Online",
@@ -113,6 +111,9 @@ export class User extends BaseEntity {
   @OneToMany(() => ChannelUser, (chanusr) => (chanusr.user))
   channels: ChannelUser[];
 
+  @OneToMany(() => UserSocket, (socket) => (socket.user))
+  sockets: UserSocket[];
+
   /** MEMBER METHODS */
 
   public get xpAmountForNextLevel(): number {
@@ -153,17 +154,6 @@ export class User extends BaseEntity {
       user.xp -= amount;
     else
       user.xp = 0;
-    return user.save();
-  }
-
-  static async changeUsername(user: User, newUsername: string): Promise<User> {
-    if (user.username === newUsername)
-      return user;
-    if (!usernamePattern.test(newUsername))
-      throw new BadRequestException("Invalid username");
-    if (await User.findOneBy({username: newUsername}))
-      throw new ConflictException("Username " + newUsername + " already exists in database.");
-    user.username = newUsername;
     return user.save();
   }
 
@@ -215,13 +205,10 @@ export class User extends BaseEntity {
     `);
   }
 
-  static async reinitSockets() {
-    User.update({}, {
-      status: User.Status.OFFLINE,
-      socket: null
-    });
+  static async clearOnlines() {
+    User.update({}, { status: User.Status.OFFLINE });
+    UserSocket.delete({});
   }
-
 }
 
 export namespace User {

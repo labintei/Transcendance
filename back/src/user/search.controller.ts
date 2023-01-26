@@ -1,45 +1,19 @@
 import { Controller, Get, Param, Query, Request, UseGuards } from "@nestjs/common";
-import { LogAsJraffin } from "src/auth/logAsJraffin.dummyGuard";
 import { TransGuard } from "src/auth/trans.guard";
 import { User } from "src/entities/user.entity";
 import { UserRelationship } from "src/entities/userrelationship.entity";
-import { ILike, IsNull, Not } from "typeorm";
 
 @Controller('search')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class SearchController {
 
   @Get(':username')
-  async searchUser(@Param('username') partialUsername, @Query('count') count, @Request() req): Promise<User[]> {
+  async searchUser(@Param('username') partialUsername:string, @Query('count') count, @Request() req): Promise<User[]> {
     let howMany = Number(count);
     if (isNaN(howMany) || howMany > 50)
       howMany = 10;
 
-    //  Typeorm way doesnt permit to return selected
-    //  and also empty relationship, so we are forced
-    //  to use the QueryBuilder.
-
-    // return User.find({
-    //   select: User.defaultFilter,
-    //   relations: {
-    //     relatedships: true
-    //   },
-    //   where: {
-    //     username: ILike(partialUsername+"%"),
-    //     relatedships: [
-    //       {
-    //         ownerLogin: IsNull()
-    //       },
-    //       {
-    //         ownerLogin: req.user
-    //       }
-    //     ]
-    //   },
-    //   take: howMany
-    // });
-
-    return await User.createQueryBuilder("user")
+    let query = User.createQueryBuilder("user")
       .leftJoinAndMapMany(
         "user.relatedships",
         UserRelationship,
@@ -49,7 +23,7 @@ export class SearchController {
       )
       .where(
         "user.username ILIKE :testUsername",
-        { testUsername: partialUsername+'%' }
+        { testUsername: partialUsername.replace(/([%_])/g, "\\$1") + '%' }
       )
       .select([
         "user.ft_login",
@@ -64,8 +38,10 @@ export class SearchController {
         "user.rank",
         "relationship.status"
         ])
-      .take(howMany)
-      .getMany();
+      .take(howMany);
+      
+      console.log(query.getQueryAndParameters());
+      return await query.getMany();
   }
 
 }

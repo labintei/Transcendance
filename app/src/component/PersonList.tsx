@@ -121,7 +121,7 @@ export default class PersonList extends React.Component {
 
 
   doSearch() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "search/" + this.state.query, {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "search/" + encodeURIComponent(this.state.query), {
       withCredentials: true
     }).then(async res => {
         const others = res.data;

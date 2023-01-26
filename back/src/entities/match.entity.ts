@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere } from 'typeorm';
 import { User } from './user.entity';
 
 const matchDefaultFilter: FindOptionsSelect<Match> = {
@@ -11,7 +11,7 @@ const matchDefaultFilter: FindOptionsSelect<Match> = {
 }
 
 enum MatchStatus {
-  MATCHED = "Matched",
+  NEW = "New",
   ONGOING = "Ongoing",
   ENDED = "Finished"
 }
@@ -28,7 +28,7 @@ export class Match extends BaseEntity {
   @Column({
     type: 'enum',
     enum: MatchStatus,
-    default: MatchStatus.MATCHED
+    default: MatchStatus.NEW
   })
   status: MatchStatus;
 
@@ -93,6 +93,10 @@ export class Match extends BaseEntity {
         (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
       );
     User.refreshRanks();
+  }
+
+  static async clearOngoing() {
+    Match.delete({ status: Not(MatchStatus.ENDED) } as FindOptionsWhere<Match>);
   }
 
 }
