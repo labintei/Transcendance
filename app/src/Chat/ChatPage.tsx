@@ -26,6 +26,7 @@ import {
 import avatar_temp from './logo192.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { a } from '@react-spring/three';
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
@@ -33,11 +34,20 @@ import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-sv
 interface Message {
   time: Date;
   content: string;
-  sender: { username : string };
+  sender: User;
 }
 
 interface User {
-
+  ft_login: string;
+  username: string;
+  status: string;
+  avatarURL: string;
+  level: number;
+  xp: number;
+  victories: number;
+  defeats: number;
+  draws: number;
+  rank: number;
 }
 
 interface Channel {
@@ -50,19 +60,18 @@ interface Channel {
 }
 
 const temp_msg : Message[] = [
-  {time: new Date(), content: "Hello World this is a test", sender: {username: "Bob"}},
-  {time: new Date(), content: "Hello World this is another test", sender: {username: "Bob"}},
-  {time: new Date(), content: "Hello World this is still a test", sender: {username: "Bob"}},
+  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
+  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
+  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
 ];
 
-const empty_chan = {id: 0, status: "", name: ""} as Channel;
+const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as Channel;
 
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<Channel>(empty_chan);
   const [channels, setChannels] = useState<Channel[]>([]);
   const [invitedChannels, setInvitedChannels] = useState<Channel[]>([]);
-  const [messages, setMessages] = useState<Message[]>(temp_msg);
-  // const [valueCreateChannel, setValueCreateChannel] = useState<string>();
+  const [profilSidebar, setProfilSidebar] = useState<string>("");
 
   const socket = useContext(getSocketContext);
 
@@ -75,13 +84,13 @@ export default function Chat() {
     socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
 
     socket.on('joinedList', (data) => {
-      console.log("[WS] joinedList  ");
+      console.log("[WS] joinedList");
       setChannels(data);
-      if (data.length !== 0)
-        setCurrentChannel(data[0]);
+      if (data.length !== 0) {
+        socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
+          setCurrentChannel(newCurrentChannel);
+        })}
     });
-
-    socket.on('getMsgs', (data) => { setMessages(data) });
 
     socket.emit('joinedList');
     // This code will run when component unmount
@@ -94,15 +103,19 @@ export default function Chat() {
 
   function RenderConversations() {
     const switchChannel = (channel: Channel) => (e: any) => {
-      setCurrentChannel(channel);
-      socket.emit('getMsgs', {
-        channel: { id: channel.id },
-        from: null,
-        count: 10
-      })};
+      socket.emit('getChannel', channel, (data : Channel) => {
+        setCurrentChannel(data);
+        let updateChannels = [...channels];
+        let index = updateChannels.findIndex((i) => i.id === data.id);
+        updateChannels[index] = data;
+        setChannels(updateChannels);
+      })}
+
+      console.log(channels);
+      console.log(currentChannel);
 
     return (
-      <>
+      <ExpansionPanel title="Conversations list" open={true}>
         {channels.map((channel, index) => {
           return (
             <Conversation
@@ -111,27 +124,67 @@ export default function Chat() {
               name={channel.name}
               onClick={switchChannel(channel)}/>
           )})}
-      </>
+      </ExpansionPanel>
     )
   }
 
-  function RenderInvitedConversations() {
-    const joinInvited = (channel: Channel) => (e: any) => {
+  function RenderPublicConversations() {
+    const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
+
+    useEffect(() => {
+      socket.on('publicList', (chans : Channel[]) => {
+        let newPublicList : Channel[] = [];
+        chans.filter((x : Channel) => {
+          if (channels.find((a) => {return (a.id === x.id)}) === undefined)
+            newPublicList = [...newPublicList, x];
+        });
+        console.log("[DEBUG] : publicChannels:", newPublicList);
+        setPublicChannels(newPublicList); 
+      });
+
+      socket.emit('publicList');
+
+      return (() => {
+        socket.off('publicList'); 
+      });
+    }, []);
+
+    const onClick = (channel: Channel) => (e: any) => {
       setCurrentChannel(channel);
       socket.emit('joinChannel', channel, (data : Channel) => {
         setChannels([...channels, data]);
       })};
 
     return (
-      <>
+      <ExpansionPanel title="Public conversations list">
+        {publicChannels.map((channel, index) => {
+          return (
+            <Conversation
+              key={index}
+              name={channel.name}
+              onClick={onClick(channel)}/>
+          )})}
+      </ExpansionPanel>
+    );
+  }
+
+  function RenderInvitedConversations() {
+    const onClick = (channel: Channel) => (e: any) => {
+      setCurrentChannel(channel);
+      socket.emit('joinChannel', channel, (data : Channel) => {
+        setChannels([...channels, data]);
+      })};
+
+    return (
+      <ExpansionPanel title="Invited conversations list">
         {invitedChannels.map((channel, index) => {
           return (
             <Conversation
               key={index}
               name={channel.name}
-              onClick={joinInvited(channel)}/>
+              onClick={onClick(channel)}/>
           )})}
-      </>
+      </ExpansionPanel>
     )
   }
 
@@ -143,6 +196,11 @@ export default function Chat() {
       socket.emit('leaveChannel', currentChannel, () => {
         socket.emit('joinedList')
       })}
+
+    const openProfile = (ft_login: string) => (e: any) => {
+      e.preventDefault();
+      setProfilSidebar(ft_login);
+    }
 
     if (channels.length === 0)
     {
@@ -185,13 +243,13 @@ export default function Chat() {
         </ConversationHeader>
 
         <MessageList>
-          {messages.map((message, index) => {
+          {currentChannel.messages.map((message, index) => {
             return (
               <Message
                 key={index}
                 model={{
                   message: message.content,
-                  sentTime: message.time.getUTCDate().toString(),
+                  sentTime: message.time.toString(),
                   sender: message.sender.username,
                   direction: "incoming",
                   position: "single"
@@ -199,7 +257,7 @@ export default function Chat() {
                 // avatarPosition="tl"
               >
                 <Message.Header sender={message.sender.username} />
-                <Avatar src={avatar_temp} />
+                <Avatar src={avatar_temp} onClick={openProfile(message.sender.ft_login)}/>
               </Message>
             )
           })}
@@ -241,52 +299,70 @@ export default function Chat() {
     }
 
     return (
-      <form
-        onSubmit={onSubmit}
-      >
-        <input
-          type="input"
-          placeholder="Channel name"
-          ref={node => channelName = node}
-          required
-        />
+      <ExpansionPanel title="Create Channel">
+        <form onSubmit={onSubmit}>
+          <input
+            type="input"
+            placeholder="Channel name"
+            ref={node => channelName = node}
+            required
+          />
 
-      <input type="checkbox" checked={check.password}
-        onChange={() => {setCheck({password: !check.password, private: false})
-        }} />
-        Password ?
-      {
-        check.password === false ? <></> :
-        <input
-          type="input"
-          placeholder="Password"
-          ref={node => password = node}
-          required
-        />
-      }
+          <input type="checkbox" checked={check.password}
+            onChange={() => {setCheck({password: !check.password, private: false})
+            }} />
+            Password ?
+          {
+            check.password === false ? <></> :
+            <input
+              type="input"
+              placeholder="Password"
+              ref={node => password = node}
+              required
+            />
+          }
 
-      <input type="checkbox" checked={check.private}
-        onChange={() => {setCheck({password: false, private: !check.private})
-      }} />
-        Private
-      <Button>Create</Button>
-      </form>
+          <input type="checkbox" checked={check.private}
+            onChange={() => {setCheck({password: false, private: !check.private})
+          }} />
+            Private
+          <Button>Create</Button>
+        </form>
+      </ExpansionPanel>
+    );
+  }
+
+  function RenderRightSidebar() {
+
+    return (
+      <Sidebar position="right">
+        { profilSidebar !== "" ?
+          <>
+            <h1>Profil panel : {profilSidebar}</h1>
+          </>
+          :
+          <>
+            <h1>Admin Panel</h1>
+          </>
+        }
+      </Sidebar>
     );
   }
 
   function sendMessage(content : string) {
+    const message : Message = {} as Message;
+
+    message.content = content;
     console.log(content, currentChannel);
     socket.emit("sendMsg", {
       content: content,
-      channel: { name: currentChannel }
-    }, () => {
-      socket.emit("getMsgs", {
-        channel: { name: currentChannel },
-        from: null,
-        count: 10
-      })
-    })
+      channelId: currentChannel.id,
+    }, () => { socket.emit("getChannel", currentChannel, (data : Channel) => {
+      setCurrentChannel(data);
+    })})
   }
+
+
 
   return (
     <div style={{
@@ -297,17 +373,13 @@ export default function Chat() {
       { !socket.connected ? <Navigate to="/login"></Navigate> : <></> }
       <MainContainer>
         <Sidebar position="left" scrollable={false}>
-          <ExpansionPanel title="Create Channel">
-            <RenderCreateChannel />
-          </ExpansionPanel>
-          <ExpansionPanel title="Conversations list" open={true}>
-            <RenderConversations />
-          </ExpansionPanel>
-          <ExpansionPanel title="Invited conversations list">
-            <RenderInvitedConversations/>
-          </ExpansionPanel>
+          <RenderCreateChannel />
+          <RenderConversations />
+          <RenderPublicConversations/>
+          <RenderInvitedConversations/>
         </Sidebar>
-        <RenderChatContainer/>
+        <RenderRightSidebar />
+        <RenderChatContainer />
       </MainContainer>
     </div>
   );

@@ -97,29 +97,43 @@ export class Channel extends BaseEntity {
 
   static async getChannelWithUsersAndMessages(channelId: number): Promise<Channel> {
     const channel = await Channel.findOne({
-      select: {
-        ...Channel.defaultFilter,
-        users: {
-          user: User.defaultFilter
-        },
-        messages: true
-      },
-      relations: {
-        users: {
-          user:true
-        },
-        messages: true
-      },
+      select: Channel.defaultFilter,
       where: {
         id: channelId
-      },
-      order: {
-        messages: {
-          time: "ASC"
-        }
       }
     });
-    delete channel.password;
+    channel.users = await ChannelUser.find({
+      select: {
+        user: User.defaultFilter,
+        rights: true
+      },
+      relations: {
+        user: true
+      },
+      where: {
+        channelId: channel.id
+      },
+      order: {
+        rights: "ASC"
+      }
+    });
+    channel.messages = await Message.find({
+      select: {
+        id: true,
+        time: true,
+        content: true,
+        sender: User.defaultFilter
+      },
+      relations: {
+        sender: true
+      },
+      where: {
+        channelId: channel.id
+      },
+      order: {
+        time: "ASC"
+      }
+    });
     return channel;
   }
 
