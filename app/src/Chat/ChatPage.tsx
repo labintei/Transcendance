@@ -29,8 +29,6 @@ import { a } from '@react-spring/three';
 
 const avatar_temp = "logo192.png";
 
-const avatar_temp = "logo192.png";
-
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
 
