@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Not, Any, IsNull } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Not, Any, IsNull, Index } from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
@@ -26,6 +26,7 @@ export class Channel extends BaseEntity {
   @PrimaryGeneratedColumn()
   id: number;
 
+  @Index()
   @Column({
     type: 'enum',
     enum: ChannelStatus,
@@ -36,6 +37,7 @@ export class Channel extends BaseEntity {
   @Column({ type: 'varchar', length: 60, nullable: true })
   password: string; // For password-protected channels
 
+  @Index()
   @Column({ nullable: true, unique: true })
   name: string;
 
@@ -46,10 +48,13 @@ export class Channel extends BaseEntity {
   messages: Message[];
 
   async emitUpdate() {
-    const fullChannel = await Channel.getChannelWithUsersAndMessages(this.id);
-    if (fullChannel.status === Channel.Status.PUBLIC)
+    if (this.status === Channel.Status.PUBLIC)
       SocketGateway.getIO().emit('publicList', await Channel.publicList());
-    SocketGateway.channelEmit(this.id, 'channel', fullChannel);
+    SocketGateway.channelEmit(this.id, 'updateChannel', {id: this.id});
+  }
+
+  async emitHide(login: string) {
+    SocketGateway.userEmit(login, 'hideChannel', {id: this.id})
   }
 
   async getNewOwner(): Promise<ChannelUser> {
@@ -97,29 +102,44 @@ export class Channel extends BaseEntity {
 
   static async getChannelWithUsersAndMessages(channelId: number): Promise<Channel> {
     const channel = await Channel.findOne({
-      select: {
-        ...Channel.defaultFilter,
-        users: {
-          user: User.defaultFilter
-        },
-        messages: true
-      },
-      relations: {
-        users: {
-          user:true
-        },
-        messages: true
-      },
+      select: Channel.defaultFilter,
       where: {
         id: channelId
-      },
-      order: {
-        messages: {
-          time: "ASC"
-        }
       }
     });
-    delete channel.password;
+    channel.users = await ChannelUser.find({
+      select: {
+        user: User.defaultFilter,
+        rights: true
+      },
+      relations: {
+        user: true
+      },
+      where: {
+        channelId: channel.id,
+        status: ChannelUser.Status.JOINED
+      },
+      order: {
+        rights: "ASC"
+      }
+    });
+    channel.messages = await Message.find({
+      select: {
+        id: true,
+        time: true,
+        content: true,
+        sender: User.defaultFilter
+      },
+      relations: {
+        sender: true
+      },
+      where: {
+        channelId: channel.id
+      },
+      order: {
+        time: "ASC"
+      }
+    });
     return channel;
   }
 

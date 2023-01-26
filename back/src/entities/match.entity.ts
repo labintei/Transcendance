@@ -23,10 +23,10 @@ export class Match extends BaseEntity {
   })
   status: MatchStatus;
 
-  @Column('smallint')
+  @Column({ type: 'smallint', default: 0 })
   score1: number;
 
-  @Column('smallint')
+  @Column({ type: 'smallint', default: 0 })
   score2: number;
 
   @ManyToOne(() => User, { onDelete: "SET NULL" })

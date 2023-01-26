@@ -178,10 +178,9 @@ export class ChatGateway {
         });
       chanUser.status = ChannelUser.Status.JOINED;
       await chanUser.save();
-      delete channel.password;
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
-      return null;
+      return Channel.getChannelWithUsersAndMessages(channel.id);
     }
     catch (e) {
       this.err(client, 'joinChannel', e);
@@ -227,7 +226,8 @@ export class ChatGateway {
       chanUser.status = null;
       await chanUser.save();
       client.leave(SocketGateway.channelsToRooms([channel])[0])
-      channel.emitUpdate();
+      await channel.emitHide(chanUser.userLogin);
+      await channel.emitUpdate();
       return chanUser
     }
     catch (e) {
@@ -279,7 +279,6 @@ export class ChatGateway {
         status: ChannelUser.Status.JOINED
       }))
         throw new WsException("You are not a member of this Channel.");
-      client.emit('channel', channel);
       return channel;
     }
     catch (e) {
@@ -288,7 +287,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('setPermissions')
-  async setPermissions(client: Socket, data: ChannelUser) {
+  async setPermissions(client: Socket, data: ChannelUser): Promise<ChannelUser> {
     try {
       const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
@@ -302,25 +301,58 @@ export class ChatGateway {
       });
       if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
         throw new WsException("Target user is not a member of this channel.");
-      if (!Object.values(ChannelUser.Rights).includes(data.rights))
+      if (data.status === chanUser.status)
+        delete data.rights;
+      if (data.rights === chanUser.rights)
+        delete data.rights;
+      if (data.rightsEnd === chanUser.rightsEnd)
+        delete data.rightsEnd;
+      if (data.rights === undefined && data.status === undefined && data.rightsEnd === undefined)
+        throw new WsException("No changes in user permissions.");
+      if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
         throw new WsException("Invalid user rights.");
+      if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
+        throw new WsException("Invalid user status.");
+      if (data.rightsEnd && data.rightsEnd !== null) {
+        const endDate = new Date(data.rightsEnd);
+        if (isNaN(endDate.getTime()))
+          throw new WsException("Invalid end date.");
+        data.rightsEnd = endDate;
+      }
       if ((chanUser.isAdmin() || data.isAdmin()) && !ownStatus.isOwner())
         throw new WsException("You must be the owner to set an administrator permission.");
-      chanUser.rights = data.rights;
-      if (data.rightsEnd !== undefined) {
-        const endDate = new Date(data.rightsEnd);
-        if (data.rightsEnd !== undefined && isNaN(endDate.getTime()))
-          throw new WsException("Invalid specified end date.");
-        chanUser.rightsEnd = endDate;
+      if (!ownStatus.isAdmin())
+        throw new WsException("You must be an administrator to set a user permission.");
+      if (data.status === ChannelUser.Status.INVITED && chanUser.status === ChannelUser.Status.JOINED)
+        throw new WsException("You cannot invite a user who is already a member of this channel.");
+      if (data.rights !== undefined) {
+        chanUser.rights = data.rights;
+        if (chanUser.rights === ChannelUser.Rights.BANNED)
+          chanUser.status = null;
       }
-      await chanUser.save();
+      if (data.status !== undefined)
+        chanUser.status = data.status;
+      if (data.rights !== undefined) {
+        chanUser.rights = data.rights;
+        chanUser.rightsEnd = null;
+      }
+      if (data.rightsEnd !== undefined)
+        chanUser.rightsEnd = data.rightsEnd;
+      if (!chanUser.status && chanUser.rights) {
+        await chanUser.remove();
+        return null;
+      }
       if (chanUser.isOwner())
       {
         ownStatus.rights = ChannelUser.Rights.ADMIN;
         ownStatus.save();
       }
       channel.emitUpdate();
-      return
+      if (!chanUser.status && chanUser.rights) {
+        await chanUser.remove();
+        return null;
+      }
+      return chanUser.save();
     }
     catch (e) {
       this.err(client, 'setPermissions', e);
