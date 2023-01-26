@@ -57,6 +57,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
     if(l && (l[0] && l[1] == true))
     {
       console.log('reconnection a la game');
+      // marche pour l un des deux mais pas l autre
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', [id_role]);
       this.gameservice.ClientChange(id_role, client);
