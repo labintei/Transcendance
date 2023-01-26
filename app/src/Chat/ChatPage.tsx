@@ -83,7 +83,10 @@ export default function Chat() {
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
-    socket.on('msgs', (data) => { console.log('message', data) }); // move to Message or ChannelMessage
+    socket.on('message', (data) => {
+      const messages = [...currentChannel.messages, data];
+      setCurrentChannel({...currentChannel, messages: messages})
+    });
 
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
@@ -94,11 +97,6 @@ export default function Chat() {
         })}
       socket.emit('publicList');
     });
-
-    // socket.on('joinChannel', (channel : Channel) => {
-    //   socket.emit('joinedList');
-    //   socket.emit('getChannel', channel, (data : Channel) => {setCurrentChannel(channel)});
-    // });
 
     socket.emit('joinedList');
     // This code will run when component unmount
