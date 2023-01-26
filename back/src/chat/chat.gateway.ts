@@ -5,7 +5,6 @@ import { ChannelUser } from 'src/entities/channeluser.entity';
 import { Message } from 'src/entities/message.entity';
 import { User } from 'src/entities/user.entity';
 import { SocketGateway } from 'src/socket/socket.gateway';
-import { FindOptionsWhere, LessThanOrEqual } from 'typeorm';
 
 @WebSocketGateway()
 export class ChatGateway {
@@ -178,10 +177,9 @@ export class ChatGateway {
         });
       chanUser.status = ChannelUser.Status.JOINED;
       await chanUser.save();
-      delete channel.password;
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
-      return null;
+      return Channel.getChannelWithUsersAndMessages(channel.id);
     }
     catch (e) {
       this.err(client, 'joinChannel', e);
@@ -227,7 +225,8 @@ export class ChatGateway {
       chanUser.status = null;
       await chanUser.save();
       client.leave(SocketGateway.channelsToRooms([channel])[0])
-      channel.emitUpdate();
+      await channel.emitHide(chanUser.userLogin);
+      await channel.emitUpdate();
       return chanUser
     }
     catch (e) {
@@ -279,7 +278,6 @@ export class ChatGateway {
         status: ChannelUser.Status.JOINED
       }))
         throw new WsException("You are not a member of this Channel.");
-      client.emit('channel', channel);
       return channel;
     }
     catch (e) {
@@ -288,7 +286,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('setPermissions')
-  async setPermissions(client: Socket, data: ChannelUser) {
+  async setPermissions(client: Socket, data: ChannelUser): Promise<ChannelUser> {
     try {
       const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
@@ -296,31 +294,58 @@ export class ChatGateway {
       const ownStatus = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
       if (!ownStatus || !ownStatus.isAdmin())
         throw new WsException("You are not an administrator of this channel.");
-      const chanUser = await ChannelUser.findOneBy({
+      let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: data.userLogin
       });
       if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
         throw new WsException("Target user is not a member of this channel.");
-      if (!Object.values(ChannelUser.Rights).includes(data.rights))
+      if ((data.rights === undefined || data.rights === chanUser.rights)
+        && (data.status === undefined || data.status === chanUser.status)
+        && (data.rightsEnd === undefined || data.rightsEnd === chanUser.rightsEnd))
+        throw new WsException("No changes in user permissions.");
+      if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
         throw new WsException("Invalid user rights.");
+      if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
+        throw new WsException("Invalid user status.");
+      if (data.rightsEnd) {
+        const endDate = new Date(data.rightsEnd);
+        if (isNaN(endDate.getTime()))
+          throw new WsException("Invalid end date.");
+        data.rightsEnd = endDate;
+      }
       if ((chanUser.isAdmin() || data.isAdmin()) && !ownStatus.isOwner())
         throw new WsException("You must be the owner to set an administrator permission.");
-      chanUser.rights = data.rights;
-      if (data.rightsEnd !== undefined) {
-        const endDate = new Date(data.rightsEnd);
-        if (data.rightsEnd !== undefined && isNaN(endDate.getTime()))
-          throw new WsException("Invalid specified end date.");
-        chanUser.rightsEnd = endDate;
+      if (!ownStatus.isAdmin())
+        throw new WsException("You must be an administrator to set a user permission.");
+      if (data.status === ChannelUser.Status.INVITED && chanUser.status === ChannelUser.Status.JOINED)
+        throw new WsException("You cannot invite a user who is already a member of this channel.");
+      if (data.rights !== undefined && data.rights !== chanUser.rights) {
+        chanUser.rights = data.rights;
+        if (chanUser.rights === ChannelUser.Rights.BANNED && chanUser.status)
+          data.status = null;
+        chanUser.rightsEnd = null;
       }
-      await chanUser.save();
+      if (data.rightsEnd !== undefined && data.rightsEnd !== chanUser.rightsEnd)
+        chanUser.rightsEnd = data.rightsEnd;
+      if (data.status !== undefined && data.status !== chanUser.status) {
+        chanUser.status = data.status;
+        if (data.status === null)
+          await channel.emitHide(chanUser.userLogin);
+      }
       if (chanUser.isOwner())
       {
         ownStatus.rights = ChannelUser.Rights.ADMIN;
-        ownStatus.save();
+        await ownStatus.save();
       }
-      channel.emitUpdate();
-      return
+      if (!chanUser.status && !chanUser.rights) {
+        await chanUser.remove();
+        chanUser = null;
+      }
+      else
+        chanUser = await chanUser.save();
+      await channel.emitUpdate();
+      return chanUser;
     }
     catch (e) {
       this.err(client, 'setPermissions', e);

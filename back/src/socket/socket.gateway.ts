@@ -94,6 +94,12 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     return this.getIO().in(chanRoomPrefix + channelId).emit(event, content);
   }
 
+  public static async userEmit(userLogin: string,event: string, content: any) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).emit(event, content);
+  }
+
   public static async userJoinRooms(userLogin: string, rooms: string[]) {
     const userSockets = await UserSocket.findBy({userLogin: userLogin});
     for (let sock of userSockets)

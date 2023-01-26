@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
+import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
@@ -23,6 +23,7 @@ export class ChannelUser extends BaseEntity {
   @PrimaryColumn({ type: 'varchar', name: 'user' })
   userLogin: string;
 
+  @Index()
   @Column({
     type: 'enum',
     nullable: true,
@@ -63,7 +64,9 @@ export class ChannelUser extends BaseEntity {
   }
 
   canSpeak(): boolean {
-    return this.status === ChannelUser.Status.JOINED;
+    return (this.rights !== ChannelUser.Rights.MUTED
+      && this.rights !== ChannelUser.Rights.BANNED
+      && this.status === ChannelUser.Status.JOINED);
   }
 
 }

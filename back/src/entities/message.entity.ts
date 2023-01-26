@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, Index, FindOptionsSelect } from 'typeorm';
 import { Channel } from './channel.entity';
 import { User } from './user.entity';
-import { SocketGateway } from 'src/socket/socket.gateway';
 
 @Entity('message')
 export class Message extends BaseEntity {
