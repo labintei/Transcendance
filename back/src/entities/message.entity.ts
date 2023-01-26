@@ -15,7 +15,8 @@ export class Message extends BaseEntity {
   @Column()
   content: string;
 
-  @Column({ name: 'sender' })
+  @Index()
+  @Column({ type: 'varchar', name: 'sender', nullable: true})
   senderLogin: string;
 
   @Column({ name: 'channel' })

@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere, Index } from 'typeorm';
 import { User } from './user.entity';
 
 enum MatchStatus {
@@ -28,6 +28,14 @@ export class Match extends BaseEntity {
 
   @Column({ type: 'smallint', default: 0 })
   score2: number;
+
+  @Index()
+  @Column({ type: 'varchar', name: 'user1', nullable: true})
+  user1Login: string;
+
+  @Index()
+  @Column({ type: 'varchar', name: 'user2', nullable: true})
+  user2Login: string;
 
   @ManyToOne(() => User, { onDelete: "SET NULL" })
   @JoinColumn({ name: 'user1' })

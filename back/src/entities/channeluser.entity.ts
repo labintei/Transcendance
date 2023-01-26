@@ -43,6 +43,7 @@ export class ChannelUser extends BaseEntity {
   @Column({ nullable: true, default: null })
   rightsEnd: Date;
 
+  @Index()
   @UpdateDateColumn()
   updated: Date;
 
