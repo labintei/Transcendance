@@ -27,7 +27,6 @@ export class ChatGateway {
   async sendMsg(client: Socket, data: Message): Promise<Message> {
     try {
       data.senderLogin = client.data.login;
-      console.log("[sendMsg] : " + JSON.stringify(data));
       if (data.recipientLogin) {
         if (!await User.findOneBy({ft_login: data.recipientLogin}))
           throw new WsException("Direct message recipient was not found !");
@@ -50,6 +49,12 @@ export class ChatGateway {
         senderLogin: data.senderLogin,
         channelId: data.channelId
       }).save();
+      message.sender = await User.findOne({
+        select: User.defaultFilter,
+        where: {
+          ft_login: data.senderLogin
+        }
+      });
       SocketGateway.channelEmit(message.channelId, 'message', message);
       return message;
     }

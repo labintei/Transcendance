@@ -2,7 +2,7 @@ import { Controller, Delete, ConflictException, Get, NotFoundException, Param, P
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { ILike, UpdateResult } from 'typeorm';
+import { ILike, MssqlParameter, UpdateResult } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
