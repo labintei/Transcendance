@@ -89,6 +89,10 @@ pclean			: stop
 #	cleans everything
 fclean			:	clean cclean pclean
 
+pdre				: pclean dev
+
+dre					:	fclean dev
+
 re					:	fclean all
 
 list				:

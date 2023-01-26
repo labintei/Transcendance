@@ -23,9 +23,10 @@ import {
   AddUserButton
 } from '@chatscope/chat-ui-kit-react';
 
-import avatar_temp from './logo192.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+
+const avatar_temp = "logo192.png";
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });

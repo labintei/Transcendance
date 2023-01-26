@@ -95,7 +95,7 @@ export class Match extends BaseEntity {
   }
 
   static async clearOngoing() {
-    Match.delete({ status: Not(MatchStatus.ENDED) } as FindOptionsWhere<Match>);
+    Match.delete({ status: MatchStatus.ONGOING });
   }
 
 }

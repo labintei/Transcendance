@@ -16,6 +16,8 @@ export class AppService implements OnModuleInit {
   }
 
   async generateExamples() {
+    if (await User.count())
+      return;
     await User.save([
       {
         ft_login: 'mromaniu',
@@ -68,6 +70,7 @@ export class AppService implements OnModuleInit {
         xp: 587
       }
     ]);
+    await User.refreshRanks();
     await UserRelationship.save([
       {
         ownerLogin: "jraffin",
@@ -94,6 +97,5 @@ export class AppService implements OnModuleInit {
         status: Match.Status.ENDED
       }
     ]);
-    await User.refreshRanks();
   }
 }
