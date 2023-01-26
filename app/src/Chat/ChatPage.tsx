@@ -23,10 +23,11 @@ import {
   AddUserButton
 } from '@chatscope/chat-ui-kit-react';
 
-import avatar_temp from './logo192.png';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import { a } from '@react-spring/three';
+
+const avatar_temp = "logo192.png";
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
@@ -82,7 +83,7 @@ export default function Chat() {
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
-    socket.on('msg', (data) => { console.log('msg', data) }); // move to Message or ChannelMessage
+    socket.on('msgs', (data) => { console.log('message', data) }); // move to Message or ChannelMessage
 
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
@@ -94,28 +95,26 @@ export default function Chat() {
       socket.emit('publicList');
     });
 
-    socket.on('joinChannel', (channel : Channel) => {
-      socket.emit('joinedList');
-      socket.emit('getChannel', channel);
-    });
-
-    socket.on('getChannel', (channel: Channel) => {
-      setCurrentChannel(channel);
-    });
+    // socket.on('joinChannel', (channel : Channel) => {
+    //   socket.emit('joinedList');
+    //   socket.emit('getChannel', channel, (data : Channel) => {setCurrentChannel(channel)});
+    // });
 
     socket.emit('joinedList');
     // This code will run when component unmount
     return () => {
-      socket.off('msg');
-      socket.off('getChannel');
+      socket.off('message');
       socket.off('joinedList');
     };
   }, []);
 
   function RenderConversations() {
     const switchChannel = (channel: Channel) => (e: any) => {
-      socket.emit('getChannel', channel);
+      socket.emit('getChannel', channel, (data: Channel) => {
+        setCurrentChannel(data);
+      });
     };
+
       // socket.emit('getChannel', channel, (data : Channel) => {
       //   setCurrentChannel(data);
       //   let updateChannels = [...channels];
@@ -160,7 +159,12 @@ export default function Chat() {
     }, [channels]);
 
     const onClick = (channel: Channel) => (e: any) => {
-      socket.emit('joinChannel', channel);
+      socket.emit('joinChannel', channel, (channel : Channel) => {
+        socket.emit('joinedList');
+        socket.emit('getChannel', channel, (channel : Channel) => {
+          setCurrentChannel(channel)
+        });
+      });
       socket.emit('publicList');
     };
 
@@ -179,10 +183,11 @@ export default function Chat() {
 
   function RenderInvitedConversations() {
     const onClick = (channel: Channel) => (e: any) => {
-      setCurrentChannel(channel);
-      socket.emit('joinChannel', channel, (data : Channel) => {
-        setChannels([...channels, data]);
-      })};
+      // setCurrentChannel(channel);
+      // socket.emit('joinChannel', channel, (data : Channel) => {
+      //   setChannels([...channels, data]);
+      // })};
+    }
 
     return (
       <ExpansionPanel title="Invited conversations list">
@@ -199,6 +204,10 @@ export default function Chat() {
 
   function RenderChatContainer() {
     console.count("renderChatContainer")
+
+    // useEffect(() => {
+
+    // }, []);
 
     const leaveChannel = (e: any) => {
       console.log("leaving channel", currentChannel.name)
@@ -370,8 +379,6 @@ export default function Chat() {
       setCurrentChannel(data);
     })})
   }
-
-
 
   return (
     <div style={{
