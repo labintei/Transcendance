@@ -1,4 +1,4 @@
-import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
+import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
@@ -41,6 +41,9 @@ export class ChannelUser extends BaseEntity {
 
   @Column({ nullable: true, default: null })
   rightsEnd: Date;
+
+  @UpdateDateColumn()
+  updated: Date;
 
   @ManyToOne(() => Channel, (chan) => (chan.users), { onDelete: "CASCADE" })
   @JoinColumn({ name: 'channel' })

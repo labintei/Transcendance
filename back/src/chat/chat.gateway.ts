@@ -37,7 +37,7 @@ export class ChatGateway {
       else if (data.channelId) {
         const channel = await Channel.findOneBy({id: data.channelId});
         if (!channel)
-          throw new WsException("Message destination channel was not found !");
+          throw new WsException("Channel id (" + data.id + ") was not found.");
         if (channel.status === Channel.Status.DIRECT)
           throw new WsException("You cannot send a channel message to a direct channel.");
         const chanUser = await ChannelUser.findOneBy({channelId: data.channelId, userLogin: client.data.login});
@@ -65,7 +65,8 @@ export class ChatGateway {
     try {
       if (!data.name)
         throw new WsException("A channel name is required.")
-      if (await Channel.findOneBy({ name: data.name }))
+      const exists = await Channel.findOneBy({ name: data.name });
+      if (exists && exists.id !== data.id)
         throw new WsException("this channel name is already taken.")
       if (data.status === Channel.Status.DIRECT || !Object.values(Channel.Status).includes(data.status))
         throw new WsException("Bad channel status.")
@@ -97,45 +98,42 @@ export class ChatGateway {
   @SubscribeMessage('updateChannel')
   async updateChannel(client: Socket, data: Channel): Promise<Channel> {
     try {
-      let altered = false;
       data.id = Number(data.id);
       if (!Number.isInteger(data.id) || data.id < 0)
         throw new WsException("Invalid channel id");
       let channel = await Channel.findOneBy({ id: data.id });
       if (!channel)
-        throw new WsException("Channel was not found.");
+        throw new WsException("Channel id (" + data.id + ") was not found.");
       const chanUser = await ChannelUser.findOneBy({ channelId: data.id, userLogin: client.data.login });
       if (!chanUser || !chanUser.isOwner())
         throw new WsException("You are not the owner of this channel.");
+      let altered = false;
       if (data.name && data.name !== channel.name)
       {
         if (await Channel.findOneBy({ name: data.name }))
-          throw new WsException("this channel name is already taken.")
+          throw new WsException("this channel name is already taken.");
         channel.name = data.name;
         altered = true;
       }
       if (data.status && data.status !== channel.status)
       {
-        if (data.status === Channel.Status.PUBLIC || data.status === Channel.Status.PRIVATE)
-          channel.password = null;
-        else if (data.status !== Channel.Status.PROTECTED)
-          throw new WsException("Bad channel status.");
-        else if (!data.password)
-          throw new WsException("Protected channel status requires to provide a password.");
+        if (data.status === Channel.Status.DIRECT || !Object.values(Channel.Status).includes(data.status))
+          throw new WsException("Bad channel status.")
         channel.status = data.status;
         altered = true;
       }
-      if (data.password && channel.status === Channel.Status.PROTECTED)
+      if (data.password && data.password !== channel.password)
       {
+        if (channel.status !== Channel.Status.PROTECTED)
+          throw new WsException("Only protected channels can have a password.");
         channel.password = await Channel.hashPassword(data.password);
         altered = true;
       }
       if (altered)
-      {
         channel = await channel.save();
-        channel.emitUpdate();
-      }
       delete channel.password;
+      if (altered)
+        channel.emitUpdate();
       return channel;
     }
     catch (e) {
@@ -147,54 +145,43 @@ export class ChatGateway {
   @SubscribeMessage('joinChannel')
   async joinChannel(client: Socket, data: Channel): Promise<Channel> {
     try {
-      if (!data.id && !data.name)
-        throw new WsException("You must provide the channel id or name.");
-      const channel = await Channel.findOneBy({ id: data.id, name: data.name });
+      data.id = Number(data.id);
+      if (!Number.isInteger(data.id) || data.id < 0)
+        throw new WsException("Invalid channel id");
+      const channel = await Channel.findOneBy({ id: data.id });
       if (!channel)
-        throw new WsException("Channel was not found.");
+        throw new WsException("Channel id (" + data.id + ") was not found.");
+      if (channel.status === Channel.Status.DIRECT)
+        throw new WsException("You cannot join a direct channel.");
       let chanUser = await ChannelUser.findOne({
         where: {
           channelId: channel.id,
           userLogin: client.data.login
         }
       });
-      if (chanUser) {
-        if (chanUser.rights === ChannelUser.Rights.BANNED)
-          throw new WsException("You are banned from this channel.");
-        if (chanUser.status === ChannelUser.Status.JOINED)
-          throw new WsException("You already joined this channel.");
-        chanUser.status = ChannelUser.Status.JOINED;
-      }
-      else
-        chanUser = await ChannelUser.create({
-          channelId: channel.id,
-          userLogin: client.data.login,
-          status: ChannelUser.Status.JOINED
-        });
-      if (channel.status === Channel.Status.DIRECT)
-        throw new WsException("You cannot join another person's direct channel.")
+      if (chanUser?.status === ChannelUser.Status.JOINED)
+        throw new WsException("You already joined this channel.");
+      if (chanUser?.rights === ChannelUser.Rights.BANNED)
+        throw new WsException("You are banned from this channel.");
+      if (channel.status === Channel.Status.PRIVATE && (!chanUser || chanUser.status !== ChannelUser.Status.INVITED))
+        throw new WsException("You must be invited to join a private channel");
       if (channel.status === Channel.Status.PROTECTED) {
         if (!data.password)
           throw new WsException("Protected Channel, password is required.");
         if (!(await Channel.comparePassword(data.password, channel.password)))
           throw new WsException("Channel password does not match.");
       }
-      else if (channel.status === Channel.Status.PRIVATE)
-        throw new WsException("Channel is private, you must be invited by a channel admin to join.");
+      if (!chanUser)
+        chanUser = ChannelUser.create({
+          channelId: channel.id,
+          userLogin: client.data.login
+        });
+      chanUser.status = ChannelUser.Status.JOINED;
       await chanUser.save();
+      delete channel.password;
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
-      return Channel.findOne({
-        select: Channel.defaultFilter,
-        relations: {
-          users: {
-            user: true
-          }
-        },
-        where: {
-          id: channel.id
-        }
-      });
+      return null;
     }
     catch (e) {
       this.err(client, 'joinChannel', e);
@@ -205,33 +192,46 @@ export class ChatGateway {
   @SubscribeMessage('leaveChannel')
   async leaveChannel(client: Socket, data: Channel): Promise<ChannelUser> {
     try {
-      const channel = await Channel.findOneBy({ id: data.id, name: data.name });
+      data.id = Number(data.id);
+      if (!Number.isInteger(data.id) || data.id < 0)
+        throw new WsException("Invalid channel id");
+      const channel = await Channel.findOneBy({ id: data.id });
       if (!channel)
-        throw new WsException("Channel was not found.");
+        throw new WsException("Channel id (" + data.id + ") was not found.");
       if (channel.status === Channel.Status.DIRECT)
         throw new WsException("You cannot leave a direct Channel.");
-      const chanUser = await ChannelUser.findOne({
-        relations: {
-          channel: true
-        },
-        where: {
-          channel: channel,
-          userLogin: client.data.login
-        } as FindOptionsWhere<ChannelUser>
+      const chanUser = await ChannelUser.findOneBy({
+        channelId: channel.id,
+        userLogin: client.data.login
       });
-      if (!chanUser)
-        throw new WsException("User is not a member of this channel.");
-      chanUser.status = null;
-      if (!chanUser.rights)
+      if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
+        throw new WsException("You are not a member of this channel.");
+      if (chanUser.isOwner()){
+        const newOwner = await channel.getNewOwner();
+        if (newOwner) {
+          newOwner.rights = ChannelUser.Rights.OWNER;
+          await newOwner.save();
+          await chanUser.remove();
+        }
+        else {
+          const rooms = SocketGateway.channelsToRooms([channel]);
+          this.io.in(rooms).socketsLeave(rooms);
+          await channel.remove();
+        }
+        return null;
+      }
+      if (!chanUser.rights) {
         await chanUser.remove();
-      else
-        await chanUser.save();
-      this.io.in(client.id).socketsLeave(SocketGateway.channelsToRooms([channel]));
+        return null;
+      }
+      chanUser.status = null;
+      await chanUser.save();
+      client.leave(SocketGateway.channelsToRooms([channel])[0])
       channel.emitUpdate();
       return chanUser
     }
     catch (e) {
-      this.err(client, 'leave', e);
+      this.err(client, 'leaveChannel', e);
       return null;
     }
   }
@@ -257,20 +257,22 @@ export class ChatGateway {
     return list;
   }
 
-  /*  TODO  TODO  TODO
   @SubscribeMessage('directList')
   async directList(client: Socket): Promise<Channel[]> {
     const list = await Channel.directList(client.data.login);
-    client.emit('invitedList', list);
+    client.emit('directList', list);
     return list;
-  }*/
+  }
 
   @SubscribeMessage('getChannel')
-  async getChannel(client: Socket, data: {channelId: number}): Promise<Channel> {
+  async getChannel(client: Socket, data: Channel): Promise<Channel> {
     try {
-      const channel = await Channel.getChannel(data.channelId);
+      data.id = Number(data.id);
+      if (!Number.isInteger(data.id) || data.id < 0)
+        throw new WsException("Invalid channel id");
+      const channel = await Channel.getChannelWithUsersAndMessages(data.id);
       if (!channel)
-        throw new WsException("ChannelId " + data.channelId + " was not found.");
+        throw new WsException("ChannelId " + data.id + " was not found.");
       if (!await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: client.data.login,
@@ -291,40 +293,32 @@ export class ChatGateway {
       const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
         throw new WsException("Channel was not found.");
-      if (channel.status === Channel.Status.DIRECT)
-        throw new WsException("Cannot set user permissions on a direct channel.");
-      const ownChanUser = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
-      if (!ownChanUser || !ownChanUser.isAdmin())
-        throw new WsException("You are not administrator of this channel.");
-      const other = await User.findOneBy({ft_login: data.user.ft_login, username: data.user.username});
-      if (!other)
-        throw new WsException("Target user not found.");
-      let otherChanUser = await ChannelUser.findOneBy({
-          channel: channel,
-          user: other
-        } as FindOptionsWhere<ChannelUser>);
+      const ownStatus = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
+      if (!ownStatus || !ownStatus.isAdmin())
+        throw new WsException("You are not an administrator of this channel.");
+      const chanUser = await ChannelUser.findOneBy({
+        channelId: channel.id,
+        userLogin: data.userLogin
+      });
+      if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
+        throw new WsException("Target user is not a member of this channel.");
       if (!Object.values(ChannelUser.Rights).includes(data.rights))
-        throw new WsException("Invalid new channel user rights.");
-      if (!Object.values(ChannelUser.Status).includes(data.status))
-        throw new WsException("Invalid new channel user status.");
-      const endDate = new Date(data.rightsEnd);
-      if (isNaN(endDate.getTime()))
-        throw new WsException("Invalid new channel user status end date.");
-      if (otherChanUser)
-      {
-        otherChanUser.rights = data.rights;
-        otherChanUser.status = data.status;
-        otherChanUser.rightsEnd = endDate;
+        throw new WsException("Invalid user rights.");
+      if ((chanUser.isAdmin() || data.isAdmin()) && !ownStatus.isOwner())
+        throw new WsException("You must be the owner to set an administrator permission.");
+      chanUser.rights = data.rights;
+      if (data.rightsEnd !== undefined) {
+        const endDate = new Date(data.rightsEnd);
+        if (data.rightsEnd !== undefined && isNaN(endDate.getTime()))
+          throw new WsException("Invalid specified end date.");
+        chanUser.rightsEnd = endDate;
       }
-      else
-        otherChanUser = ChannelUser.create({
-          channel: channel,
-          user: other,
-          rights: data.rights,
-          status: data.status,
-          rightsEnd: endDate
-        });
-      await otherChanUser.save();
+      await chanUser.save();
+      if (chanUser.isOwner())
+      {
+        ownStatus.rights = ChannelUser.Rights.ADMIN;
+        ownStatus.save();
+      }
       channel.emitUpdate();
       return
     }
