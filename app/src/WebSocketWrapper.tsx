@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
-import { io, Socket } from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 interface WebSocketWrapper {
   children: React.ReactNode;
@@ -39,7 +39,6 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
 
       socket.on('ping', () => {
         socket.emit('pong');
-        console.count('pong');
       })
     }
   }, [login]);
