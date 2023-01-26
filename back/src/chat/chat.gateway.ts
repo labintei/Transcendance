@@ -50,7 +50,7 @@ export class ChatGateway {
         senderLogin: data.senderLogin,
         channelId: data.channelId
       }).save();
-      SocketGateway.channelEmit(message.channelId, 'msgs', message);
+      SocketGateway.channelEmit(message.channelId, 'message', message);
       return message;
     }
     catch (e) {
