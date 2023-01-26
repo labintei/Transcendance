@@ -51,6 +51,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
   {
+    console.log('GAME HEAR');
     var l = await this.gameservice.newGame(client);// renvoit room-id et true replace ou pas
     console.log(l);
     if(l && (l[0] && l[1] == true))
