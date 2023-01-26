@@ -80,6 +80,8 @@ display:flex;
 #level-list > li > .avatar{
 display:block;
 float:left;
+background-size: cover;
+background-position: center;
 margin-right:8px;
 position: relative;
 }

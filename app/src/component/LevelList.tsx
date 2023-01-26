@@ -57,20 +57,7 @@ export default class LevelList extends React.Component {
                 if (prank.status !== undefined)
                   one.status = prank.status;
                 if (prank.avatarURL !== undefined && prank.avatarURL !== null && '' !== prank.avatarURL)
-                {
-                  if (acceptedimg.includes(prank.avatarURL))
-                    await axios.get(process.env.REACT_APP_BACKEND_URL + "avatar/" + one.name, {
-                        withCredentials: true,
-                        responseType:'blob'
-                      }).then(res => {
-                        one.avatar_location = URL.createObjectURL(res.data);
-                      }).catch(error => {
-                        if (error.response.status === 401)
-                          this.setState({logged:false});
-                      });
-                  else
-                    one.avatar_location = prank.avatarURL;
-                }
+                  one.avatar_location = prank.avatarURL;
                 listtmp.push(one);
             }
         }
