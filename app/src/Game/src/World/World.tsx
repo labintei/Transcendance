@@ -24,6 +24,17 @@ import waterimg from "./Textures/waternormals.png"
 import axios from "axios";
 
 
+const loader = new CubeTextureLoader();
+// The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
+const texture = loader.load([
+  i1,
+  i2,
+  i3,
+  i4,
+  i5,
+  i6,
+]);
+
 //import Timer from '../time'
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
@@ -95,24 +106,9 @@ const CameraControls = () => {
   />;
 };
 
-// Loads the skybox texture and applies it to the scene.
+// https://codeworkshop.dev/blog/2020-06-14-creating-a-skybox-with-reflections-in-react-three-fiber
 function SkyBox() {
   const { scene } = useThree();
-  const loader = new CubeTextureLoader();
-  // The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
-  const texture = loader.load([
-    i1,
-    i2,
-    i3,
-    i4,
-    i5,
-    i6
-    //   "https://6izyu.csb.app/3.jpg",
-    //   "https://6izyu.csb.app/4b.jpg",
-    //   "https://6izyu.csb.app/4.jpg",
-    //   "https://6izyu.csb.app/5.jpg",
-    //   "https://6izyu.csb.app/2.jpg",
-  ]);
   // Set the scene background property to the resulting texture.
   scene.background = texture;
   return null;

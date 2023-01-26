@@ -11,7 +11,7 @@ export class FriendsController
 
   @Get()
   async getFriends(@Request() req): Promise<User[]> {
-    return User.find({
+    const users = await User.find({
       select: User.defaultFilter,
       relations: {
         relatedships: true
@@ -23,6 +23,7 @@ export class FriendsController
         }
       }
     });
+    return users;
   }
 
   @Put(':username')
