@@ -72,6 +72,7 @@ export default function Chat() {
   const [channels, setChannels] = useState<Channel[]>([]);
   const [invitedChannels, setInvitedChannels] = useState<Channel[]>([]);
   const [profilSidebar, setProfilSidebar] = useState<string>("");
+  const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
 
   const socket = useContext(getSocketContext);
 
@@ -90,29 +91,41 @@ export default function Chat() {
         socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
           setCurrentChannel(newCurrentChannel);
         })}
+      socket.emit('publicList');
+    });
+
+    socket.on('joinChannel', (channel : Channel) => {
+      socket.emit('joinedList');
+      socket.emit('getChannel', channel);
+    });
+
+    socket.on('getChannel', (channel: Channel) => {
+      setCurrentChannel(channel);
     });
 
     socket.emit('joinedList');
     // This code will run when component unmount
     return () => {
       socket.off('msg');
-      socket.off('getChannels');
+      socket.off('getChannel');
       socket.off('joinedList');
     };
   }, []);
 
   function RenderConversations() {
     const switchChannel = (channel: Channel) => (e: any) => {
-      socket.emit('getChannel', channel, (data : Channel) => {
-        setCurrentChannel(data);
-        let updateChannels = [...channels];
-        let index = updateChannels.findIndex((i) => i.id === data.id);
-        updateChannels[index] = data;
-        setChannels(updateChannels);
-      })}
+      socket.emit('getChannel', channel);
+    };
+      // socket.emit('getChannel', channel, (data : Channel) => {
+      //   setCurrentChannel(data);
+      //   let updateChannels = [...channels];
+      //   let index = updateChannels.findIndex((i) => i.id === data.id);
+      //   updateChannels[index] = data;
+      //   setChannels(updateChannels);
+      // })}
 
-      console.log(channels);
-      console.log(currentChannel);
+      // console.log(channels);
+      // console.log(currentChannel);
 
     return (
       <ExpansionPanel title="Conversations list" open={true}>
@@ -129,11 +142,10 @@ export default function Chat() {
   }
 
   function RenderPublicConversations() {
-    const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
-
     useEffect(() => {
       socket.on('publicList', (chans : Channel[]) => {
         let newPublicList : Channel[] = [];
+        console.log("[DEBUG]: channels:", channels);
         chans.filter((x : Channel) => {
           if (channels.find((a) => {return (a.id === x.id)}) === undefined)
             newPublicList = [...newPublicList, x];
@@ -142,18 +154,15 @@ export default function Chat() {
         setPublicChannels(newPublicList); 
       });
 
-      socket.emit('publicList');
-
       return (() => {
         socket.off('publicList'); 
       });
-    }, []);
+    }, [channels]);
 
     const onClick = (channel: Channel) => (e: any) => {
-      setCurrentChannel(channel);
-      socket.emit('joinChannel', channel, (data : Channel) => {
-        setChannels([...channels, data]);
-      })};
+      socket.emit('joinChannel', channel);
+      socket.emit('publicList');
+    };
 
     return (
       <ExpansionPanel title="Public conversations list">

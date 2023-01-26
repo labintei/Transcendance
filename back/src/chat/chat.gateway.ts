@@ -179,7 +179,9 @@ export class ChatGateway {
       await chanUser.save();
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
-      return Channel.getChannelWithUsersAndMessages(channel.id);
+      const to_send = Channel.getChannelWithUsersAndMessages(channel.id);
+      client.emit('joinChannel', to_send);
+      return to_send;
     }
     catch (e) {
       this.err(client, 'joinChannel', e);
@@ -278,6 +280,7 @@ export class ChatGateway {
         status: ChannelUser.Status.JOINED
       }))
         throw new WsException("You are not a member of this Channel.");
+      client.emit('getChannel', channel);
       return channel;
     }
     catch (e) {
