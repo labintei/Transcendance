@@ -1,17 +1,8 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere } from 'typeorm';
 import { User } from './user.entity';
 
-const matchDefaultFilter: FindOptionsSelect<Match> = {
-  time: true,
-  status: true,
-  score1: true,
-  score2: true,
-  user1: User.defaultFilter,
-  user2: User.defaultFilter
-}
-
 enum MatchStatus {
-  MATCHED = "Matched",
+  NEW = "New",
   ONGOING = "Ongoing",
   ENDED = "Finished"
 }
@@ -28,14 +19,14 @@ export class Match extends BaseEntity {
   @Column({
     type: 'enum',
     enum: MatchStatus,
-    default: MatchStatus.MATCHED
+    default: MatchStatus.NEW
   })
   status: MatchStatus;
 
-  @Column('smallint')
+  @Column({ type: 'smallint', default: 0 })
   score1: number;
 
-  @Column('smallint')
+  @Column({ type: 'smallint', default: 0 })
   score2: number;
 
   @ManyToOne(() => User, { onDelete: "SET NULL" })
@@ -95,9 +86,12 @@ export class Match extends BaseEntity {
     User.refreshRanks();
   }
 
+  static async clearOngoing() {
+    Match.delete({ status: Not(MatchStatus.ENDED) } as FindOptionsWhere<Match>);
+  }
+
 }
 
 export namespace Match {
   export import Status = MatchStatus;
-  export const defaultFilter = matchDefaultFilter;
 }

@@ -10,8 +10,10 @@ export class AppService implements OnModuleInit {
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
     //await this.generateExamples();
-
-    await User.reinitSockets();
+    await this.generateExamples();
+    
+    await User.clearOnlines();
+    await Match.clearOngoing();
   }
 
   async generateExamples() {
@@ -72,17 +74,30 @@ export class AppService implements OnModuleInit {
         ownerLogin: "jraffin",
         relatedLogin: "lbintein",
         status: UserRelationship.Status.FRIEND
-      } as UserRelationship,
+      },
       {
         ownerLogin: "jraffin",
         relatedLogin: "omarecha",
         status: UserRelationship.Status.FRIEND
-      } as UserRelationship,
+      },
       {
         ownerLogin: "jraffin",
         relatedLogin: "mromaniu",
         status: UserRelationship.Status.BLOCKED
-      } as UserRelationship
+      }
+    ]);
+    await Match.save([
+      {
+        user1: {
+          ft_login: "jraffin"
+        },
+        user2: {
+          ft_login: "bmarecha"
+        },
+        score1: 12,
+        score2: 0,
+        status: Match.Status.ENDED
+      }
     ]);
     await User.refreshRanks();
   }

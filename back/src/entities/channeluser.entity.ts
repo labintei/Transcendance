@@ -1,24 +1,6 @@
-import { BaseEntity, Column, Entity, FindOptionsSelect, JoinColumn, ManyToOne, PrimaryColumn } from "typeorm";
-import { User } from "./user.entity";
+import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
-
-const channelUserDefaultFilter: FindOptionsSelect<ChannelUser> = {
-  rights: true,
-  status: true,
-  rightsEnd: true,
-  channel: {
-    id: true,
-    status: true,
-    name: true
-  },
-  user: {
-    ft_login: true,
-    username: true,
-    status: true,
-    level: true,
-    xp: true
-  }
-};
+import { User } from "./user.entity";
 
 enum ChannelUserRights {
   OWNER = "Owner",
@@ -29,8 +11,7 @@ enum ChannelUserRights {
 
 enum ChannelUserStatus {
   INVITED = "Invited",
-  JOINED = "Joined",
-  DIRECT_ALTER = "Direct Message Alter"
+  JOINED = "Joined"
 }
 
 @Entity('channel_user')
@@ -42,6 +23,7 @@ export class ChannelUser extends BaseEntity {
   @PrimaryColumn({ type: 'varchar', name: 'user' })
   userLogin: string;
 
+  @Index()
   @Column({
     type: 'enum',
     nullable: true,
@@ -61,6 +43,9 @@ export class ChannelUser extends BaseEntity {
   @Column({ nullable: true, default: null })
   rightsEnd: Date;
 
+  @UpdateDateColumn()
+  updated: Date;
+
   @ManyToOne(() => Channel, (chan) => (chan.users), { onDelete: "CASCADE" })
   @JoinColumn({ name: 'channel' })
   channel: Channel;
@@ -79,7 +64,9 @@ export class ChannelUser extends BaseEntity {
   }
 
   canSpeak(): boolean {
-    return this.status === ChannelUser.Status.JOINED;
+    return (this.rights !== ChannelUser.Rights.MUTED
+      && this.rights !== ChannelUser.Rights.BANNED
+      && this.status === ChannelUser.Status.JOINED);
   }
 
 }
@@ -87,5 +74,4 @@ export class ChannelUser extends BaseEntity {
 export namespace ChannelUser {
   export import Status = ChannelUserStatus;
   export import Rights = ChannelUserRights;
-  export const defaultFilter = channelUserDefaultFilter;
 }

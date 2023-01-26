@@ -1,10 +1,11 @@
 import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, SubscribeMessage, WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
+import { UserSocket } from 'src/entities/usersocket.entity';
 import { User } from 'src/entities/user.entity';
 
 const chanRoomPrefix = "channel_";
-const pingTimeout = 6000;//10000;
+const pingTimeout = 1000000;
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -16,49 +17,54 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
   }
 
   async handleConnection(client: Socket) {
-    const user = await User.findOne(
-      {
-        select: User.defaultFilter,
-        where: {
-          ft_login: (client.request as any).user
-        }
+    client.data.login = (client.request as any).user;
+    await UserSocket.create({
+      id: client.id,
+      userLogin: client.data.login
+    }).save();
+    const user = await User.findOne({
+      select: User.defaultFilter,
+      where: {
+        ft_login: client.data.login
       }
-    );
-    client.data.login = user.ft_login;
-    await SocketGateway.userDisconnect(user);
-    user.socket = client.id;
-    user.status = User.Status.ONLINE;
-    await user.save();
-    console.log('Websocket Client Connected : ' + user.ft_login);
+    });
+    if (user.status === User.Status.OFFLINE) {
+      user.status = User.Status.ONLINE;
+      await user.save();
+    }
+    console.log('Websocket Client Connected : ' + client.data.login);
     const joinedList = await Channel.joinedList(client.data.login);
     for (let channel of joinedList)
-      SocketGateway.channelEmit(channel, 'updateUser', user);
+      SocketGateway.channelEmit(channel.id, 'updateUser', user);
     console.log('Joining rooms : ');
-    console.log(joinedList);
+    console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
 }
 
   async handleDisconnect(client: Socket) {
-    const user = await User.findOne(
-      {
-        select: User.defaultFilter,
-        where: {
-          ft_login: client.data.login
-        }
+    const userSocket = await UserSocket.delete({ id: client.id });
+    const user = await User.findOne({
+      select: User.defaultFilter,
+      relations: {
+        sockets: true
+      },
+      where: {
+        ft_login: client.data.login
       }
-    );
-    user.socket = null;
-    user.status = User.Status.OFFLINE;
-    await user.save();
+    });
+    if (!user.sockets.length) {
+      user.status = User.Status.OFFLINE;
+      await user.save();
+    }
     console.log('Websocket Client Disconnected : ' + user.ft_login);
     const joinedList = await Channel.joinedList(client.data.login);
     console.log('Leaving rooms : ');
-    console.log(joinedList);
+    console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
     for (let channel of joinedList)
-      SocketGateway.channelEmit(channel, 'updateUser', user);
+      SocketGateway.channelEmit(channel.id, 'updateUser', user);
   }
 
   async ping(client: Socket) {
@@ -84,14 +90,26 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     return this.io;
   }
 
-  public static async channelEmit(channel: Channel, event: string, content: any): Promise<boolean> {
-    return this.getIO().in(chanRoomPrefix + channel.id).emit(event, content);
+  public static async channelEmit(channelId: number, event: string, content: any): Promise<boolean> {
+    return this.getIO().in(chanRoomPrefix + channelId).emit(event, content);
   }
 
-  public static async userDisconnect(user: User): Promise<void> {
-    if (!user.socket)
-      return;
-    return this.getIO().in(user.socket).disconnectSockets();
+  public static async userEmit(userLogin: string,event: string, content: any) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).emit(event, content);
+  }
+
+  public static async userJoinRooms(userLogin: string, rooms: string[]) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).socketsJoin(rooms);
+  }
+
+  public static async userDisconnect(userLogin: string) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).disconnectSockets();
   }
 
   public static channelsToRooms(channels: Channel[]): string[] {

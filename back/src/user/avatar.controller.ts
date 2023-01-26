@@ -25,7 +25,6 @@ const imageFileFilter = (req, file, callback) => {
 
 @Controller('avatar')
 @UseGuards(TransGuard)
-//@UseGuards(LogAsJraffin) // Test Guard to uncomment to act as if you are authenticated ad 'jraffin'
 export class AvatarController
 {
 
