@@ -25,6 +25,8 @@ export const useStore = create((set,get) => ({
     escape: false
   },
 
+  spectator : false, 
+
   cx : 0,
   cy : 3,
   cz : 7,
