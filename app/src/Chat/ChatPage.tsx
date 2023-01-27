@@ -75,7 +75,22 @@ export default function Chat() {
   const [profilSidebar, setProfilSidebar] = useState<string>("");
   const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
 
+  const refChannel = useRef(currentChannel);
+
   const socket = useContext(getSocketContext);
+
+  function callback(data: any) {
+    if (data.channelId === refChannel.current.id)
+    {
+      const messages = [...refChannel.current.messages, data];
+      console.log(messages);
+      setCurrentChannel({...refChannel.current, messages: messages})
+    }
+  }
+
+  useEffect(() => {
+    refChannel.current = currentChannel;
+  })
 
   useEffect(() => {
     if (!socket.connected)
@@ -83,15 +98,20 @@ export default function Chat() {
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
-    socket.on('message', (data) => {
-      const messages = [...currentChannel.messages, data];
-      setCurrentChannel({...currentChannel, messages: messages})
-    });
+    socket.on('message', callback);
+    // socket.on('message', (data) => {
+      // if (data.channelId === refChannel.current.id)
+      // {
+      //   const messages = [...refChannel.current.messages, data];
+      //   console.log(messages);
+      //   setCurrentChannel({...refChannel.current, messages: messages})
+      // }
+    // });
 
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
       setChannels(data);
-      if (data.length !== 0) {
+      if (data.length !== 0 && currentChannel.id === 0) {
         socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
           setCurrentChannel(newCurrentChannel);
         })}
@@ -109,6 +129,7 @@ export default function Chat() {
   function RenderConversations() {
     const switchChannel = (channel: Channel) => (e: any) => {
       socket.emit('getChannel', channel, (data: Channel) => {
+        console.log(data);
         setCurrentChannel(data);
       });
     };
@@ -273,7 +294,7 @@ export default function Chat() {
                 // avatarPosition="tl"
               >
                 <Message.Header sender={message.sender.username} />
-                <Avatar src={avatar_temp} onClick={openProfile(message.sender.ft_login)}/>
+                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender.ft_login)}/>
               </Message>
             )
           })}
@@ -374,6 +395,7 @@ export default function Chat() {
       content: content,
       channelId: currentChannel.id,
     }, () => { socket.emit("getChannel", currentChannel, (data : Channel) => {
+      console.log("AAAAAA");
       setCurrentChannel(data);
     })})
   }
