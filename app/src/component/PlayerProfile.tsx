@@ -1,8 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerProfile.css';
-import { acceptedimg,  defaultavatar } from "./const";
-import { useStore } from 'Game/src/State/state';
+import { defaultavatar } from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Person = {
@@ -24,44 +23,9 @@ type State = {
   avatar:File | null
   avatarEdit:boolean
   logged:boolean
-}
-
-function get_status (num:number, bgd:number) {
-  return (bgd === num ? "selected":"not-select")
-}
-
-function Customize(props: {pprof:PlayerProfile}) {
-  const bgd:number = useStore((s:any) => s.bgdChoice);
-  const padc:string = useStore((s:any) => s.padColor);
-  const ballc:string = useStore((s:any) => s.ballColor);
-  const changeBg:any = useStore((s:any) => s.changeBgd);
-  const changePad:any = useStore((s:any) => s.changePadColor);
-  const changeBall:any = useStore((s:any) => s.changeBallColor);
-
-  return (
-    <>
-      <h3>Choose your in-game background :</h3>
-        <div className='bgd-buttons'>
-        <button className={get_status(0, bgd)}
-          style={props.pprof.styleImgAsDiv('/space_choice.jpg')}
-          onClick={() => changeBg(0)}>
-        </button>
-        <button className={get_status(1, bgd)}
-          style={props.pprof.styleImgAsDiv('/sea_choice.jpg')}
-          onClick={() => changeBg(1)}>
-        </button>
-        </div>
-      <h3>Choose your colors :</h3>
-      <input type="color" value={padc} id="pad" className="colorPick"
-        onChange={event => {changePad(event.target.value)}
-      }></input>
-      <label htmlFor="pad">Paddle</label>
-      <input type="color" value={ballc} id="ball" className="colorPick"
-        onChange={event => {changeBall(event.target.value)}
-      }></input>
-      <label htmlFor="ball">Ball</label>
-    </>
-  )
+  bgd:number
+  padc:string
+  ballc:string
 }
 
 export default class PlayerProfile extends React.Component {
@@ -86,11 +50,13 @@ export default class PlayerProfile extends React.Component {
           player.draws = data.draws;
         }
         if (data.avatarURL && data.avatarURL !== '')
-        {
             player.avatar_location = data.avatarURL;
+        if (player !== this.state.player) {
+          if (data.padColor !== undefined && data.ballColor !== undefined && data.bgdChoice !== undefined)
+            this.setState({player:player, bgd:data.bgdChoice, padc:data.padColor, ballc:data.ballColor})
+          else
+            this.setState({player:player});
         }
-        if (player !== this.state.player)
-          this.setState({player:player});
       }
     }).catch(error => {
       this.setState({logged:false});
@@ -101,7 +67,7 @@ export default class PlayerProfile extends React.Component {
     super(props);
     this.state = {
       player:dflt, nameEdit:false, avatarEdit:false,
-      query:'', query2:null, avatar:null, logged:true, errormsg:null
+      query:'', query2:null, avatar:null, logged:true, errormsg:null, bgd:0, padc:"000000", ballc:""
     };
     this.requestUser();
   }
@@ -202,8 +168,41 @@ export default class PlayerProfile extends React.Component {
     return (divStyle)
   }
 
+  setBallC(value: string) {
+    if (value !== this.state.ballc)
+      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {ballColor:value}, {withCredentials:true}).then(() => {
+        this.setState({ballc:value});
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          this.setState({logged:false});
+        console.log(error)
+      })
+  }
+
+  setPadC(value: string) {
+    if (value !== this.state.padc)
+      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {padColor:value}, {withCredentials:true}).then(() => {
+        this.setState({padc:value});
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          this.setState({logged:false});
+        console.log(error)
+      })
+  }
+
+  setBgd(arg0: number) {
+    if (arg0 !== this.state.bgd)
+      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {bgdChoice:arg0}, {withCredentials:true}).then(() => {
+        this.setState({bgd:arg0});
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          this.setState({logged:false});
+        console.log(error)
+      })
+  }
 
   render() {
+
     return (
         <>
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
@@ -229,9 +228,27 @@ export default class PlayerProfile extends React.Component {
                 <p>{this.state.player.defeats}</p>
             </li>
         </ul>
-        <Customize pprof={this}></Customize>
+        <h3>Choose your in-game background :</h3>
+          <div className='bgd-buttons'>
+          <button className={0 === this.state.bgd ? "selected":"not_selected"}
+            style={this.styleImgAsDiv('/space_choice.jpg')}
+            onClick={() => {this.setBgd(0)}}>
+          </button>
+          <button className={1 === this.state.bgd ? "selected":"not_selected"}
+            style={this.styleImgAsDiv('/sea_choice.jpg')}
+            onClick={() => {this.setBgd(1)}}>
+          </button>
+          </div>
+        <h3>Choose your colors :</h3>
+        <input type="color" value={this.state.padc} id="pad" className="colorPick"
+          onChange={event => {this.setPadC(event.target.value)}
+        }></input>
+        <label htmlFor="pad">Paddle</label>
+        <input type="color" value={this.state.ballc} id="ball" className="colorPick"
+          onChange={event => {this.setBallC(event.target.value)}
+        }></input>
+        <label htmlFor="ball">Ball</label>
         </>
-
     )
   }
 }

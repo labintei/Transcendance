@@ -1,7 +1,7 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerList.css';
-import {acceptedimg, defaultavatar} from "./const";
+import { defaultavatar} from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Person = {
@@ -12,6 +12,7 @@ type Person = {
     rank: number;
     friend: boolean;
     blocked: boolean;
+    matchid: number | null
 }
 
 type State = {
@@ -96,7 +97,8 @@ export default class PersonList extends React.Component {
         let listftmp: Array<Person> = [];
         let id = 0;
         for (var person of friends) {
-            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1,
+              friend:false, blocked:false, matchid:null};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
@@ -104,9 +106,9 @@ export default class PersonList extends React.Component {
                 if (person.status !== undefined)
                   one.status = person.status;
                 if (person.avatarURL && person.avatarURL !== '')
-                {
                       one.avatar_location = person.avatarURL;
-                }
+                if (person.ongoingMatchId !== undefined)
+                  one.matchid = person.ongoingMatchId;
                 listftmp.push(one);
             }
             id++;
@@ -128,7 +130,8 @@ export default class PersonList extends React.Component {
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
-            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1, friend:false, blocked:false};
+            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1,
+              friend:false, blocked:false, matchid:null};
             if (person.level !== undefined && person.username !== undefined) {
                 console.log(person);
                 one.rank = person.level;
@@ -183,7 +186,15 @@ export default class PersonList extends React.Component {
                 <button onClick={() => this.blockManage(person.id, flist)} id="unblock-button" title="unblock"></button>
                 </>
               : person.friend ?
+                <>
                 <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button" title="remove friend"></button>
+                {
+                  person.matchid !== null ?
+                  <button onClick={() => {console.log("Redirect to do : [website]/game?matchid=" + person.matchid)}}
+                  id="watch-button" title="Watch live game"></button>
+                  : <></>
+                }
+                </>
               :
                 <><button onClick={() => this.friendManage(person.id, flist)} id="add-f-button" title="add friend"></button>
                 <button onClick={() => this.blockManage(person.id, flist)} id="block-button" title="block"></button>

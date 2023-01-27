@@ -1,9 +1,9 @@
-import { SocketGateway } from 'src/socket/socket.gateway';
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect, AfterLoad, VirtualColumn } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
 import { UserSocket } from './usersocket.entity';
 import { UserRelationship } from './userrelationship.entity';
+import { Match } from './match.entity';
 
 const userDefaultFilter: FindOptionsSelect<User> = {
   ft_login: true,
@@ -105,7 +105,31 @@ export class User extends BaseEntity {
   @OneToMany(() => UserSocket, (socket) => (socket.user))
   sockets: UserSocket[];
 
+  //  Virtual computed field for reliable online status.
+  isOnline: boolean;
+
+  //  Virtual field to be able to see friends ongoing matches.
+  ongoingMatchId: Number;
+
   /** MEMBER METHODS */
+
+  @AfterLoad()
+  public async computeFields() {
+    const ongoingMatch = await Match.findOne({
+      where: [
+        {
+          user1Login: this.ft_login,
+          status: Match.Status.ONGOING
+        },
+        {
+          user2Login: this.ft_login,
+          status: Match.Status.ONGOING
+        },
+      ]
+    });
+    this.ongoingMatchId = ongoingMatch ? ongoingMatch.id : null;
+    this.isOnline = ((await UserSocket.countBy({userLogin: this.ft_login})) > 0);
+  }
 
   public get xpAmountForNextLevel(): number {
     const x = 0.03;

@@ -41,7 +41,7 @@ export default function LoginPage() {
       if (error.response.status === 403)
         setLogged(LogStatus.twoFA);
     });
-  }, []);
+  }, [login]);
 
   function requestLogout() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "auth/logout", {

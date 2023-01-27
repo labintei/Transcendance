@@ -5,7 +5,7 @@ import { UserSocket } from 'src/entities/usersocket.entity';
 import { User } from 'src/entities/user.entity';
 
 const chanRoomPrefix = "channel_";
-const pingTimeout = 1000000;
+const pingTimeout = 5000;
 
 @WebSocketGateway()
 export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect {
@@ -32,12 +32,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       user.status = User.Status.ONLINE;
       await user.save();
     }
-    console.log('Websocket Client Connected : ' + client.data.login);
+    console.log('Websocket Client Connected : ' + client.data.login + ' id(' + client.id + ')');
     const joinedList = await Channel.joinedList(client.data.login);
     for (let channel of joinedList)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
-    console.log('Joining rooms : ');
-    console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
@@ -58,10 +56,8 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       user.status = User.Status.OFFLINE;
       await user.save();
     }
-    console.log('Websocket Client Disconnected : ' + user.ft_login);
+    console.log('Websocket Client Disconnected : ' + client.data.login + ' id(' + client.id + ')');
     const joinedList = await Channel.joinedList(client.data.login);
-    console.log('Leaving rooms : ');
-    console.log(SocketGateway.channelsToRooms(joinedList));
     SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
     for (let channel of joinedList)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);

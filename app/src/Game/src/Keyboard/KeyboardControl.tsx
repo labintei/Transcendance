@@ -1,20 +1,16 @@
-import { useEffect } from 'react'
+import { useEffect , useContext} from 'react'
 import { useStore } from '../State/state'
 //import { socket } from '../PongGame'
-import {socket} from '../PongGame' 
+//mport {socket} from '../PongGame' 
 //import { socket } from '../../../App' ;
+import { getSocketContext } from 'WebSocketWrapper';
 
 const pressed = [false]
 
 function useKeys(target:any, event:any, up = true) {
+  
+  const socket = useContext(getSocketContext);
   useEffect(() => {
-
-
-/*    var i = setInterval(() => {
-      this.s.get(id).time += 1;
-      console.log('Time ' + String(this.s.get(id).time));// penser a clear l interval
-  }, 1000)
-*/
     const downHandler = (e:any) => {
       
       if (target.indexOf(e.key) !== -1) {
@@ -44,23 +40,27 @@ export default function KeyBoardControls()
 {
   const role = useStore((s:any) => s.role);
   const id = useStore((s:any) => s.id);
-  const set = useStore((state: any) => state.set)
+  const set = useStore((state: any) => state.set);
+
+  const Spectator = useStore((s:any) => s.spectator);
+  const socket = useContext(getSocketContext);
 
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
-    if(left)
+    if(left /*&& Spectator == false*/)
     {
+      console.log([role,id]);
       socket.emit('left', [role,id]);
     }
   })
 
   useKeys(['ArrowRight', 'd', 'D'], (right:boolean) =>
   { 
-    if(right)// envoyer le role et l iddelaroom
+    if(right /*&& Spectator == false*/)
     {
-      socket.emit('right', [role,id])
+      console.log([role,id]);
+      socket.emit('right', [role,id]);
     }
-
   })
 /*
   useKeys(['Escape'], (escape:boolean) =>

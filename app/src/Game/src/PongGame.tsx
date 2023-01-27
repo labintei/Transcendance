@@ -1,39 +1,57 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import Menu from './Menu/menu';
 //import { socket } from '../../App' ;
-import Timer from './time';
 import { start } from 'repl';
 import { io} from "socket.io-client";
+import { getSocketContext } from 'WebSocketWrapper';
+import { Routes, Route, useParams } from 'react-router-dom';
 
-const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-
-export const socket = io(secu_url, {withCredentials: true, autoConnect: false});
-
-socket.on("connect_error", () => {
-  socket.io.opts.transports = ["polling", "websocket"];
-});
-
-socket.on('connect', async () => {
-  console.log('CONNECT');
-  //const donnes = await axios.get(process.env.REACT_APP_BACKEND_URL + "user", {withCredentials: true}).then((res) => res.data.ft_login)
-  //socket.emit('useremit', donnes);
-})
+//const secu_url = process.env.REACT_APP_BACKEND_URL || '';
+//export const socket = useContext(getSocketContext);
+//export const socket = io(secu_url, {withCredentials: true});
 
 
 export default function PongGame(props: any) {
-/*
+
+  const socket = useContext(getSocketContext);
+
+ //const afficherparams = function(){
+    let o = new URLSearchParams(window.location.href);
+    console.log(o.get("matchid"));
+  //}
+    //window.location.href = window.location.href;
+    //setFinish(0);
+    //socket.emit('start_game');
+    
+    // useParams doit etre utilise de set facon
+    /*let { matchid } = useParams();
+    console.log('Params  ' + matchid);
+  */
+
+
+
+    //console.log(URLSearchParams)
+  
+
+
+  /*
   const [time, setTime] = useState(0);
   const [score, setScore]  = useState([0,0]);
 */
   
   //var tim = 0;
 
+  // URL SEARCH PARAMS
+  //console.log(URLSearchParams.entries());
+
   const [Finish, setFinish] = useState(0);
 
   // marche po
+  const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
+
   var B:any = useStore((s:any)=> s.Player1);// MovePlayer1
   var C:any = useStore((s:any)=> s.Player2);
   
@@ -67,7 +85,11 @@ export default function PongGame(props: any) {
 
   useEffect(() => 
   {
-    socket.emit('start_game');   
+    //afficherparams();
+    if(Spectator_mode == false)
+      socket.emit('start_game');
+    else
+      socket.emit('start_stream');   
     return() => {}
   },[])
 
@@ -76,6 +98,7 @@ export default function PongGame(props: any) {
     console.log('START');
     
     socket.on('start', (data) => {
+      console.log(data);
       setRole(data[1]);
       setId(data[0]);
       SetReady();
@@ -95,7 +118,7 @@ export default function PongGame(props: any) {
     })
     return () => {
       socket.off('start');
-      socket.emit('endgame');
+      //socket.emit('endgame');
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
 
@@ -104,7 +127,7 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('newpos', (data) => {
-      console.log(vbis);
+      //console.log(vbis);
       if(vbis != data[4])
         v(data[4]);
       Setx(data[0]);
