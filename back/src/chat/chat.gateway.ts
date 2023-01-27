@@ -167,7 +167,7 @@ export class ChatGateway {
         throw new WsException("You already joined this channel.");
       if (chanUser?.rights === ChannelUser.Rights.BANNED)
         throw new WsException("You are banned from this channel.");
-      if (channel.status === Channel.Status.PRIVATE && (!chanUser || chanUser.status !== ChannelUser.Status.INVITED))
+      if (channel.status === Channel.Status.PRIVATE && chanUser?.status !== ChannelUser.Status.INVITED)
         throw new WsException("You must be invited to join a private channel");
       if (channel.status === Channel.Status.PROTECTED) {
         if (!data.password)
@@ -193,7 +193,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('leaveChannel')
-  async leaveChannel(client: Socket, data: Channel): Promise<ChannelUser> {
+  async leaveChannel(client: Socket, data: Channel) {
     try {
       data.id = Number(data.id);
       if (!Number.isInteger(data.id) || data.id < 0)
@@ -234,11 +234,9 @@ export class ChatGateway {
       client.leave(SocketGateway.channelsToRooms([channel])[0])
       await channel.emitHide(client.data.login);
       await channel.emitUpdate();
-      return chanUser
     }
     catch (e) {
       this.err(client, 'leaveChannel', e);
-      return null;
     }
   }
 
@@ -289,6 +287,7 @@ export class ChatGateway {
     }
     catch (e) {
       this.err(client, 'getChannel', e);
+      return null;
     }
   }
 
@@ -306,6 +305,7 @@ export class ChatGateway {
     }
     catch (e) {
       this.err(client, 'getDirectChannel', e);
+      return null;
     }
   }  
 
@@ -373,6 +373,7 @@ export class ChatGateway {
     }
     catch (e) {
       this.err(client, 'setPermissions', e);
+      return null;
     }
   }
 
