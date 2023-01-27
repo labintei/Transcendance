@@ -118,18 +118,18 @@ export class GameGateway implements OnGatewayDisconnect {
   async left(client: Socket, c:any)//: Promise<number>id-room role 1 ou deux
   {
     if(c[0] === 1)// si le role correspond a 1
-      this.gameservice.player1x_left(c[1]);
+      this.gameservice.player1x_left(c[1], client);
     if(c[0] === 2)
-      this.gameservice.player2x_right(c[1]);
+      this.gameservice.player2x_right(c[1], client);
   }
 
   @SubscribeMessage('right')
   async right(client: Socket, c:any)//: Promise<number>
   {
     if(c[0] === 1)
-      this.gameservice.player1x_right(c[1]);
+      this.gameservice.player1x_right(c[1], client);
     if(c[0] === 2)
-      this.gameservice.player2x_left(c[1]);
+      this.gameservice.player2x_left(c[1], client);
   }
 
 

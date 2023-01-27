@@ -606,24 +606,28 @@ export class GameService {
     }
 
 
-    player2x_right(id:number)
+    player2x_right(id:number, client:Socket)
     {
-        this.s.get(id).Box2x += 0.6;
+        if(this.s.get(id).player2 == client)
+            this.s.get(id).Box2x += 0.6;
     }
 
-    player2x_left(id:number)
+    player2x_left(id:number, client:Socket)
     {
-        this.s.get(id).Box2x -= 0.6;
+        if(this.s.get(id).player2 == client)
+            this.s.get(id).Box2x -= 0.6;
     }
 
-    player1x_right(id:number)
+    player1x_right(id:number, client:Socket)
     {
-        this.s.get(id).Box1x += 0.6;
+        if(this.s.get(id).player1 == client)
+            this.s.get(id).Box1x += 0.6;
     }
 
-    player1x_left(id:number)
+    player1x_left(id:number, client:Socket)
     {
-        this.s.get(id).Box1x -= 0.6;
+        if(this.s.get(id).player1 == client)
+            this.s.get(id).Box1x -= 0.6;
     }
 
     getRender(id:number):any
