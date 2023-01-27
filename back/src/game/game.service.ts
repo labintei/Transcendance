@@ -154,15 +154,12 @@ export class GameService {
         console.log('DISCONNECTION GAME');
         for(var [key, value] of this.s.entries())
         {
-            console.log(key);
-            console.log(value);
             if(value)
             {
                 if(value.player1 == client ||
                     value.player2 == client)
                 {
                     var clients = [value.player1,value.player2];
-                    console.log('EST BIEN DANS GAME');
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
@@ -193,12 +190,25 @@ export class GameService {
 
     }
 
-    IsinGame(client:Socket)
+    IsinDispoDelete(client:Socket)
     {
-        console.log('End Game');
-        console.log(this.s);// pourquoi map{0} ici
-        console.log(Object.entries(this.s));
-        
+        for(var [key, value] of this.dispoUser.entries())
+        {
+            if(value)
+            {
+                if(value[1] == client )
+                {
+                    this.dispoUser.delete(value);
+                    return true;
+                }
+            }
+        }
+        return false;  
+    }
+
+/*
+    IsinGame(client:Socket)// correstion a une disconnection
+    {       
         for(var [key, value] of this.s.entries())
         {
             if(value)
@@ -206,7 +216,6 @@ export class GameService {
                 if(value.player1 == client ||
                     value.player2 == client)
                 {
-                    console.log('EST BIEN DANS GAME');
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
@@ -218,7 +227,7 @@ export class GameService {
         }
         return false;
     }
-
+*/
 
 
     sphereroom(id:number): number[]
@@ -269,14 +278,12 @@ export class GameService {
     ((sx >= (b1x - 0.8)) && 
     (sx <= (b1x + 1.8))))
     {
-        console.log('collision');
         room.zdir = -0.3;
     }  
     if(sz === (-5) && 
         ((sx >= (b2x - 1.8)) &&
         (sx <= (b2x + 0.8))))
     {
-        console.log('collision');
         room.zdir = 0.3;
     }
     
@@ -289,18 +296,15 @@ export class GameService {
             room.score2++;
         if(sz < -7)
             room.score1++;
-        console.log('Score 1 : ' + room.score1 + ' Score 2 : ' + room.score2);
         room.sx = 0;
         room.sz = 0;
         var l = Math.random();
         var side = Math.random();
-        console.log(l);
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.1;
         if(side < 0.5)
             room.xangle *= -1;
-        console.log(room.xangle.toFixed(3));
         return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
       }   
     return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
@@ -314,8 +318,6 @@ export class GameService {
         {
             if(value[0])
             {
-                /*
-                console.log(value[0]);
                 const blocked = await UserRelationship.findOneBy([
                     {
                         ownerLogin: user.ft_login,
@@ -326,8 +328,7 @@ export class GameService {
                         relatedLogin: user.ft_login
                     }
                 ] as FindOptionsWhere<UserRelationship>);
-                if(blocked.status != UserRelationship.Status.BLOCKED)*/
-                if(value[0] != user)
+                if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
                     return value;
             }
         }
@@ -345,18 +346,6 @@ export class GameService {
         }
         return false;
     }
-/*
-    export class Invitation {
-        public user1:User;
-        public player1:Socket;
-        public user2:User;
-        public player2:Socket;
-        public connect1:boolean;
-        public connect2:boolean;
-    }
-*/
-//var room: Game = {
-
 
 
     CreateInvitation(user1:User,user2:User)
@@ -406,17 +395,19 @@ export class GameService {
         return null;
     }
 
-    
 
     async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
     {
-        console.log('LANCEMENT JEU');
-        const m = new Match();
-        m.score1 = 0;
-        m.score2 = 0;
-        m.user1 = contestant[0];
-        m.user2 = user;
-        await Match.save(m);//sauvegarde le match
+        const m = await new Match();
+        await Match.save(m);
+        await Match.update(m.id, {
+            score1: 0,
+            score2: 0,
+            user1Login: contestant[0].ft_login,
+            user2Login: user.ft_login,
+            user1 : contestant[0],
+            user2 : user
+        })
         var room: Game = {
             match: m,
             user1: contestant[0],
@@ -449,17 +440,13 @@ export class GameService {
             room.xangle = l * 0.5;
             room.id = m.id;
             room.room_id = m.id;
-            // cence effacer le contestant ici
-            this.dispoUser.delete(contestant);//efface le premier  des contestants
-            this.s.set(room.id , room);// donne la room id
-            console.log(room.id);
+            this.dispoUser.delete(contestant);
+            this.s.set(room.id , room);
             return room.id;
     }
 
     ClientChange(id_role: number[], client:Socket)
     {
-        if(!id_role)
-            console.log('ID_ROLE NULL');
         if(id_role)
         {
             //var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
@@ -524,8 +511,6 @@ export class GameService {
     {
         for(var [key, value] of this.s.entries())
         {
-            if(value)
-                console.log(value);
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
             {
                 return true;
@@ -560,7 +545,6 @@ export class GameService {
         if(this.InsideGame(user)/*user.status == User.Status.PLAYING*/)// si le user est deja en train de jouer ... Marche pas parce que meme player
         {
             console.log('EST DEJA DANS UNE GAME');
-            console.log('FINDGAME ' + this.FindGame(user));
             return [this.FindGame(user), true];
         }
         if(this.InsideDispo(user)/*user.status == User.Status.MATCHING*/)// MARCHE PAS COMME CA
@@ -757,25 +741,18 @@ export class GameService {
             return this.stream.get(data);// par default sera a 0
     }
 
-    async CreateMatchID(data:number)// plus xp
+    async CreateMatchID(data:number)// MET LES XP
     {
         console.log('MATCH history');
         var room = this.s.get(data);
         if(room)
         {
-            // ne find pas les bons users
-            // surement mauvaise association entre username et client
-            var u1 = await User.findOneBy({socket: room.player1.id});// cherche user1
-            var u2 = await User.findOneBy({socket: room.player2.id});// cherche user2
+            
+            const u1 = await User.findOne({where: {ft_login: room.player1.data.login}});
+            const u2 = await User.findOne({where: {ft_login: room.player2.data.login}});
             if(u1 == null && u2 == null)// si les deux joueurs sont des visitor
-            {
-                console.log('Tout les deux null');
                 return;
-            }
-            // j ai directement les playeurs
-            var match = Match.create();
-            match.user1 = u1;
-            match.user2 = u2;
+            Match.update(data, {score1: room.score1, score2: room.score2});
             if(u1)
             {
                 if(room.score1 > room.score2)
@@ -790,11 +767,6 @@ export class GameService {
                 if(room.score2 < room.score1)
                     u2.looseXP(50);
             }
-            match.score1 = room.score1;
-            match.score2 = room.score2;
-            await Match.save(match);
-            var listMatch = await Match.find();
-            console.log(listMatch);
         }
     }
 

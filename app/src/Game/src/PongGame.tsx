@@ -118,7 +118,7 @@ export default function PongGame(props: any) {
     })
     return () => {
       socket.off('start');
-      //socket.emit('endgame');
+      socket.emit('endgame');// reteste
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
 
