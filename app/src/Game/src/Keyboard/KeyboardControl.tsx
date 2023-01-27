@@ -47,14 +47,20 @@ export default function KeyBoardControls()
 
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 
   {
-    if(left && Spectator == false)
+    if(left /*&& Spectator == false*/)
+    {
+      console.log([role,id]);
       socket.emit('left', [role,id]);
+    }
   })
 
   useKeys(['ArrowRight', 'd', 'D'], (right:boolean) =>
   { 
-    if(right && Spectator == false)
-      socket.emit('right', [role,id])
+    if(right /*&& Spectator == false*/)
+    {
+      console.log([role,id]);
+      socket.emit('right', [role,id]);
+    }
   })
 /*
   useKeys(['Escape'], (escape:boolean) =>

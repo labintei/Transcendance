@@ -462,14 +462,17 @@ export class GameService {
             console.log('ID_ROLE NULL');
         if(id_role)
         {
-            var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
+            //var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
             if(id_role[1] === 1)
-             room.player1 = client;
-            if(id_role[2] === 2)
-             room.player2 = client;
+                this.s.get(id_role[0]).player1 = client;
+            //room.player1 = client;
+            if(id_role[1] === 2)
+                this.s.get(id_role[0]).player2 = client;
+            //room.player2 = client;
         }
     }
 
+    // marche pour le player 1 mais pas le 2
     async Idrole(client:Socket): Promise<number[]>
     {
         const user = await User.findOne({where: {ft_login: client.data.login}});
@@ -517,6 +520,33 @@ export class GameService {
         return null;  
     }
 
+    InsideGame(user:User)
+    {
+        for(var [key, value] of this.s.entries())
+        {
+            if(value)
+                console.log(value);
+            if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
+            {
+                return true;
+            }
+        }
+        return false;  
+    }
+
+    InsideDispo(user:User)
+    {
+        for(var [key,value] of this.dispoUser.entries())
+        {
+            if(value && value[0] == user)
+                return true;
+        }
+        return false;
+    }
+
+    delay(ms: number) {
+        return new Promise( resolve => setTimeout(resolve, ms) );
+    }
 
     async newGame(client:Socket): Promise<[number, boolean]>//Promise<number[]>
     {
@@ -527,13 +557,13 @@ export class GameService {
             console.log('USER NULL');
             return [null, false];
         }
-        if(user.status == User.Status.PLAYING)// si le user est deja en train de jouer ... Marche pas parce que meme player
+        if(this.InsideGame(user)/*user.status == User.Status.PLAYING*/)// si le user est deja en train de jouer ... Marche pas parce que meme player
         {
             console.log('EST DEJA DANS UNE GAME');
             console.log('FINDGAME ' + this.FindGame(user));
             return [this.FindGame(user), true];
         }
-        if(user.status == User.Status.MATCHING)
+        if(this.InsideDispo(user)/*user.status == User.Status.MATCHING*/)// MARCHE PAS COMME CA
         {
             console.log('EST EN TRAIN DE MATCHER');
             this.ReplaceMatched(user, client);
