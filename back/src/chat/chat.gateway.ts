@@ -193,7 +193,7 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('leaveChannel')
-  async leaveChannel(client: Socket, data: Channel) {
+  async leaveChannel(client: Socket, data: Channel): Promise<boolean> {
     try {
       data.id = Number(data.id);
       if (!Number.isInteger(data.id) || data.id < 0)
@@ -234,9 +234,11 @@ export class ChatGateway {
       client.leave(SocketGateway.channelsToRooms([channel])[0])
       await channel.emitHide(client.data.login);
       await channel.emitUpdate();
+      return true;
     }
     catch (e) {
       this.err(client, 'leaveChannel', e);
+      return null;
     }
   }
 
