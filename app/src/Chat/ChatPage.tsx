@@ -20,12 +20,14 @@ import {
   Sidebar,
   ConversationHeader,
   Button,
-  AddUserButton
+  AddUserButton,
+  ArrowButton
 } from '@chatscope/chat-ui-kit-react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket, faPen, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faCheck, faKey, faLock, faLockOpen, faPen, faUserSlash, faXmark } from '@fortawesome/free-solid-svg-icons';
 import { a } from '@react-spring/three';
+import { channel } from 'diagnostics_channel';
 
 const avatar_temp = "logo192.png";
 
@@ -95,13 +97,15 @@ export default function Chat() {
   useEffect(() => {
     if (!socket.connected)
         return ;
-    socket.on('error', () => { console.log('error') });
+    socket.on('error', (data) => { console.log('error', data) });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
     socket.on('message', callback);
+    socket.on('updateChannel', () => { console.log("updateChannel"); socket.emit('joinedList') });
 
     socket.on('hideChannel', (channel : Channel) => {
-      console.log("HIDE");
+      console.log("HIDE", channel);
+      // console.log()
       if (channel.id === refChannel.current.id)
         setCurrentChannel(empty_chan);
     })
@@ -119,8 +123,11 @@ export default function Chat() {
     socket.emit('joinedList');
     // This code will run when component unmount
     return () => {
+      socket.off('error');
       socket.off('message');
       socket.off('joinedList');
+      socket.off('hideChannel');
+      socket.off('updateChannel');
     };
   }, []);
 
@@ -179,12 +186,12 @@ export default function Chat() {
       }
 
       socket.emit('joinChannel', channel, (channel : Channel) => {
-        // socket.emit('joinedList');
+        socket.emit('joinedList');
         socket.emit('getChannel', channel, (channel : Channel) => {
           setCurrentChannel(channel)
         });
       });
-      socket.emit('publicList');
+      // socket.emit('joinedList');
     };
 
     const onSubmit = (channel: Channel) => (e: any) => {
@@ -193,7 +200,7 @@ export default function Chat() {
       channel.password = password!.value;
 
       socket.emit('joinChannel', channel, (channel : Channel) => {
-        // socket.emit('joinedList');
+        socket.emit('joinedList');
         socket.emit('getChannel', channel, (channel : Channel) => {
           setCurrentChannel(channel)
         });
@@ -312,7 +319,8 @@ export default function Chat() {
                   sentTime: message.time.toString(),
                   sender: message.sender.username,
                   direction: "incoming",
-                  position: "single"
+                  position: "single",
+                  type: "text"
                 }}
                 // avatarPosition="tl"
               >
@@ -326,7 +334,8 @@ export default function Chat() {
         <MessageInput
             attachButton={false}
             onSend={sendMessage}
-            placeholder="Type message here ..." />
+            placeholder="Type message here ..."
+            autoFocus />
       </ChatContainer>
     );
   }
@@ -386,36 +395,149 @@ export default function Chat() {
             onChange={() => {setCheck({password: false, private: !check.private})
           }} />
             Private
-          <Button>Create</Button>
+          <Button>
+            Create
+          </Button>
         </form>
       </ExpansionPanel>
     );
   }
 
   function RenderRightSidebar() {
+    let name: HTMLInputElement | null = null;
+    let password: HTMLInputElement | null = null;
 
     function AdminPanel() {
+      const [edit, setEdit] = useState<string>("");
+
+      const updateName = (e: any) => {
+        e.preventDefault();
+
+        const updatedChannel = currentChannel;
+
+        updatedChannel.name = name!.value;
+
+        socket.emit('updateChannel', updatedChannel);
+      }
+
+      const updatePassword = (e: any) => {
+        e.preventDefault();
+
+        const updatedChannel = currentChannel;
+
+        updatedChannel.password = password ? password.value : "";
+        updatedChannel.status = "Protected";
+
+        socket.emit('updateChannel', updatedChannel);
+      }
+
+      const lockChannel = (status: boolean) => (e: any) => {
+        e.preventDefault();
+
+        const updatedChannel = currentChannel;
+
+        updatedChannel.status = status ? "Private" : "Public";
+        socket.emit('updateChannel', updatedChannel);
+      }
+
       return (
         <>
-          <h1>
-            {currentChannel.name}
-          </h1>
-          <Button icon={<FontAwesomeIcon icon={faPen}/>}>
-            Change Name
-          </Button>
+          {edit !== "name" ? 
+            <>
+              <h1>
+                {currentChannel.name}
+              </h1>
+              <Button
+                icon={<FontAwesomeIcon icon={faPen}/>}
+                onClick={() => setEdit("name")}
+              >
+              Change Name
+              </Button>
+            </>
+          :
+          <>
+            <form onSubmit={updateName}>
+              <input
+                type="input"
+                placeholder="Enter new channel name..."
+                ref={node => name = node}
+                required
+              />
+
+              <Button
+                icon={<FontAwesomeIcon icon={faCheck}/>}
+              >
+                Validate
+              </Button>
+            </form>
+              <Button
+              icon={<FontAwesomeIcon icon={faXmark}/>}
+              onClick={() => setEdit("")}
+              >
+                Cancel
+              </Button>
+            </>
+          }
+
+          {currentChannel.status !== "Private" ? 
+            <Button
+              icon={<FontAwesomeIcon icon={faLock}/>}
+              onClick={lockChannel(true)}
+            >
+              Lock Channel
+            </Button>
+            :
+            <Button
+              icon={<FontAwesomeIcon icon={faLockOpen}/>}
+              onClick={lockChannel(false)}
+            >
+              Unlock Channel
+            </Button>
+          }
+
+          {edit !== "password" ?
+            <Button
+              icon={<FontAwesomeIcon icon={faKey}/>}
+              onClick={() => setEdit("password")}
+              >
+              Change Password
+            </Button>
+          :
+          <>
+            <form onSubmit={updatePassword}>
+              <input
+                type="input"
+                placeholder="Enter password"
+                ref={node => password = node}
+              />
+
+              <Button
+                icon={<FontAwesomeIcon icon={faCheck}/>}
+              >
+                Validate
+              </Button>
+            </form>
+              <Button
+              icon={<FontAwesomeIcon icon={faXmark}/>}
+              onClick={() => setEdit("")}
+              >
+                Cancel
+              </Button>
+            </>
+          }
         </>
       );
     }
 
-
     return (
       <Sidebar position="right">
-        { profilSidebar !== "" ?
+        { profilSidebar !== "" || currentChannel.id === 0?
           <>
+            <ArrowButton direction="left" onClick={() => setProfilSidebar("")}/>
             <h1>Profil panel : {profilSidebar}</h1>
           </>
           :
-          <>
+          <> {/* Add verification */}
             <AdminPanel/>
           </>
         }
