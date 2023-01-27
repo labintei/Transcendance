@@ -15,7 +15,7 @@ function App () {
     <div className="App">
     
       {(root ? <Navigate to="matching"></Navigate> : <></>)}
-     { location.pathname !== "/game" &&  <menu>
+   <menu>
         <li><button onClick={() => {navigate("matching")}}>Matching</button></li>
         <li><button onClick={() => {navigate("leaderboard")}}>LeaderBoard</button></li>
         <li><button onClick={() => {navigate("match-history")}}>History</button></li>
@@ -23,7 +23,7 @@ function App () {
         <li><button onClick={() => {navigate("login")}}>Log in/out</button></li>
         <li><button onClick={() => {navigate("game")}}>game</button></li>
         <li><button onClick={() => {navigate("chat")}}>chat</button></li>
-      </menu> }
+      </menu>
       <div className="content">
         <Outlet />
       </div>

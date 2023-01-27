@@ -123,8 +123,6 @@ export default function PongGame(props: any) {
   }, [h1,h2,h3,SetReady,setId, setRole])
 
 
-
-
   useEffect(() => {
     socket.on('newpos', (data) => {
       //console.log(vbis);
