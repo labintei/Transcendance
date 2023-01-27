@@ -167,6 +167,7 @@ export class Channel extends BaseEntity {
       }).save();
       SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
       SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
+      channel.emitUpdate();
     }
     return channel.id;
   }

@@ -290,6 +290,23 @@ export class ChatGateway {
     }
   }
 
+  @SubscribeMessage('getDirectChannel')
+  async getDirectChannel(client: Socket, data: User): Promise<Channel> {
+    try {
+      const other = await User.findOneBy({ft_login: data.ft_login});
+      if (!other)
+        throw new WsException("User " + data.ft_login + " was not found.");
+      const channelId = await Channel.getDirectChannelId(client.data.login, other.ft_login);
+      const channel = await Channel.getChannelWithUsersAndMessages(channelId);
+      if (!channel)
+        throw new WsException("ChannelId " + channelId + " was not found.");
+      return channel;
+    }
+    catch (e) {
+      this.err(client, 'getDirectChannel', e);
+    }
+  }  
+
   @SubscribeMessage('setPermissions')
   async setPermissions(client: Socket, data: ChannelUser): Promise<ChannelUser> {
     try {
