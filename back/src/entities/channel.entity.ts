@@ -83,6 +83,7 @@ export class Channel extends BaseEntity {
       newOwner = await ChannelUser.findOne({
         where: {
           channelId: this.id,
+          rights: ChannelUser.Rights.MUTED,
           status: ChannelUser.Status.JOINED
         },
         order: {
