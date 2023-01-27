@@ -2,50 +2,26 @@ import React, { useCallback, useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import Menu from './Menu/menu';
 //import { socket } from '../../App' ;
 import { start } from 'repl';
 import { io} from "socket.io-client";
 import { getSocketContext } from 'WebSocketWrapper';
-import { Routes, Route, useParams } from 'react-router-dom';
+import { Routes, Route, useParams, useNavigate } from 'react-router-dom';
 
 //const secu_url = process.env.REACT_APP_BACKEND_URL || '';
 //export const socket = useContext(getSocketContext);
 //export const socket = io(secu_url, {withCredentials: true});
 
-
 export default function PongGame(props: any) {
-
-  const socket = useContext(getSocketContext);
-
- //const afficherparams = function(){
-    let o = new URLSearchParams(window.location.href);
-    console.log(o.get("matchid"));
-  //}
-    //window.location.href = window.location.href;
-    //setFinish(0);
-    //socket.emit('start_game');
-    
-    // useParams doit etre utilise de set facon
-    /*let { matchid } = useParams();
-    console.log('Params  ' + matchid);
-  */
-
-
-
-    //console.log(URLSearchParams)
   
-
+  const socket = useContext(getSocketContext);
+  const {id}  = useParams();
+  const navigate = useNavigate();
 
   /*
   const [time, setTime] = useState(0);
   const [score, setScore]  = useState([0,0]);
 */
-  
-  //var tim = 0;
-
-  // URL SEARCH PARAMS
-  //console.log(URLSearchParams.entries());
 
   const [Finish, setFinish] = useState(0);
 
@@ -58,7 +34,6 @@ export default function PongGame(props: any) {
   const setRole:any = useStore((s:any)=> s.SetRole);
   const setId:any = useStore((s:any)=> s.SetId);
 
-
   // score fonctionne je n ai pas vu de probleme
   const s:any = useStore((s:any) => s.s);
   const sbis:any = useStore((s:any) => s.sbis);
@@ -69,14 +44,8 @@ export default function PongGame(props: any) {
   const Setz:any = useStore((s:any) => s.Setz);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
-// marche pas
-  var j:number = 0;
-//  const t:any = useStore((s:any) => s.time);
-
   var v:any = useStore((s:any) => s.setbis);
   var vbis:number = useStore((s:any) => s.t);
-//  const setT:any = useStore((s:any) => s.Otime);
-
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
@@ -85,20 +54,33 @@ export default function PongGame(props: any) {
 
   useEffect(() => 
   {
-    //afficherparams();
+    
+    if (id != undefined)
+    {
+      console.log(id)
+
+
+    }
+    // if url with id
+    //  Check if the id is known
+    //    if yes, set spectator mode 
+
+    //var parans = ...;
     if(Spectator_mode == false)
       socket.emit('start_game');
     else
       socket.emit('start_stream');   
     return() => {}
   },[])
-
+  
   useEffect(() => {
     
     console.log('START');
     
     socket.on('start', (data) => {
-      console.log(data);
+      // console.log(data);
+      if (id === undefined)
+        navigate(`${data[0]}`);
       setRole(data[1]);
       setId(data[0]);
       SetReady();
@@ -153,8 +135,7 @@ export default function PongGame(props: any) {
     socket.emit('start_game');
   }
 
-
-  //       Time:<Timer time={useStore((s:any) => s.time)}/>
+  //  Time:<Timer time={useStore((s:any) => s.time)}/>
 
   //  Time:<Timer/>
   return (

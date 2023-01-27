@@ -52,11 +52,12 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   async new_game(client:Socket, data:number)
   {
     var l = await this.gameservice.newGame(client);// renvoit room-id et true replace ou pas
+    console.log(l)
     if(l && (l[0] && l[1] == true))
     {
       console.log('reconnection a la game');
       var id_role = await this.gameservice.Idrole(client);
-      client.emit('start', id_role);// j avais rajoute une [] dessus ce qui faisait un tableau de tableau
+      client.emit('start', id_role, l);// j avais rajoute une [] dessus ce qui faisait un tableau de tableau
       await this.gameservice.delay(4000);
       this.gameservice.ClientChange(id_role, client);
       return ;

@@ -35,7 +35,7 @@ export const useStore = create((set,get) => ({
   id : 0,
 
 
-  sphere_x: 0,// initalisatio
+  sphere_x: 0,
   sphere_z: 0,
   
   player2_x: 0,

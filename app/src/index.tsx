@@ -50,9 +50,17 @@ const router = createBrowserRouter([
         element: <PongGame />,
       },
       {
+        path: "game/:id",
+        element: <PongGame/>,
+      },
+      {
         path: "chat",
         element: <Chat />,
-      }
+      },
+      // {
+      //   path: "game/",
+      //   element: <Test />,
+      // }
     ],
   },
 ]);
