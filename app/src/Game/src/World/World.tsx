@@ -114,9 +114,6 @@ function SkyBox() {
   return null;
 }
 
-// changer la position de la Camera si role === 2
-
-
 export default function World(props: any) {
 
   const [userData, setUserData] = useState<any>(null)

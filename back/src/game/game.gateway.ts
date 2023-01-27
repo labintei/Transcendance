@@ -77,7 +77,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
             clients[0].emit('newpos', a);
         if(clients[1] != null)
             clients[1].emit('newpos', a);
-       }, 160);
+       }, 50);
        
        var time = 0;
        var score = [0,0];
@@ -140,7 +140,6 @@ export class GameGateway/* implements OnGatewayDisconnect */{
     var j = await this.gameservice.Getlist();
     client.emit('getlist', j);
   }
-
 
 
   @SubscribeMessage('useremit')
