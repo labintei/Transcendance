@@ -50,11 +50,8 @@ export class Channel extends BaseEntity {
   async emitUpdate() {
     if (this.status === Channel.Status.PUBLIC)
       SocketGateway.getIO().emit('publicList', await Channel.publicList());
-    SocketGateway.channelEmit(this.id, 'updateChannel', {id: this.id});
-  }
-
-  async emitHide(login: string) {
-    SocketGateway.userEmit(login, 'hideChannel', {id: this.id})
+    if (this.id)
+      await SocketGateway.channelEmit(this.id, 'updateChannel', {id: this.id});
   }
 
   async getNewOwner(): Promise<ChannelUser> {
@@ -166,8 +163,8 @@ export class Channel extends BaseEntity {
           }
         ]
       }).save();
-      SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
-      SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
+      await SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
+      await SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
       channel.emitUpdate();
     }
     return channel.id;

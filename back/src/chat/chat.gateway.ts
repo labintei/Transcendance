@@ -198,7 +198,7 @@ export class ChatGateway {
       data.id = Number(data.id);
       if (!Number.isInteger(data.id) || data.id < 0)
         throw new WsException("Invalid channel id");
-      const channel = await Channel.findOneBy({ id: data.id });
+      let channel = await Channel.findOneBy({ id: data.id });
       if (!channel)
         throw new WsException("Channel id (" + data.id + ") was not found.");
       if (channel.status === Channel.Status.DIRECT)
@@ -209,31 +209,28 @@ export class ChatGateway {
       });
       if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
         throw new WsException("You are not a member of this channel.");
+      let removeChannel = false;
       if (chanUser.isOwner()){
         const newOwner = await channel.getNewOwner();
         if (newOwner) {
           newOwner.rights = ChannelUser.Rights.OWNER;
           await newOwner.save();
-          await chanUser.remove();
         }
         else {
           const rooms = SocketGateway.channelsToRooms([channel]);
           this.io.in(rooms).socketsLeave(rooms);
           await channel.remove();
         }
-        chanUser = null;
-      }
-      else if (!chanUser.rights) {
-        await chanUser.remove();
-        chanUser = null;
-      }
-      if (chanUser) {
-        chanUser.status = null;
-        chanUser = await chanUser.save();
+        chanUser.rights = null;
       }
       client.leave(SocketGateway.channelsToRooms([channel])[0])
-      await channel.emitHide(client.data.login);
+      console.log(channel);
+      await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
       await channel.emitUpdate();
+      if (!chanUser.rights)
+        await chanUser.remove();
+      else
+        await chanUser.save();
       return true;
     }
     catch (e) {
@@ -357,7 +354,7 @@ export class ChatGateway {
       if (data.status !== undefined && data.status !== chanUser.status) {
         chanUser.status = data.status;
         if (data.status === null)
-          await channel.emitHide(chanUser.userLogin);
+          await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
       }
       if (chanUser.isOwner())
       {
