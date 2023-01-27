@@ -30,7 +30,7 @@ export class GameGateway implements OnGatewayDisconnect {
   async handleDisconnect(client:Socket)// n empiete pas sur la deconnection de base
   {
     console.log('DISCONNECTION GAME GATEWAY');
-    this.gameservice.IsinDispoDelete(client);
+    console.log(this.gameservice.IsinDispoDelete(client));
     //console.log(this.gameservice.IsinGame(client));
     //this.gameservice.DisconnectionGame(client);
   }
@@ -39,6 +39,7 @@ export class GameGateway implements OnGatewayDisconnect {
   out_page(client:Socket)
   {
     console.log("TU AS QUUITTER LA PAGE");
+    console.log(this.gameservice.IsinDispoDelete(client));
   }
 
   @SubscribeMessage('testlaulau')
