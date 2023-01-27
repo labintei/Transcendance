@@ -217,15 +217,15 @@ export class ChatGateway {
           await newOwner.save();
         }
         else {
-          const rooms = SocketGateway.channelsToRooms([channel]);
-          this.io.in(rooms).socketsLeave(rooms);
+          await SocketGateway.channelEmit(channel.id, 'hideChannel', {id: channel.id});
+          await SocketGateway.allChannelLeavesRoom(channel.id);
           await channel.remove();
+          return true;
         }
         chanUser.rights = null;
       }
-      client.leave(SocketGateway.channelsToRooms([channel])[0])
-      console.log(channel);
       await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
+      await SocketGateway.userLeaveChannelRoom(chanUser.userLogin, chanUser.channelId);
       await channel.emitUpdate();
       if (!chanUser.rights)
         await chanUser.remove();
