@@ -99,14 +99,6 @@ export default function Chat() {
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
     socket.on('message', callback);
-    // socket.on('message', (data) => {
-      // if (data.channelId === refChannel.current.id)
-      // {
-      //   const messages = [...refChannel.current.messages, data];
-      //   console.log(messages);
-      //   setCurrentChannel({...refChannel.current, messages: messages})
-      // }
-    // });
 
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
@@ -134,17 +126,6 @@ export default function Chat() {
       });
     };
 
-      // socket.emit('getChannel', channel, (data : Channel) => {
-      //   setCurrentChannel(data);
-      //   let updateChannels = [...channels];
-      //   let index = updateChannels.findIndex((i) => i.id === data.id);
-      //   updateChannels[index] = data;
-      //   setChannels(updateChannels);
-      // })}
-
-      // console.log(channels);
-      // console.log(currentChannel);
-
     return (
       <ExpansionPanel title="Conversations list" open={true}>
         {channels.map((channel, index) => {
@@ -160,6 +141,9 @@ export default function Chat() {
   }
 
   function RenderPublicConversations() {
+    const [state, setState] = useState<number>(0);
+    let password: HTMLInputElement | null = null;
+
     useEffect(() => {
       socket.on('publicList', (chans : Channel[]) => {
         let newPublicList : Channel[] = [];
@@ -178,8 +162,18 @@ export default function Chat() {
     }, [channels]);
 
     const onClick = (channel: Channel) => (e: any) => {
+      e.preventDefault();
+      if (channel.status === "Protected")
+      {
+        if (state === channel.id)
+          setState(0);
+        else
+          setState(channel.id);
+        return ;
+      }
+
       socket.emit('joinChannel', channel, (channel : Channel) => {
-        socket.emit('joinedList');
+        // socket.emit('joinedList');
         socket.emit('getChannel', channel, (channel : Channel) => {
           setCurrentChannel(channel)
         });
@@ -187,14 +181,39 @@ export default function Chat() {
       socket.emit('publicList');
     };
 
+    const onSubmit = (channel: Channel) => (e: any) => {
+      e.preventDefault();
+
+      channel.password = password!.value;
+
+      socket.emit('joinChannel', channel, (channel : Channel) => {
+        // socket.emit('joinedList');
+        socket.emit('getChannel', channel, (channel : Channel) => {
+          setCurrentChannel(channel)
+        });
+      });
+    }
+
     return (
       <ExpansionPanel title="Public conversations list">
         {publicChannels.map((channel, index) => {
-          return (
+          return (<>
             <Conversation
               key={index}
               name={channel.name}
               onClick={onClick(channel)}/>
+            {state !== channel.id ? <></> :
+              <form onSubmit={onSubmit(channel)}>
+                <input
+                  type="input"
+                  placeholder="Password"
+                  ref={node => password = node}
+                  required
+                />
+              <Button>Create</Button>
+            </form>
+            }
+            </>
           )})}
       </ExpansionPanel>
     );
