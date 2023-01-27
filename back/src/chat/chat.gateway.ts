@@ -45,7 +45,7 @@ export class ChatGateway {
       else
         throw new WsException("Invalid message submitted");
       const message = await Message.create({
-        content: encodeURIComponent(data.content),
+        content: data.content,
         senderLogin: data.senderLogin,
         channelId: data.channelId
       }).save();
