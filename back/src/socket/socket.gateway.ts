@@ -90,6 +90,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     return this.getIO().in(chanRoomPrefix + channelId).emit(event, content);
   }
 
+  public static async allChannelLeavesRoom(channelId: number) {
+    this.getIO().socketsLeave(chanRoomPrefix + channelId);
+  }
+
   public static async userEmit(userLogin: string,event: string, content: any) {
     const userSockets = await UserSocket.findBy({userLogin: userLogin});
     for (let sock of userSockets)
@@ -100,6 +104,24 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
     const userSockets = await UserSocket.findBy({userLogin: userLogin});
     for (let sock of userSockets)
       this.getIO().in(sock.id).socketsJoin(rooms);
+  }
+
+  public static async userLeaveRooms(userLogin: string, rooms: string[]) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).socketsLeave(rooms);
+  }
+
+  public static async userJoinChannelRoom(userLogin: string, channelId: number) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).socketsJoin(chanRoomPrefix + channelId);
+  }
+
+  public static async userLeaveChannelRoom(userLogin: string, channelId: number) {
+    const userSockets = await UserSocket.findBy({userLogin: userLogin});
+    for (let sock of userSockets)
+      this.getIO().in(sock.id).socketsLeave(chanRoomPrefix + channelId);
   }
 
   public static async userDisconnect(userLogin: string) {

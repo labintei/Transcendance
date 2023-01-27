@@ -45,7 +45,7 @@ export class ChatGateway {
       else
         throw new WsException("Invalid message submitted");
       const message = await Message.create({
-        content: data.content,
+        content: encodeURIComponent(data.content),
         senderLogin: data.senderLogin,
         channelId: data.channelId
       }).save();
@@ -217,15 +217,15 @@ export class ChatGateway {
           await newOwner.save();
         }
         else {
-          const rooms = SocketGateway.channelsToRooms([channel]);
-          this.io.in(rooms).socketsLeave(rooms);
+          await SocketGateway.channelEmit(channel.id, 'hideChannel', {id: channel.id});
+          await SocketGateway.allChannelLeavesRoom(channel.id);
           await channel.remove();
+          return true;
         }
         chanUser.rights = null;
       }
-      client.leave(SocketGateway.channelsToRooms([channel])[0])
-      console.log(channel);
       await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
+      await SocketGateway.userLeaveChannelRoom(chanUser.userLogin, chanUser.channelId);
       await channel.emitUpdate();
       if (!chanUser.rights)
         await chanUser.remove();
@@ -242,28 +242,28 @@ export class ChatGateway {
   @SubscribeMessage('publicList')
   async publiclist(client: Socket): Promise<Channel[]> {
     const list = await Channel.publicList();
-    client.emit('publicList', list);
+    SocketGateway.userEmit(client.data.login, 'publicList', list);
     return list;
   }
 
   @SubscribeMessage('joinedList')
   async joinedList(client: Socket): Promise<Channel[]> {
     const list = await Channel.joinedList(client.data.login);
-    client.emit('joinedList', list);
+    SocketGateway.userEmit(client.data.login, 'joinedList', list);
     return list;
   }
 
   @SubscribeMessage('invitedList')
   async invitedList(client: Socket): Promise<Channel[]> {
     const list = await Channel.invitedList(client.data.login);
-    client.emit('invitedList', list);
+    SocketGateway.userEmit(client.data.login, 'invitedList', list);
     return list;
   }
 
   @SubscribeMessage('directList')
   async directList(client: Socket): Promise<Channel[]> {
     const list = await Channel.directList(client.data.login);
-    client.emit('directList', list);
+    SocketGateway.userEmit(client.data.login, 'directList', list);
     return list;
   }
 
