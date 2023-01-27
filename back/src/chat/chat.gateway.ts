@@ -203,7 +203,7 @@ export class ChatGateway {
         throw new WsException("Channel id (" + data.id + ") was not found.");
       if (channel.status === Channel.Status.DIRECT)
         throw new WsException("You cannot leave a direct Channel.");
-      const chanUser = await ChannelUser.findOneBy({
+      let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: client.data.login
       });
@@ -221,16 +221,18 @@ export class ChatGateway {
           this.io.in(rooms).socketsLeave(rooms);
           await channel.remove();
         }
-        return null;
+        chanUser = null;
       }
-      if (!chanUser.rights) {
+      else if (!chanUser.rights) {
         await chanUser.remove();
-        return null;
+        chanUser = null;
       }
-      chanUser.status = null;
-      await chanUser.save();
+      if (chanUser) {
+        chanUser.status = null;
+        chanUser = await chanUser.save();
+      }
       client.leave(SocketGateway.channelsToRooms([channel])[0])
-      await channel.emitHide(chanUser.userLogin);
+      await channel.emitHide(client.data.login);
       await channel.emitUpdate();
       return chanUser
     }
@@ -289,6 +291,23 @@ export class ChatGateway {
       this.err(client, 'getChannel', e);
     }
   }
+
+  @SubscribeMessage('getDirectChannel')
+  async getDirectChannel(client: Socket, data: User): Promise<Channel> {
+    try {
+      const other = await User.findOneBy({ft_login: data.ft_login});
+      if (!other)
+        throw new WsException("User " + data.ft_login + " was not found.");
+      const channelId = await Channel.getDirectChannelId(client.data.login, other.ft_login);
+      const channel = await Channel.getChannelWithUsersAndMessages(channelId);
+      if (!channel)
+        throw new WsException("ChannelId " + channelId + " was not found.");
+      return channel;
+    }
+    catch (e) {
+      this.err(client, 'getDirectChannel', e);
+    }
+  }  
 
   @SubscribeMessage('setPermissions')
   async setPermissions(client: Socket, data: ChannelUser): Promise<ChannelUser> {
