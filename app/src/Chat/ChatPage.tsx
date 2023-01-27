@@ -24,7 +24,7 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faPen, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import { a } from '@react-spring/three';
 
 const avatar_temp = "logo192.png";
@@ -100,10 +100,16 @@ export default function Chat() {
     socket.on('disconnect', () => { console.log('disconnected') });
     socket.on('message', callback);
 
+    socket.on('hideChannel', (channel : Channel) => {
+      console.log("HIDE");
+      if (channel.id === refChannel.current.id)
+        setCurrentChannel(empty_chan);
+    })
+
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
       setChannels(data);
-      if (data.length !== 0 && currentChannel.id === 0) {
+      if (data.length !== 0 && refChannel.current.id === 0) {
         socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
           setCurrentChannel(newCurrentChannel);
         })}
@@ -197,9 +203,9 @@ export default function Chat() {
     return (
       <ExpansionPanel title="Public conversations list">
         {publicChannels.map((channel, index) => {
-          return (<>
+          return (
+          <div key={index}>
             <Conversation
-              key={index}
               name={channel.name}
               onClick={onClick(channel)}/>
             {state !== channel.id ? <></> :
@@ -213,7 +219,7 @@ export default function Chat() {
               <Button>Create</Button>
             </form>
             }
-            </>
+            </div>
           )})}
       </ExpansionPanel>
     );
@@ -243,22 +249,20 @@ export default function Chat() {
   function RenderChatContainer() {
     console.count("renderChatContainer")
 
-    // useEffect(() => {
-
-    // }, []);
-
     const leaveChannel = (e: any) => {
       console.log("leaving channel", currentChannel.name)
-      socket.emit('leaveChannel', currentChannel, () => {
-        socket.emit('joinedList')
-      })}
+      socket.emit('leaveChannel', currentChannel, (data : any) => {
+        console.log("leave emit", data)
+        socket.emit('joinedList');
+      })
+    }
 
     const openProfile = (ft_login: string) => (e: any) => {
       e.preventDefault();
       setProfilSidebar(ft_login);
     }
 
-    if (channels.length === 0)
+    if (currentChannel.id === 0)
     {
       return (
         <MessageList>
@@ -390,6 +394,20 @@ export default function Chat() {
 
   function RenderRightSidebar() {
 
+    function AdminPanel() {
+      return (
+        <>
+          <h1>
+            {currentChannel.name}
+          </h1>
+          <Button icon={<FontAwesomeIcon icon={faPen}/>}>
+            Change Name
+          </Button>
+        </>
+      );
+    }
+
+
     return (
       <Sidebar position="right">
         { profilSidebar !== "" ?
@@ -398,7 +416,7 @@ export default function Chat() {
           </>
           :
           <>
-            <h1>Admin Panel</h1>
+            <AdminPanel/>
           </>
         }
       </Sidebar>
