@@ -124,13 +124,18 @@ export class ChatGateway {
         if (data.status === Channel.Status.DIRECT || !Object.values(Channel.Status).includes(data.status))
           throw new WsException("Bad channel status.")
         channel.status = data.status;
+        if (channel.status !== Channel.Status.PROTECTED)
+          channel.password = null;
         altered = true;
       }
-      if (data.password && data.password !== channel.password)
+      if (data.password !== undefined)
       {
         if (channel.status !== Channel.Status.PROTECTED)
           throw new WsException("Only protected channels can have a password.");
-        channel.password = await Channel.hashPassword(data.password);
+        if (data.password)
+          channel.password = await Channel.hashPassword(data.password);
+        else
+          channel.password = null;
         altered = true;
       }
       if (altered)
