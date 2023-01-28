@@ -28,19 +28,24 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
 
   useEffect(() => {
     if (login === "") {
-      if (socket.connected)
+      if (socket.connected) {
         socket.disconnect();
+        // console.log("Websocket disconnected :(");
+    }
       return ;
     }
 
     if (!socket.connected) {
       socket.connect();
-      console.log("Websocket connected :)");
-
+      // console.log("Websocket connected :)");
       socket.on('ping', () => {
         socket.emit('pong');
       })
     }
+
+    return (() => {
+      socket.off('ping');
+    })
   }, [login]);
 
   function setLogged(arg : string) {
