@@ -408,9 +408,16 @@ export class GameService {
 
     getPos(data:number): number[]
     {
-        var room = this.s.get(data);
+        let room;
+        for(var [key, value] of this.s.entries())
+        {
+            console.log(value);
+            if(value && value.id == data)
+                room = value;
+        }
         if(room)
-            return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
+            return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+        //return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
         return ([0,0,0,0,0,0,0])// valeur par default tout a 0
     }
 
@@ -570,7 +577,7 @@ export class GameService {
         return m;
     }
 
-    async createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match)
+    createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game
     {
         var room: Game = {
             match: m,
@@ -602,7 +609,7 @@ export class GameService {
     async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
     {
         const m = await this.createMatch(contestant[0], user);
-        const room = await this.createRoom(contestant[0], contestant[1], user, client, m);
+        const room = this.createRoom(contestant[0], contestant[1], user, client, m);
         var l = Math.random();    
         User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
         User.update(user.ft_login, {status:User.Status.PLAYING});     
@@ -724,19 +731,6 @@ export class GameService {
             this.ReplaceMatched(user, client);
             return [null, true];
         }
-        if(this.Invitation(user))// le joueur est invitee
-        {
-            this.ClientInvitationConnection(user,client)
-            var invit = this.Invitation(user);
-            if(invit.connect1 && invit.connect2)
-            {
-                var n:number = await this.createGame([invit.user1, invit.player1], invit.user2, invit.player2);
-                this.invitation.delete(invit);
-                return [n, false];
-            }
-            return [null, false];
-            
-        }
         const contestant = await this.NotonlyBlock(user);
         if(contestant == null)// Pas de Dispo Ou personne uniquement block
         {
@@ -846,7 +840,7 @@ export class GameService {
     }
 
 
-    endStream(client:Socket, id:number)
+    endStream(client:Socket, id:number)//
     {
         //public stream: Map<number, Array<Socket>>;
         if(id != -1)
@@ -888,6 +882,38 @@ export class GameService {
             return [null,null];
     }
 
+    Roomreturn(id:number): Game
+    {
+        return this.s.get(id);
+    }
+
+    room(id:number): boolean
+    {
+        for(var [key, value] of this.s.entries())
+        {
+            console.log(value);
+            if(value && value.id == id)
+                return true;
+            /*
+            if(value && value[0])
+            {
+                if(value[0] == user)
+                    value[1] = client;
+            }*/
+        }
+        return false;
+        /*
+        //var j = this.s.get(id).room_id;
+        console.log(j);
+        //console.log(id);
+        console.log((j == id));
+        if(j == id)
+            return true;
+        return false;
+       // if(this.s.get(id))
+        //    return true;
+        //return false;*/
+    }
 
     async findRoom(id:number)
     {
@@ -910,7 +936,7 @@ export class GameService {
         }
     }
 
-    getStream(data:number)
+    getStream(data:number): Array<Socket>
     {
         if(this.stream)
             return this.stream.get(data);// par default sera a 0

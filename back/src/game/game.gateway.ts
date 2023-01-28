@@ -63,15 +63,20 @@ export class GameGateway implements OnGatewayDisconnect {
     else // n est pas une invitation
     {
       console.log('IS STREAM');
-      console.log(await this.gameservice.getRoom(data));
-
-      if(!(this.gameservice.getRoom(data)))
+      console.log(data);
+      //console.log(await this.gameservice.getRoom(data));
+      var c =  this.gameservice.room(data);
+      var room = this.gameservice.Roomreturn(data);
+      console.log(room);
+      console.log(c);
+      if(c == false)
       {
         console.log('ROOM EXISTE PAS');
         //return ;// la room n existe pas
       }
       if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
       {
+        console.log('ARRIVE ICI');
         var render_stream;
         render_stream =  setInterval(() => {
           GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
@@ -159,6 +164,7 @@ export class GameGateway implements OnGatewayDisconnect {
       return ;
     if(l && (l[0] && l[1] == false))// GAME
     {
+      console.log('RENDER NUMBER ' + l[0]);
       this.rendergame(l[0]);
       /*
         var room = this.gameservice.getClients(l[0]);
@@ -203,6 +209,8 @@ export class GameGateway implements OnGatewayDisconnect {
     console.log('END GAME NOT DISCONNECT')
     //this.gameservice.DisconnectionGame(client);
   }
+
+
 
 
   @SubscribeMessage('left')
@@ -254,7 +262,7 @@ export class GameGateway implements OnGatewayDisconnect {
 
   public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
   {
-    stream.map((s) => {s.emit('pos', data);});
+    stream.map((s) => {s.emit('newpos', data);});
 	}
 
   @SubscribeMessage('start_stream')
