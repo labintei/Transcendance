@@ -21,7 +21,7 @@ export default function PongGame(props: any) {
  //const afficherparams = function(){
     let o = new URLSearchParams(window.location.href);
     console.log(o.get("matchid"));
-    const {matchid} = useParams();
+    let {matchid} = useParams();// si marche plus remettre en const
   // -> id ...
     console.log(matchid);
   //}
@@ -89,10 +89,13 @@ export default function PongGame(props: any) {
   useEffect(() => 
   {
     //afficherparams();
-    if(Spectator_mode == false)
-      socket.emit('start_game');
+    //if(Spectator_mode == false)
+    if(matchid)
+      socket.emit('start_invit_stream', matchid);
     else
-      socket.emit('start_stream');   
+      socket.emit('start_game');
+    //else
+    //  socket.emit('start_stream');   
     return() => {}
   },[])
 

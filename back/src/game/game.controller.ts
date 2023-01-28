@@ -14,10 +14,14 @@ export class GameController {
   constructor(private readonly gameService: GameService) {}
 
   @Get(':username')
-  async invitation(@Request() req , @Param('username') user: string): Promise<number> {
-    try {
+  async invitation(@Request() req , @Param('username') user: string): Promise<number> 
+  {
+      //var l  = (client.request as any).user;
+      console.log('USER ' + req.user);
       const user1 = await User.findOneBy({ft_login: req.user});
+      console.log('CONTROLLER ' + user1.ft_login);
       const user2 = await User.findOneBy({username: user});
+      console.log('CONTROLLER ' + user2.ft_login);
       if (!user1)
         throw new HttpException("User invalid", HttpStatus.BAD_REQUEST);
       if (!user2)
@@ -26,7 +30,7 @@ export class GameController {
       var urlredir: string = process.env.REACT_APP_WEBSITE_URL + 'game/' + await c;
       const channelId = await Channel.getDirectChannelId(user1.ft_login, user2.ft_login);
       const message = await Message.create({
-        content: urlredir,
+        content: "<a href='" + urlredir + "'>Accepte mon defi !</a>",
         senderLogin: user1.ft_login,
         channelId: channelId
       }).save();
@@ -38,10 +42,6 @@ export class GameController {
       });
       SocketGateway.channelEmit(message.channelId, 'message', message);
       return c;
-    }
-    catch (e) {
-      console.log("[Error Invite]", e);
-    }
   }
 
   @Get('history')

@@ -34,6 +34,54 @@ export class GameGateway implements OnGatewayDisconnect {
     //console.log(this.gameservice.IsinGame(client));
     //this.gameservice.DisconnectionGame(client);
   }
+  
+  // Le cas ou tu as a la fois une invitation et un matching 
+  // On part du principe que on peut pas demarrer ni l un ni l autre si deja en train de jouer
+  //socket.emit('start_invit_stream');
+  // probleme tu peut pas a la fois etre invite et regarder ton propre stream
+  @SubscribeMessage('start_invit_stream')
+  async stream_invit(client:Socket, data:number)
+  {
+    console.log('client ' + client + ' data ' + data);
+    if(await this.gameservice.IsInvitation(client, data))// si c est une invitation
+    {
+      console.log('IS INVITATION');
+      if(this.gameservice.IsInside(client))// si il est daje en train de jouer
+      {
+        console.log('probleme ici');
+        return ;// n implemente pas et attends qu il reload ca page pour le mettre dans la room
+      }
+      else// launch la game et wait le deuxieme participant
+      {
+        var bothconnect = await this.gameservice.LaunchInvitation(client, data);// si vrai lancera la game des deux cotes
+        if(bothconnect[1] == true)
+        {
+          this.rendergame(bothconnect[0])
+        }
+      }
+    }
+    else // n est pas une invitation
+    {
+      console.log('IS STREAM');
+      console.log(await this.gameservice.getRoom(data));
+
+      if(!(this.gameservice.getRoom(data)))
+      {
+        console.log('ROOM EXISTE PAS');
+        //return ;// la room n existe pas
+      }
+      if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
+      {
+        var render_stream;
+        render_stream =  setInterval(() => {
+          GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+        }, 160)
+      }
+    }
+
+  }
+
+
 
   @SubscribeMessage('endgame')
   out_page(client:Socket)
@@ -53,6 +101,46 @@ export class GameGateway implements OnGatewayDisconnect {
 
   }
 
+  //public static async
+  async rendergame(data:number)
+  {
+    var room = this.gameservice.getClients(data);
+    if(room[0])
+      room[0].emit('start', [data, 1]);
+    if(room[1])
+      room[1].emit('start', [data, 2]);
+    
+    console.log(data);
+    var i = setInterval(() => {
+      var clients = this.gameservice.getClients(data);
+      var a = this.gameservice.sphereroom(data);
+      if(clients[0] != null)
+          clients[0].emit('newpos', a);
+      if(clients[1] != null)
+          clients[1].emit('newpos', a);
+     }, 50);
+     
+     var time = 0;
+     var score = [0,0];
+     var j = setInterval(() => {
+      if(this.gameservice.isFinish(data))
+      {
+        var clients = this.gameservice.getClients(data);
+        if(clients[0])
+          clients[0].emit('endgame');
+        if(clients[1])
+          clients[1].emit('endgame');
+        this.gameservice.CreateMatchID(data);
+        this.gameservice.DisconnectionGameId(data);
+      }
+      else
+        this.gameservice.addtime(data)
+    }, 1000);
+    this.gameservice.SetTimer(data,j);
+    this.gameservice.SetRender(data,i);
+  }
+
+
 
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
@@ -71,6 +159,8 @@ export class GameGateway implements OnGatewayDisconnect {
       return ;
     if(l && (l[0] && l[1] == false))// GAME
     {
+      this.rendergame(l[0]);
+      /*
         var room = this.gameservice.getClients(l[0]);
         if(room[0])
           room[0].emit('start', [l[0],1]);
@@ -103,7 +193,7 @@ export class GameGateway implements OnGatewayDisconnect {
       }, 1000);
       this.gameservice.SetTimer(l[0],j);
       this.gameservice.SetRender(l[0],i);
-      return ;
+      return ;*/
     }
   }
 

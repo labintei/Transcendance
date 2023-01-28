@@ -139,6 +139,85 @@ export class GameService {
     return null;
 */
 
+    async IsInvitation(client:Socket, data:number): Promise<boolean>
+    {
+        var l  = (client.request as any).user;
+        console.log('Client login ' + l);
+        //console.log('FT LOGIN ' + (client.request as any).user);
+        //const user = await User.findOneBy({ft_login: client.data.login})
+        //console.log('client ' + user.ft_login + ' data ' +  data);
+        for( var [key, value] of this.invitation.entries())
+        {
+            console.log('MATCHID ' + data + 'USER 1 '  + value.user1.ft_login + ' USER2 ' + value.user2.ft_login);
+            
+            if(value && value.match_id == data && (
+                    (l == value.user1.ft_login) || 
+                    (l == value.user2.ft_login)))
+                return true;
+        }
+        return false;
+    }
+
+
+    async getInvitation(client:Socket, data:number): Promise<Invitation>
+    {
+        const user1 =  await User.findOne({where: {ft_login: client.data.login}});
+        for( var [key, value] of this.invitation.entries())
+        {
+            if(value && value.match_id == data /*&& 
+                ((user1.ft_login == value.user1.ft_login) || 
+                (user1.ft_login == value.user2.ft_login))*/)
+                return value;
+        }
+        return null;
+    }
+
+    async DeleteInvitation(data:number)
+    {
+
+        for( var [key, value] of this.invitation.entries())
+        {
+            if(value && value.match_id == data)
+                this.invitation.delete(value);
+        }
+        //return null;
+    }
+
+    async LaunchInvitation(client:Socket, data:number): Promise<[number,boolean]>
+    {
+        const I = await this.getInvitation(client, data);// obtient l invitation
+        console.log(I);// est donc null
+        if(I.user1.ft_login == client.data.login)
+        {
+            I.player1 = client;
+            I.connect1 = true;
+        }
+        else if(I.user2.ft_login == client.data.login)
+        {
+            I.player2 = client;
+            I.connect2 = true;
+        }// connect, replace les clients si besoin
+        if(I.connect1 === true && I.connect2 === true)
+        {
+            var m = await Match.findOneBy({id: I.match_id});// creer la room
+            var room = await this.createRoom(I.user1, I.player1, I.user2, I.player2, m);// creer la room
+            var l = Math.random();    
+            User.update(I.user1.ft_login, {status:User.Status.PLAYING});
+            User.update(I.user2.ft_login, {status:User.Status.PLAYING});     
+            if (l < 0.5)
+              room.zdir = -0.05;
+            room.xangle = l * 0.5;
+            room.id = m.id;
+            room.room_id = m.id;
+            this.s.set(room.id , room);
+            this.DeleteInvitation(I.match_id);
+            console.log('Invitation apres ' + this.invitation.size)
+            return [I.match_id,true];
+        }
+        else
+            return [null, false];
+    }
+
     async NotBlock(user1login:string, user2login:string): Promise<boolean>
     {
         const blocked = await UserRelationship.findOneBy([
@@ -163,6 +242,13 @@ export class GameService {
     {
         if(this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
+            for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
+            {
+                if(value)
+                    if(((value.user1.ft_login == user1.ft_login) && (value.user2.ft_login == user2.ft_login))
+                    || (value.user1.ft_login == user2.ft_login) && (value.user2.ft_login == user1.ft_login))
+                        return value.match_id;
+            }
             const m = await this.createMatch(user1, user2);
             // mettre le status en NEW
             this.CreateInvitation(user1,user2, m.id);
