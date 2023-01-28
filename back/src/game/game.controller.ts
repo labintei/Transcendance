@@ -1,10 +1,16 @@
-import { Controller, Get, Request, UseGuards } from '@nestjs/common';
+import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
 import { TransGuard } from 'src/auth/trans.guard';
 import { Match } from 'src/entities/match.entity';
 
 @Controller('match')
 @UseGuards(TransGuard)
 export class GameController {
+
+  @Get(':username')
+  async createMatchOrReturnExisting(@Request() req, @Param('username') user1:string): Promise<number> {
+    
+    return 0;
+  }
 
   @Get('history')
   async gethistory(@Request() req): Promise<Match[]> {
