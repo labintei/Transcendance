@@ -21,9 +21,9 @@ export default function PongGame(props: any) {
  //const afficherparams = function(){
     let o = new URLSearchParams(window.location.href);
     console.log(o.get("matchid"));
-
-    let {params} = useParams();
-    console.log(params);
+    const {matchid} = useParams();
+  // -> id ...
+    console.log(matchid);
   //}
     //window.location.href = window.location.href;
     //setFinish(0);

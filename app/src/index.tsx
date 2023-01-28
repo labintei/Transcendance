@@ -48,6 +48,10 @@ const router = createBrowserRouter([
       {
         path: "game",
         element: <PongGame />,
+        children: [{
+          path: ":matchid",
+          element: <PongGame />
+        }]
       },
       {
         path: "chat",

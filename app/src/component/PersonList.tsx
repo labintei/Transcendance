@@ -1,8 +1,8 @@
 import React from 'react';
 import axios from 'axios';
 import './PlayerList.css';
-import { defaultavatar} from "./const";
-import { Navigate } from 'react-router-dom';
+import { defaultavatar, ChallengeButton} from "./const";
+import { Navigate, useNavigate } from 'react-router-dom';
 
 type Person = {
     id: number
@@ -20,6 +20,19 @@ type State = {
   listf:Array<Person>
   logged:boolean
   query:string
+}
+
+
+function GetLive(props:{matchid:number}) {
+  const navigate = useNavigate();
+
+  return (
+    <button onClick={() => {
+          navigate("../game/" + props.matchid);
+      }}
+      id="watch-button" title="Watch live game">
+    </button>
+  );
 }
 
 export default class PersonList extends React.Component {
@@ -109,6 +122,7 @@ export default class PersonList extends React.Component {
                       one.avatar_location = person.avatarURL;
                 if (person.ongoingMatchId !== undefined)
                   one.matchid = person.ongoingMatchId;
+                one.matchid = 5;
                 listftmp.push(one);
             }
             id++;
@@ -123,6 +137,8 @@ export default class PersonList extends React.Component {
 
 
   doSearch() {
+    if (this.state.query === "")
+      return;
     axios.get(process.env.REACT_APP_BACKEND_URL + "search/" + encodeURIComponent(this.state.query), {
       withCredentials: true
     }).then(async res => {
@@ -176,7 +192,7 @@ export default class PersonList extends React.Component {
               :
                 <p>{person.status}</p>
               }</>
-              <button onClick={() => this.challengeClicked(person.id)}  id="challenge-button" title='challenge'></button>
+              <ChallengeButton username={person.name}></ChallengeButton>
               { person.blocked ?
               <><button 
                   onClick={() => this.friendManage(person.id, flist)}
@@ -190,8 +206,7 @@ export default class PersonList extends React.Component {
                 <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button" title="remove friend"></button>
                 {
                   person.matchid !== null ?
-                  <button onClick={() => {console.log("Redirect to do : [website]/game?matchid=" + person.matchid)}}
-                  id="watch-button" title="Watch live game"></button>
+                  <GetLive matchid={person.matchid}></GetLive>
                   : <></>
                 }
                 </>
