@@ -159,12 +159,12 @@ export class GameService {
     }
 
 
-    async CreateInvit(user1login:string , user2login:string)
+    async CreateInvit(user1login:string , username2:string)
     {
-        if(this.NotBlock(user1login, user2login))// deux user non block
+        const user1 = await User.findOneBy({ft_login: user1login});
+        const user2 = await User.findOneBy({username: username2});
+        if(user1 && user2 && this.NotBlock(user1.ft_login, user2.ft_login))// deux user non block
         {
-            const user1 = await User.findOneBy({ft_login: user1login});
-            const user2 = await User.findOneBy({ft_login: user2login});
             const m = await this.createMatch(user1, user2);
             // mettre le status en NEW
             this.CreateInvitation(user1,user2, m.id);
