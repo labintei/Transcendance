@@ -330,25 +330,35 @@ export class GameService {
 
     sphere(room:Game): number[]
     {
-        var width = 1;
-
         var sz = Math.floor(room.sz);
-        var sx = Math.round(room.sx * 10) / 100;
         var b2x = Math.round(room.Box2x * 10) / 100;
         var b1x = Math.round(room.Box1x * 10) / 100;
 
         room.sx += room.xangle;
         room.sz += room.zdir;
 
+
+      // if(room.sx > 0.1)
+      //   room.sx -= 0.005;
+      // if(room.sx < (-0.1))
+      //   room.sx += 0.005;
+
       if(room.zdir > 0.1)
         room.zdir -= 0.005;
       if(room.zdir < (-0.1))
         room.zdir += 0.005;
-
-    if(sz === (4) &&
-    ((room.sx >= (b1x - 0.8)) && 
-    (room.sx <= (b1x + 1.8))))
-    {
+        let newVal = Math.round(room.sz * 10) / 10
+        if(newVal === (3.9) &&
+        //? box size is 2
+        ((room.sx >= (b1x - 1)) && 
+        (room.sx <= (b1x + 1))))
+        {
+      // console.log("ball pos is " + room.sx)
+      // console.log("box pos is " + b1x)
+      // console.log("ball dist is " + ball_dist)
+      // TODO: ajouter un angle en fonction de la position de la balle
+      let ball_dist =  b1x - room.sx
+      room.xangle -= ball_dist;
         room.zdir = -0.3;
     }  
     if(sz === (-5) && 
@@ -356,9 +366,10 @@ export class GameService {
         (room.sx <= (b2x + 0.8))))
     {
         room.zdir = 0.3;
+      let ball_dist =  b1x - room.sx
+      room.xangle += ball_dist;
     }
     
-    var sxint = Math.round(room.sx);
       if(Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
         room.xangle *= -1;
       if (sz > 7 || sz < -7)
@@ -694,25 +705,25 @@ export class GameService {
     player2x_right(id:number, client:Socket)
     {
         if(this.s.get(id).player2 == client)
-            this.s.get(id).Box2x += 0.6;
+            this.s.get(id).Box2x += 2;
     }
 
     player2x_left(id:number, client:Socket)
     {
         if(this.s.get(id).player2 == client)
-            this.s.get(id).Box2x -= 0.6;
+            this.s.get(id).Box2x -= 2;
     }
 
     player1x_right(id:number, client:Socket)
     {
         if(this.s.get(id).player1 == client)
-            this.s.get(id).Box1x += 0.6;
+            this.s.get(id).Box1x += 2;
     }
 
     player1x_left(id:number, client:Socket)
     {
         if(this.s.get(id).player1 == client)
-            this.s.get(id).Box1x -= 0.6;
+            this.s.get(id).Box1x -= 2;
     }
 
     getRender(id:number):any
