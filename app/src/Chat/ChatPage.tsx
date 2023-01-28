@@ -51,12 +51,21 @@ export interface tUser {
   rank: number;
 }
 
+export interface tChannelUser {
+  channelId: number;
+  userLogin: string;
+  rights: string | null;
+  status: string | null;
+  rightsEnd: Date;
+  user: tUser;
+}
+
 export interface tChannel {
   id: number;
   status: string;
   password: string;
   name: string;
-  users: tUser[];
+  users: tChannelUser[];
   messages: tMessage[];
 }
 
@@ -94,8 +103,9 @@ export default function Chat() {
   })
 
   useEffect(() => {
-    if (!socket.connected)
+    if (!socket.connected) {
         return ;
+    }
     socket.on('error', (data) => { console.log('error', data) });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
@@ -128,7 +138,7 @@ export default function Chat() {
       socket.off('hideChannel');
       socket.off('updateChannel');
     };
-  }, []);
+  }, [login.value]);
 
   function RenderConversations() {
     const switchChannel = (channel: tChannel) => (e: any) => {
@@ -403,10 +413,22 @@ export default function Chat() {
   }
 
   function RenderRightSidebar() {
+    function shouldRender() : boolean {
+      if (profilSidebar !== "")
+        return true;
+      if (currentChannel.status === "Direct")
+        return false;
+      if (currentChannel.id === 0)
+        return false;
+      const users : any = currentChannel.users;
+      const user = users.find((element: any) => element.user.ft_login === login.value);
+      if (user.rights === "Owner" || user.rights === "Admin")
+        return true;
+      return false;
+    }
 
-
-
-
+    if (!shouldRender())
+      return null;
 
     return (
       <Sidebar position="right">
@@ -445,7 +467,11 @@ export default function Chat() {
       position: "relative",
       textAlign: "initial"
     }}>
-      { !socket.connected ? <Navigate to="/login"></Navigate> : <></> }
+      { login.value === "" ? 
+        <Navigate to="/login"></Navigate>
+      :
+        <></>
+      }
       <MainContainer>
         <Sidebar position="left" scrollable={false}>
           <RenderCreateChannel />
