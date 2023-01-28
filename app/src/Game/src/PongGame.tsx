@@ -170,7 +170,7 @@ export default function PongGame(props: any) {
       Score: 
       <div>{s} - {sbis}</div>
       Params:
-      <div>{params}</div>
+      <div>{matchid}</div>
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
