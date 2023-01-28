@@ -220,60 +220,60 @@ export class GameService {
 
   sphere(room: Game): number[] {
     
-    // var sz = Math.floor(room.sz);
-    // var sx = Math.round(room.sx * 10) / 100;
-    // var b2x = Math.round(room.Box2x * 10) / 100;
-    // var b1x = Math.round(room.Box1x * 10) / 100;
+    var sz = Math.floor(room.sz);
+    var sx = Math.round(room.sx * 10) / 100;
+    var b2x = Math.round(room.Box2x * 10) / 100;
+    var b1x = Math.round(room.Box1x * 10) / 100;
 
-    // room.sx += room.xangle;
-    // room.sz += room.zdir;
+    room.sx += room.xangle;
+    room.sz += room.zdir;
 
-    // // DESCELERATION
-    // if (room.zdir > 0.1) room.zdir -= 0.005;
-    // if (room.zdir < -0.1) room.zdir += 0.005;
+    // DESCELERATION
+    if (room.zdir > 0.1) room.zdir -= 0.005;
+    if (room.zdir < -0.1) room.zdir += 0.005;
 
-    // // COLLISIONS
-    // if (sz === 4 || sz === -4)
-    // {
-    //     console.log('sx is' + sx)
-    //     console.log('b1x is ' + b1x);
-    //     console.log('b2x is ' + b2x);
-    //     console.log('b1x - 0.8 = ' + (b1x - 0.8));
-    //     console.log('b2x - 0.8 = ' + (b2x - 0.8));
-    // }
-    // if (sz === 4 && sx >= b1x - 0.80 && sx <= b1x + 1.80) {
-    //   console.log('collision');
-    //   room.zdir = -0.3;
-    // }
-    // if (sz === -5 && sx >= b2x - 1.80 && sx <= b2x + 0.80) {
-    //   console.log('collision');
-    //   room.zdir = 0.3;
-    // }
+    // COLLISIONS
+    if (sz === 4 || sz === -4)
+    {
+        console.log('sx is ' + sx)
+        console.log('b1x is ' + b1x);
+        console.log('b2x is ' + b2x);
+        console.log('b1x - 0.8 = ' + (b1x - 0.8));
+        console.log('b2x - 0.8 = ' + (b2x - 0.8));
+    }
+    if (sz === 4 && sx >= b1x - 0.80 && sx <= b1x + 1.80) {
+      console.log('collision');
+      room.zdir = -0.3;
+    }
+    if (sz === -5 && sx >= b2x - 1.80 && sx <= b2x + 0.80) {
+      console.log('collision');
+      room.zdir = 0.3;
+    }
 
-    // // BALL LOST ABOVE X AXIS
-    // if (sz > 7 || sz < -7) {
-    //   if (sz > 7) room.score2++;
-    //   if (sz < -7) room.score1++;
-    //   console.log('Score 1 : ' + room.score1 + ' Score 2 : ' + room.score2);
-    //   room.sx = 0;
-    //   room.sz = 0;
-    //   var l = Math.random();
-    //   var side = Math.random();
-    // //   console.log(l);
-    //   if (l < 0.5) room.zdir = -0.05;
-    //   room.xangle = l * 0.1;
-    //   if (side < 0.5) room.xangle *= -1;
-    // //   console.log(room.xangle.toFixed(3));
-    //   return [
-    //     0,
-    //     0,
-    //     Number(room.Box1x.toFixed(2)),
-    //     Number(room.Box2x.toFixed(2)),
-    //     room.time,
-    //     room.score1,
-    //     room.score2,
-    //   ];
-    // }
+    // BALL LOST ABOVE X AXIS
+    if (sz > 7 || sz < -7) {
+      if (sz > 7) room.score2++;
+      if (sz < -7) room.score1++;
+      console.log('Score 1 : ' + room.score1 + ' Score 2 : ' + room.score2);
+      room.sx = 0;
+      room.sz = 0;
+      var l = Math.random();
+      var side = Math.random();
+    //   console.log(l);
+      if (l < 0.5) room.zdir = -0.05;
+      room.xangle = l * 0.1;
+      if (side < 0.5) room.xangle *= -1;
+    //   console.log(room.xangle.toFixed(3));
+      return [
+        0,
+        0,
+        Number(room.Box1x.toFixed(2)),
+        Number(room.Box2x.toFixed(2)),
+        room.time,
+        room.score1,
+        room.score2,
+      ];
+    }
     return [
       Number(room.sx.toFixed(3)),
       Number(room.sz.toFixed(3)),
