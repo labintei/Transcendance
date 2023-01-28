@@ -167,7 +167,7 @@ export class GameGateway implements OnGatewayDisconnect {
     stream.map((s) => {s.emit('pos', data);});
 	}
 
-  @SubscribeMessage('startstream')
+  @SubscribeMessage('start_stream')
   async startstream(client:Socket, data:number)
   {
     console.log('StartStream');
