@@ -31,10 +31,10 @@ export default function LoginPage() {
       if (res.data.ft_login !== undefined)
         setUsername(res.data.ft_login);
       setLogged(LogStatus.Logged);
-      login.set(true);
+      login.set(res.data.ft_login);
     }).catch(error => {
       console.log(error);
-      login.set(false);
+      login.set("");
       console.log(error.response.status);
       if (error.response.status === 401)
         setLogged(LogStatus.NotLogged);
@@ -48,10 +48,10 @@ export default function LoginPage() {
       withCredentials: true
     }).then(() => {
       setLogged(LogStatus.NotLogged);
-      login.set(false);
+      login.set("");
     }).catch(error => {
       setLogged(LogStatus.NotLogged);
-      login.set(false);
+      login.set("");
       console.log(error);
     });
   }
@@ -64,7 +64,7 @@ export default function LoginPage() {
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
-        login.set(false);
+        login.set("");
       }
       console.log(error);
     });
@@ -83,14 +83,14 @@ export default function LoginPage() {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403) {
           setLogged(LogStatus.NotLogged);
-          login.set(false);
+          login.set("");
         }
         console.log(error);
       });
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
-        login.set(false);
+        login.set("");
       }
       console.log(error);
     });
@@ -103,11 +103,11 @@ export default function LoginPage() {
     }).then(res => {
       setLogged(LogStatus.Logged);
       setUsing(true);
-      login.set(true);
+      login.set(res.data.ft_login);
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
-        login.set(false);
+        login.set("");
       }
       console.log(error);
     });
@@ -133,7 +133,7 @@ export default function LoginPage() {
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
-        login.set(false);
+        login.set("");
       }
       console.log(error);
     });

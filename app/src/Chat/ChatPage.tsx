@@ -1,9 +1,7 @@
 import React, { useContext, useEffect, useRef, useState } from 'react';
 import { io, Socket } from 'socket.io-client';
 import { getSocketContext } from 'WebSocketWrapper';
-// import ChannelMessage from './ChannelMessage';
-// import ChannelSidebar from './ChannelSidebar';
-// import MessageInput from './MessageInput';
+import { getLoginContext } from 'WebSocketWrapper';
 import { Navigate } from 'react-router-dom';
 
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
@@ -26,21 +24,21 @@ import {
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faCheck, faKey, faLock, faLockOpen, faPen, faUserSlash, faXmark } from '@fortawesome/free-solid-svg-icons';
-import { a } from '@react-spring/three';
-import { channel } from 'diagnostics_channel';
+import OwnerPanel from './OwnerPanel';
+import AdminPanel from './AdminPanel';
 
 const avatar_temp = "logo192.png";
 
 // const backend_url = process.env.REACT_APP_BACKEND_URL || '';
 // const socket = io(backend_url, { withCredentials: true });
 
-interface Message {
+export interface tMessage {
   time: Date;
   content: string;
-  sender: User;
+  sender: tUser;
 }
 
-interface User {
+export interface tUser {
   ft_login: string;
   username: string;
   status: string;
@@ -53,33 +51,34 @@ interface User {
   rank: number;
 }
 
-interface Channel {
+export interface tChannel {
   id: number;
   status: string;
   password: string;
   name: string;
-  users: User[];
-  messages: Message[];
+  users: tUser[];
+  messages: tMessage[];
 }
 
-const temp_msg : Message[] = [
-  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
-  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
-  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
+const temp_msg : tMessage[] = [
+  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as tUser},
+  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as tUser},
+  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as tUser},
 ];
 
-const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as Channel;
+const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as tChannel;
 
 export default function Chat() {
-  const [currentChannel, setCurrentChannel] = useState<Channel>(empty_chan);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [invitedChannels, setInvitedChannels] = useState<Channel[]>([]);
+  const [currentChannel, setCurrentChannel] = useState<tChannel>(empty_chan);
+  const [channels, setChannels] = useState<tChannel[]>([]);
+  const [invitedChannels, setInvitedChannels] = useState<tChannel[]>([]);
   const [profilSidebar, setProfilSidebar] = useState<string>("");
-  const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
+  const [publicChannels, setPublicChannels] = useState<tChannel[]>([]);
 
   const refChannel = useRef(currentChannel);
 
   const socket = useContext(getSocketContext);
+  const login = useContext(getLoginContext);
 
   function callback(data: any) {
     if (data.channelId === refChannel.current.id)
@@ -103,7 +102,7 @@ export default function Chat() {
     socket.on('message', callback);
     socket.on('updateChannel', () => { console.log("updateChannel"); socket.emit('joinedList') });
 
-    socket.on('hideChannel', (channel : Channel) => {
+    socket.on('hideChannel', (channel : tChannel) => {
       console.log("HIDE", channel);
       // console.log()
       if (channel.id === refChannel.current.id)
@@ -114,7 +113,7 @@ export default function Chat() {
       console.log("[WS] joinedList");
       setChannels(data);
       if (data.length !== 0 && refChannel.current.id === 0) {
-        socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
+        socket.emit('getChannel', data[0], (newCurrentChannel : tChannel) => {
           setCurrentChannel(newCurrentChannel);
         })}
       socket.emit('publicList');
@@ -132,8 +131,8 @@ export default function Chat() {
   }, []);
 
   function RenderConversations() {
-    const switchChannel = (channel: Channel) => (e: any) => {
-      socket.emit('getChannel', channel, (data: Channel) => {
+    const switchChannel = (channel: tChannel) => (e: any) => {
+      socket.emit('getChannel', channel, (data: tChannel) => {
         console.log(data);
         setCurrentChannel(data);
       });
@@ -158,10 +157,10 @@ export default function Chat() {
     let password: HTMLInputElement | null = null;
 
     useEffect(() => {
-      socket.on('publicList', (chans : Channel[]) => {
-        let newPublicList : Channel[] = [];
+      socket.on('publicList', (chans : tChannel[]) => {
+        let newPublicList : tChannel[] = [];
         console.log("[DEBUG]: channels:", channels);
-        chans.filter((x : Channel) => {
+        chans.filter((x : tChannel) => {
           if (channels.find((a) => {return (a.id === x.id)}) === undefined)
             newPublicList = [...newPublicList, x];
         });
@@ -174,7 +173,7 @@ export default function Chat() {
       });
     }, [channels]);
 
-    const onClick = (channel: Channel) => (e: any) => {
+    const onClick = (channel: tChannel) => (e: any) => {
       e.preventDefault();
       if (channel.status === "Protected")
       {
@@ -185,23 +184,23 @@ export default function Chat() {
         return ;
       }
 
-      socket.emit('joinChannel', channel, (channel : Channel) => {
+      socket.emit('joinChannel', channel, (channel : tChannel) => {
         socket.emit('joinedList');
-        socket.emit('getChannel', channel, (channel : Channel) => {
+        socket.emit('getChannel', channel, (channel : tChannel) => {
           setCurrentChannel(channel)
         });
       });
       // socket.emit('joinedList');
     };
 
-    const onSubmit = (channel: Channel) => (e: any) => {
+    const onSubmit = (channel: tChannel) => (e: any) => {
       e.preventDefault();
 
       channel.password = password!.value;
 
-      socket.emit('joinChannel', channel, (channel : Channel) => {
+      socket.emit('joinChannel', channel, (channel : tChannel) => {
         socket.emit('joinedList');
-        socket.emit('getChannel', channel, (channel : Channel) => {
+        socket.emit('getChannel', channel, (channel : tChannel) => {
           setCurrentChannel(channel)
         });
       });
@@ -233,7 +232,7 @@ export default function Chat() {
   }
 
   function RenderInvitedConversations() {
-    const onClick = (channel: Channel) => (e: any) => {
+    const onClick = (channel: tChannel) => (e: any) => {
       // setCurrentChannel(channel);
       // socket.emit('joinChannel', channel, (data : Channel) => {
       //   setChannels([...channels, data]);
@@ -318,7 +317,7 @@ export default function Chat() {
                   message: message.content,
                   sentTime: message.time.toString(),
                   sender: message.sender.username,
-                  direction: "incoming",
+                  direction: login.value === message.sender.ft_login ? "outgoing" : "incoming",
                   position: "single",
                   type: "text"
                 }}
@@ -348,10 +347,10 @@ export default function Chat() {
     function onSubmit(e : any) {
       e.preventDefault();
 
-      const new_chan : Channel = {
+      const new_chan : tChannel = {
         status: "Public",
         name: channelName!.value,
-      } as Channel;
+      } as tChannel;
 
       if (check.password === true) {
         new_chan.status = "Protected";
@@ -404,130 +403,10 @@ export default function Chat() {
   }
 
   function RenderRightSidebar() {
-    let name: HTMLInputElement | null = null;
-    let password: HTMLInputElement | null = null;
 
-    function AdminPanel() {
-      const [edit, setEdit] = useState<string>("");
 
-      const updateName = (e: any) => {
-        e.preventDefault();
 
-        const updatedChannel = currentChannel;
 
-        updatedChannel.name = name!.value;
-
-        socket.emit('updateChannel', updatedChannel);
-      }
-
-      const updatePassword = (e: any) => {
-        e.preventDefault();
-
-        const updatedChannel = currentChannel;
-
-        updatedChannel.password = password ? password.value : "";
-        updatedChannel.status = "Protected";
-
-        socket.emit('updateChannel', updatedChannel);
-      }
-
-      const lockChannel = (status: boolean) => (e: any) => {
-        e.preventDefault();
-
-        const updatedChannel = currentChannel;
-
-        updatedChannel.status = status ? "Private" : "Public";
-        socket.emit('updateChannel', updatedChannel);
-      }
-
-      return (
-        <>
-          {edit !== "name" ? 
-            <>
-              <h1>
-                {currentChannel.name}
-              </h1>
-              <Button
-                icon={<FontAwesomeIcon icon={faPen}/>}
-                onClick={() => setEdit("name")}
-              >
-              Change Name
-              </Button>
-            </>
-          :
-          <>
-            <form onSubmit={updateName}>
-              <input
-                type="input"
-                placeholder="Enter new channel name..."
-                ref={node => name = node}
-                required
-              />
-
-              <Button
-                icon={<FontAwesomeIcon icon={faCheck}/>}
-              >
-                Validate
-              </Button>
-            </form>
-              <Button
-              icon={<FontAwesomeIcon icon={faXmark}/>}
-              onClick={() => setEdit("")}
-              >
-                Cancel
-              </Button>
-            </>
-          }
-
-          {currentChannel.status !== "Private" ? 
-            <Button
-              icon={<FontAwesomeIcon icon={faLock}/>}
-              onClick={lockChannel(true)}
-            >
-              Lock Channel
-            </Button>
-            :
-            <Button
-              icon={<FontAwesomeIcon icon={faLockOpen}/>}
-              onClick={lockChannel(false)}
-            >
-              Unlock Channel
-            </Button>
-          }
-
-          {edit !== "password" ?
-            <Button
-              icon={<FontAwesomeIcon icon={faKey}/>}
-              onClick={() => setEdit("password")}
-              >
-              Change Password
-            </Button>
-          :
-          <>
-            <form onSubmit={updatePassword}>
-              <input
-                type="input"
-                placeholder="Enter password"
-                ref={node => password = node}
-              />
-
-              <Button
-                icon={<FontAwesomeIcon icon={faCheck}/>}
-              >
-                Validate
-              </Button>
-            </form>
-              <Button
-              icon={<FontAwesomeIcon icon={faXmark}/>}
-              onClick={() => setEdit("")}
-              >
-                Cancel
-              </Button>
-            </>
-          }
-        </>
-      );
-    }
 
     return (
       <Sidebar position="right">
@@ -537,8 +416,9 @@ export default function Chat() {
             <h1>Profil panel : {profilSidebar}</h1>
           </>
           :
-          <> {/* Add verification */}
-            <AdminPanel/>
+          <>
+            <OwnerPanel currentChannel={currentChannel} socket={socket}/>
+            <AdminPanel currentChannel={currentChannel} socket={socket}/>
           </>
         }
       </Sidebar>
@@ -546,14 +426,14 @@ export default function Chat() {
   }
 
   function sendMessage(content : string) {
-    const message : Message = {} as Message;
+    const message : tMessage = {} as tMessage;
 
     message.content = content;
     console.log(content, currentChannel);
     socket.emit("sendMsg", {
       content: content,
       channelId: currentChannel.id,
-    }, () => { socket.emit("getChannel", currentChannel, (data : Channel) => {
+    }, () => { socket.emit("getChannel", currentChannel, (data : tChannel) => {
       console.log("AAAAAA");
       setCurrentChannel(data);
     })})

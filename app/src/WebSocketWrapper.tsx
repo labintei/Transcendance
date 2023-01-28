@@ -12,22 +12,22 @@ const socket = io(backend_url, {
   withCredentials: true});
 
 const defaultLogin = { 
-  set: (arg: boolean) => {},
-  status: false,
+  set: (arg: string) => {},
+  value: "",
 };
 
 export const getLoginContext = React.createContext(defaultLogin);
 export const getSocketContext = React.createContext(socket);
 
 export default function WebSocketWrapper( props : WebSocketWrapper ) {
-  const [login, setLogin] = useState<boolean>(false);
+  const [login, setLogin] = useState<string>("");
 
   useEffect(() => {
     isLogged();
   }, []);
 
   useEffect(() => {
-    if (login === false) {
+    if (login === "") {
       if (socket.connected)
         socket.disconnect();
       return ;
@@ -43,23 +43,23 @@ export default function WebSocketWrapper( props : WebSocketWrapper ) {
     }
   }, [login]);
 
-  function setLogged(arg : boolean) {
+  function setLogged(arg : string) {
     setLogin(arg)
   }
 
   function isLogged() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
-    }).then(() => {
-      setLogin(true);
+    }).then((rec) => {
+      setLogin(rec.data.ft_login);
     }).catch(() => {
-      setLogin(false);
+      setLogin("");
     });
   }
 
   return (
     <getSocketContext.Provider value={socket}>
-      <getLoginContext.Provider value={{set: setLogged, status: login}}>
+      <getLoginContext.Provider value={{set: setLogged, value: login}}>
         { props.children }
       </getLoginContext.Provider>
     </getSocketContext.Provider>
