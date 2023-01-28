@@ -1,4 +1,4 @@
-import { Injectable , OnModuleInit } from "@nestjs/common";
+import { ConflictException, Injectable , OnModuleInit } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
 //import { Room } from 'src/game/room.interface';
 import { Socket} from "socket.io";
@@ -144,30 +144,32 @@ export class GameService {
         const blocked = await UserRelationship.findOneBy([
             {
                 ownerLogin: user1login,
-                relatedLogin: user2login
+                relatedLogin: user2login,
+                status: UserRelationship.Status.BLOCKED
             },
             {
                 ownerLogin: user2login,
-                relatedLogin: user1login
+                relatedLogin: user1login,
+                status: UserRelationship.Status.BLOCKED
             }
         ] as FindOptionsWhere<UserRelationship>);
-        if((!blocked) || 
-        (blocked.status != UserRelationship.Status.BLOCKED) && 
-        (user1login != user2login))
+        if((!blocked && user1login !== user2login)) {
             return true;
+        }
         return false;
     }
 
 
     async CreateInvit(user1: User , user2: User)
     {
-        if(this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
+        if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
             const m = await this.createMatch(user1, user2);
             // mettre le status en NEW
             this.CreateInvitation(user1,user2, m.id);
             return m.id;
-        }
+        } else
+            return -1;
     }
 
 
