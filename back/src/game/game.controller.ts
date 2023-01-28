@@ -1,15 +1,17 @@
 import { Controller, Get, Param, Request, UseGuards } from '@nestjs/common';
+import { GameService } from './game.service'
 import { TransGuard } from 'src/auth/trans.guard';
 import { Match } from 'src/entities/match.entity';
 
 @Controller('match')
 @UseGuards(TransGuard)
 export class GameController {
+  constructor(private readonly gameService: GameService) {}
 
   @Get(':username')
-  async createMatchOrReturnExisting(@Request() req, @Param('username') user1:string): Promise<number> {
-    
-    return 0;
+  async invitation(@Request() req , @Param('username') user: string): Promise<number> {
+    var c = this.gameService.CreateInvit(req.user, user); // normalement fonctionne 
+    return c;
   }
 
   @Get('history')

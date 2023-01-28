@@ -21,7 +21,6 @@ export default function PongGame(props: any) {
  //const afficherparams = function(){
     let o = new URLSearchParams(window.location.href);
     console.log(o.get("matchid"));
-
     const {matchid} = useParams();
   // -> id ...
     console.log(matchid);
@@ -170,6 +169,8 @@ export default function PongGame(props: any) {
       <div>{vbis}</div>
       Score: 
       <div>{s} - {sbis}</div>
+      Params:
+      <div>{params}</div>
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>

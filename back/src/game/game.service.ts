@@ -64,6 +64,7 @@ export class Game {
 }
 
 export class Invitation {
+    public match_id:number;
     public user1:User;
     public player1:Socket;
     public user2:User;
@@ -98,6 +99,78 @@ export class GameService {
     }
 
 
+/*
+    async CreateInvit(user1_login:string, user2_login:string): Promise<Number>
+    {
+        const user1 = await User.findOne({where: {ft_login: user1_login}});
+        const user2 = await User.findOne({where: {ft_login: user2_login}});
+        const i : Invitation = {
+            user1: user1,
+            player1: null,
+            user2: user2,
+            player2: null,
+            connect1: false,
+            connect2: false,
+        }
+        this.invitation.add(i);// creer l objet Invitation
+        // je vais creer l objet match et l associee
+        return
+    }*/
+ 
+    /*
+    for(var [key, value] of iteratordispo)
+    {
+        if(value[0])
+        {
+            const blocked = await UserRelationship.findOneBy([
+                {
+                    ownerLogin: user.ft_login,
+                    relatedLogin: value[0].ft_login
+                },
+                {
+                    ownerLogin: value[0].ft_login,
+                    relatedLogin: user.ft_login
+                }
+            ] as FindOptionsWhere<UserRelationship>);
+            if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
+                return value;
+        }
+    }
+    return null;
+*/
+
+    async NotBlock(user1login:string, user2login:string): Promise<boolean>
+    {
+        const blocked = await UserRelationship.findOneBy([
+            {
+                ownerLogin: user1login,
+                relatedLogin: user2login
+            },
+            {
+                ownerLogin: user2login,
+                relatedLogin: user1login
+            }
+        ] as FindOptionsWhere<UserRelationship>);
+        if((!blocked) || 
+        (blocked.status != UserRelationship.Status.BLOCKED) && 
+        (user1login != user2login))
+            return true;
+        return false;
+    }
+
+
+    async CreateInvit(user1login:string , user2login:string)
+    {
+        if(this.NotBlock(user1login, user2login))// deux user non block
+        {
+            const user1 = await User.findOneBy({ft_login: user1login});
+            const user2 = await User.findOneBy({ft_login: user2login});
+            const m = await this.createMatch(user1, user2);
+            // mettre le status en NEW
+            this.CreateInvitation(user1,user2, m.id);
+            return m.id;
+        }
+    }
 
 
     isFinish(data:number)
@@ -348,9 +421,10 @@ export class GameService {
     }
 
 
-    CreateInvitation(user1:User,user2:User)
+    CreateInvitation(user1:User,user2:User,match_id:number)
     {
         const i : Invitation = {
+            match_id: match_id,
             user1: user1,
             player1: null,
             user2: user2,
@@ -396,31 +470,37 @@ export class GameService {
     }
 
 
-    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
+    async createMatch(user1:User, user2:User): Promise <Match>
     {
         const m = await new Match();
         await Match.save(m);
         await Match.update(m.id, {
             score1: 0,
             score2: 0,
-            user1Login: contestant[0].ft_login,
-            user2Login: user.ft_login,
-            user1 : contestant[0],
-            user2 : user
+            user1Login: user1.ft_login,
+            user2Login: user2.ft_login,
+            user1 : user1,
+            user2 : user2,
+            status : Match.Status.NEW
         })
+        return m;
+    }
+
+    async createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match)
+    {
         var room: Game = {
             match: m,
-            user1: contestant[0],
-            user2: user,
-            user1_login: contestant[0].ft_login,
-            user2_login: user.ft_login,
+            user1: user1,
+            user2: user2,
+            user1_login: user1.ft_login,
+            user2_login: user2.ft_login,
             id: m.id,
             room_id: m.id,
             nb_player: 2,
             score1: 0,
             score2: 0,
-            player1: contestant[1],
-            player2: client,
+            player1: player1,
+            player2: player2,
             Box1x:0,
             Box2x:0,     
             sx: 0,
@@ -431,18 +511,25 @@ export class GameService {
             ready: false,
             timer : null,
             render : null,
-            }
-            var l = Math.random();    
-            User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
-            User.update(user.ft_login, {status:User.Status.PLAYING});     
-            if (l < 0.5)
-              room.zdir = -0.05;
-            room.xangle = l * 0.5;
-            room.id = m.id;
-            room.room_id = m.id;
-            this.dispoUser.delete(contestant);
-            this.s.set(room.id , room);
-            return room.id;
+        }
+        return room;
+    }
+
+    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
+    {
+        const m = await this.createMatch(contestant[0], user);
+        const room = await this.createRoom(contestant[0], contestant[1], user, client, m);
+        var l = Math.random();    
+        User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
+        User.update(user.ft_login, {status:User.Status.PLAYING});     
+        if (l < 0.5)
+          room.zdir = -0.05;
+        room.xangle = l * 0.5;
+        room.id = m.id;
+        room.room_id = m.id;
+        this.dispoUser.delete(contestant);
+        this.s.set(room.id , room);
+        return room.id;
     }
 
     ClientChange(id_role: number[], client:Socket)
@@ -771,6 +858,7 @@ export class GameService {
                 if(room.score2 < room.score1)
                     u2.looseXP(50);
             }
+            Match.update(data, {status: Match.Status.ENDED});
         }
     }
 
