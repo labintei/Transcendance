@@ -11,6 +11,7 @@ export class GameController {
   @Get(':username')
   async invitation(@Request() req , @Param('username') user: string): Promise<number> {
     var c = this.gameService.CreateInvit(req.user, user); // normalement fonctionne 
+    var urlredir = process.env.REACT_APP_FRONTEND_URL + '/game/' + await c;
     return c;
   }
 
