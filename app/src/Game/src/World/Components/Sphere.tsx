@@ -15,7 +15,7 @@ export default function Sphere() {
   useFrame(() => { 
     if(ready)
     {
-      ref.current.position.z = A;
+      ref.current.position.x = A;
       ref.current.position.z = B;
     }
   })

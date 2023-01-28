@@ -337,7 +337,7 @@ export class GameService {
         var b2x = Math.round(room.Box2x * 10) / 100;
         var b1x = Math.round(room.Box1x * 10) / 100;
 
-        room.sx += room.zdir;
+        room.sx += room.xangle;
         room.sz += room.zdir;
 
       if(room.zdir > 0.1)
@@ -346,20 +346,20 @@ export class GameService {
         room.zdir += 0.005;
 
     if(sz === (4) &&
-    ((sx >= (b1x - 0.8)) && 
-    (sx <= (b1x + 1.8))))
+    ((room.sx >= (b1x - 0.8)) && 
+    (room.sx <= (b1x + 1.8))))
     {
         room.zdir = -0.3;
     }  
     if(sz === (-5) && 
-        ((sx >= (b2x - 1.8)) &&
-        (sx <= (b2x + 0.8))))
+        ((room.sx >= (b2x - 1.8)) &&
+        (room.sx <= (b2x + 0.8))))
     {
         room.zdir = 0.3;
     }
     
     var sxint = Math.round(room.sx);
-      if(sx === -5 || sx === 5)
+      if(Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
         room.xangle *= -1;
       if (sz > 7 || sz < -7)
       {
