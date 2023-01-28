@@ -148,8 +148,8 @@ export class Channel extends BaseEntity {
       .innerJoin("channel.users","user1")
       .innerJoin("channel.users","user2")
       .where("channel.status = :status", { status: Channel.Status.DIRECT })
-      .andWhere("user1.userLogin = :ownerLogin", { login1 })
-      .andWhere("user2.userLogin = :otherLogin", { login2 })
+      .andWhere("user1.userLogin = :ownerLogin", { ownerLogin: login1 })
+      .andWhere("user2.userLogin = :otherLogin", { otherLogin: login2 })
       .getOne();
     if (!channel) {
       channel = await Channel.create({
