@@ -160,14 +160,12 @@ export class User extends BaseEntity {
 
   static async MgainXP(user: User, amount: number): Promise<User>
   {
-    console.log(user);
     const rest = user.xpAmountForNextLevel - user.xp;
     if (rest <= amount) {
       User.update(user.ft_login, {level: user.level + 1});
       await User.update(user.ft_login, {level: 0});
       amount -= rest;
     }
-    console.log(user.xp + amount);// le amount ne peut pas etre ajouter de cette facon
     User.update(user.ft_login, {xp: Math.round(user.xp + amount)});
     return user;
   }
@@ -193,7 +191,6 @@ export class User extends BaseEntity {
 
   static async MlooseXP(user: User, amount: number): Promise<User>
   {
-    console.log(user.xp + amount);
     if (user.xp > amount)
       User.update(user.ft_login, {xp : Math.round(user.xp + amount)});
     else

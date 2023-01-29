@@ -33,8 +33,9 @@ export class GameGateway implements OnGatewayDisconnect {
   }
   
   @SubscribeMessage('start_invit_stream')
-  async stream_invit(client:Socket, data:number)
+  async stream_invit(client:Socket, d:number)
   {
+    var data = Number(d);// converti proprement le parametre em string
     if(await this.gameservice.IsInvitation(client, data))
     {
       console.log('IS INVITATION');
@@ -50,13 +51,11 @@ export class GameGateway implements OnGatewayDisconnect {
     else
     {
       console.log('IS STREAM');
-      var c =  this.gameservice.room(data);
+      var c =  this.gameservice.room(data * 1);
       var room = this.gameservice.Roomreturn(data);
-      console.log(room);
-      console.log(c);
       if(c == false)
       {
-        console.log('ROOM EXISTE PAS');
+        console.log('ROOM EXISTE PAS')
         return ;
       }
       if(this.gameservice.startstream(client, data))
@@ -95,8 +94,6 @@ export class GameGateway implements OnGatewayDisconnect {
       room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
     if(room[1])
       room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
-    
-    console.log(data);
     var i = setInterval(() => {
       var clients = this.gameservice.getClients(data);
       var a = this.gameservice.sphereroom(data);

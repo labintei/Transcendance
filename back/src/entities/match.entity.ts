@@ -90,9 +90,7 @@ export class Match extends BaseEntity {
         (this.user1.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
       );
-    console.log('HEAR');
     await User.refreshRanks();// console.log(ne marche pas)
-    console.log('PROBLEME');
   }
 
   static async clearOngoing() {

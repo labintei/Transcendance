@@ -3,7 +3,7 @@ import { Socket} from "socket.io";
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
 import { User } from 'src/entities/user.entity';// j exporte l enum
-import { FindOptionsWhere } from "typeorm";
+import { CustomRepositoryCannotInheritRepositoryError, FindOptionsWhere } from "typeorm";
 import { Console } from "console";
 
 
@@ -270,14 +270,11 @@ export class GameService {
         let room;
         for(var [key, value] of this.s.entries())
         {
-            console.log(value);
             if(value && value.id == data)
                 room = value;
         }
         if(room)
         {
-            console.log(room.sx);
-            console.log(room.sz);
             return [Number(room.sx.toFixed(3)) , Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
         }
         return ([0,0,0,0,0,0,0])
@@ -434,7 +431,6 @@ export class GameService {
       m.user1Login = user1.ft_login;
       m.user2Login = user2.ft_login;
       await Match.save(m);
-      console.log(m);
       return m;
     }
 
@@ -480,7 +476,7 @@ export class GameService {
         room.id = m.id;
         await this.dispoUser.delete(contestant);
         console.log('ROOM ID');console.log(room.id);console.log(room);
-        this.s.set(room.id , room);
+        this.s.set(Number(room.id) , room);
         return room.id;
     }
 
@@ -595,13 +591,6 @@ export class GameService {
         }
     }
 
-    getReady(id:number): boolean
-    {
-        if(this.s.get(id))
-            return this.s.get(id).ready;
-        return false;
-    }
-
     addtime(data:number)
     {
         var room = this.s.get(data);
@@ -707,11 +696,23 @@ export class GameService {
 
     room(id:number): boolean
     {
+        console.log('ID ' + id);
+        console.log('PROBLEME ICI');
+        if(this.s.get(id))
+            console.log('FONCTIONNE');
         for(var [key, value] of this.s.entries())
         {
-            console.log(value);
+            console.log(typeof key, typeof id);
+            console.log(key);
+            if(id == key)
+                console.log('TRUE');
+            if(id === key)
+                console.log('TRUE TYPE');
             if(value && value.id == id)
+            {
+                console.log(value.id);
                 return true;
+            }
         }
         return false;
     }
