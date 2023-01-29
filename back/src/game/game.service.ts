@@ -1,4 +1,4 @@
-import { Injectable , OnModuleInit } from "@nestjs/common";
+import { ConflictException, Injectable , OnModuleInit } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
 //import { Room } from 'src/game/room.interface';
 import { Socket} from "socket.io";
@@ -64,6 +64,7 @@ export class Game {
 }
 
 export class Invitation {
+    public match_id:number;
     public user1:User;
     public player1:Socket;
     public user2:User;
@@ -98,6 +99,78 @@ export class GameService {
     }
 
 
+/*
+    async CreateInvit(user1_login:string, user2_login:string): Promise<Number>
+    {
+        const user1 = await User.findOne({where: {ft_login: user1_login}});
+        const user2 = await User.findOne({where: {ft_login: user2_login}});
+        const i : Invitation = {
+            user1: user1,
+            player1: null,
+            user2: user2,
+            player2: null,
+            connect1: false,
+            connect2: false,
+        }
+        this.invitation.add(i);// creer l objet Invitation
+        // je vais creer l objet match et l associee
+        return
+    }*/
+ 
+    /*
+    for(var [key, value] of iteratordispo)
+    {
+        if(value[0])
+        {
+            const blocked = await UserRelationship.findOneBy([
+                {
+                    ownerLogin: user.ft_login,
+                    relatedLogin: value[0].ft_login
+                },
+                {
+                    ownerLogin: value[0].ft_login,
+                    relatedLogin: user.ft_login
+                }
+            ] as FindOptionsWhere<UserRelationship>);
+            if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
+                return value;
+        }
+    }
+    return null;
+*/
+
+    async NotBlock(user1login:string, user2login:string): Promise<boolean>
+    {
+        const blocked = await UserRelationship.findOneBy([
+            {
+                ownerLogin: user1login,
+                relatedLogin: user2login,
+                status: UserRelationship.Status.BLOCKED
+            },
+            {
+                ownerLogin: user2login,
+                relatedLogin: user1login,
+                status: UserRelationship.Status.BLOCKED
+            }
+        ] as FindOptionsWhere<UserRelationship>);
+        if((!blocked && user1login !== user2login)) {
+            return true;
+        }
+        return false;
+    }
+
+
+    async CreateInvit(user1: User , user2: User)
+    {
+        if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
+        {
+            const m = await this.createMatch(user1, user2);
+            // mettre le status en NEW
+            this.CreateInvitation(user1,user2, m.id);
+            return m.id;
+        } else
+            return -1;
+    }
 
 
     isFinish(data:number)
@@ -154,15 +227,12 @@ export class GameService {
         console.log('DISCONNECTION GAME');
         for(var [key, value] of this.s.entries())
         {
-            console.log(key);
-            console.log(value);
             if(value)
             {
                 if(value.player1 == client ||
                     value.player2 == client)
                 {
                     var clients = [value.player1,value.player2];
-                    console.log('EST BIEN DANS GAME');
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
@@ -193,12 +263,25 @@ export class GameService {
 
     }
 
-    IsinGame(client:Socket)
+    IsinDispoDelete(client:Socket)
     {
-        console.log('End Game');
-        console.log(this.s);// pourquoi map{0} ici
-        console.log(Object.entries(this.s));
-        
+        for(var [key, value] of this.dispoUser.entries())
+        {
+            if(value)
+            {
+                if(value[1] == client )
+                {
+                    this.dispoUser.delete(value);
+                    return true;
+                }
+            }
+        }
+        return false;  
+    }
+
+/*
+    IsinGame(client:Socket)// correstion a une disconnection
+    {       
         for(var [key, value] of this.s.entries())
         {
             if(value)
@@ -206,7 +289,6 @@ export class GameService {
                 if(value.player1 == client ||
                     value.player2 == client)
                 {
-                    console.log('EST BIEN DANS GAME');
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
@@ -218,7 +300,7 @@ export class GameService {
         }
         return false;
     }
-
+*/
 
 
     sphereroom(id:number): number[]
@@ -250,60 +332,81 @@ export class GameService {
 
     sphere(room:Game): number[]
     {
-        var width = 1;
-
         var sz = Math.floor(room.sz);
-        var sx = Math.round(room.sx * 10) / 100;
         var b2x = Math.round(room.Box2x * 10) / 100;
         var b1x = Math.round(room.Box1x * 10) / 100;
 
-        room.sx += room.zdir;
+        room.sx += room.xangle;
         room.sz += room.zdir;
+
+      // if(room.sx > 0.1)
+      //   room.sx -= 0.005;
+      // if(room.sx < (-0.1))
+      //   room.sx += 0.005;
 
       if(room.zdir > 0.1)
         room.zdir -= 0.005;
       if(room.zdir < (-0.1))
         room.zdir += 0.005;
+        let newVal = Math.round(room.sz * 10) / 10
+     if (
+    newVal === 3.9 &&
+    room.sx >= b1x - 1 &&
+    room.sx <= b1x + 1
+  ) {
+      console.log("box1")
+    // console.log("ball pos is " + room.sx)
+    // console.log("box pos is " + b1x)
+    // console.log("ball dist is " + ball_dist)
+    // TODO: ajouter un angle en fonction de la position de la balle
+    let ball_dist = b1x - room.sx;
+  //   room.xangle -= ball_dist;
 
-    if(sz === (4) &&
-    ((sx >= (b1x - 0.8)) && 
-    (sx <= (b1x + 1.8))))
-    {
-        console.log('collision');
-        room.zdir = -0.3;
-    }  
-    if(sz === (-5) && 
-        ((sx >= (b2x - 1.8)) &&
-        (sx <= (b2x + 0.8))))
-    {
-        console.log('collision');
-        room.zdir = 0.3;
-    }
-    
-    var sxint = Math.round(room.sx);
-      if(sx === -5 || sx === 5)
-        room.xangle *= -1;
-      if (sz > 7 || sz < -7)
-      {
-        if(sz > 7)
-            room.score2++;
-        if(sz < -7)
-            room.score1++;
-        console.log('Score 1 : ' + room.score1 + ' Score 2 : ' + room.score2);
-        room.sx = 0;
-        room.sz = 0;
-        var l = Math.random();
-        var side = Math.random();
-        console.log(l);
-        if (l < 0.5)
-          room.zdir = -0.05;
-        room.xangle = l * 0.1;
-        if(side < 0.5)
-            room.xangle *= -1;
-        console.log(room.xangle.toFixed(3));
-        return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
-      }   
-    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+    room.zdir = -0.3;
+  }
+  if (sz === -5 && room.sx >= b2x - 1.8 && room.sx <= b2x + 0.8) {
+      console.log("box2")
+    room.zdir = 0.3;
+    console.log("box1 posit x is" + b1x + " and ball roomm x is " + room.sx);
+    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+  }
+
+
+  // ? BORDERS
+  if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
+    room.xangle *= -1;
+
+  // ? LOST POINT
+  if (sz > 7 || sz < -7) {
+    if (sz > 7) room.score2++;
+    if (sz < -7) room.score1++;
+    room.sx = 0;
+    room.sz = 0;
+    var l = Math.random();
+    var side = Math.random();
+    if (l < 0.5) room.zdir = -0.05;
+    room.xangle = l * 0.1;
+    if (side < 0.5) room.xangle *= -1;
+    return [
+      0,
+      0,
+      Number(room.Box1x.toFixed(1)),
+      Number(room.Box2x.toFixed(1)),
+      room.time,
+      room.score1,
+      room.score2,
+    ];
+  }
+  return [
+    Number(room.sx.toFixed(3)),
+    Number(room.sz.toFixed(3)),
+    Number(room.Box1x.toFixed(1)),
+    Number(room.Box2x.toFixed(1)),
+    room.time,
+    room.score1,
+    room.score2,
+  ];
 }
 
     async NotonlyBlock(user:User): Promise<[User,Socket]>
@@ -314,8 +417,6 @@ export class GameService {
         {
             if(value[0])
             {
-                /*
-                console.log(value[0]);
                 const blocked = await UserRelationship.findOneBy([
                     {
                         ownerLogin: user.ft_login,
@@ -326,8 +427,7 @@ export class GameService {
                         relatedLogin: user.ft_login
                     }
                 ] as FindOptionsWhere<UserRelationship>);
-                if(blocked.status != UserRelationship.Status.BLOCKED)*/
-                if(value[0] != user)
+                if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
                     return value;
             }
         }
@@ -345,23 +445,12 @@ export class GameService {
         }
         return false;
     }
-/*
-    export class Invitation {
-        public user1:User;
-        public player1:Socket;
-        public user2:User;
-        public player2:Socket;
-        public connect1:boolean;
-        public connect2:boolean;
-    }
-*/
-//var room: Game = {
 
 
-
-    CreateInvitation(user1:User,user2:User)
+    CreateInvitation(user1:User,user2:User,match_id:number)
     {
         const i : Invitation = {
+            match_id: match_id,
             user1: user1,
             player1: null,
             user2: user2,
@@ -406,30 +495,38 @@ export class GameService {
         return null;
     }
 
-    
 
-    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
+    async createMatch(user1:User, user2:User): Promise <Match>
     {
-        console.log('LANCEMENT JEU');
-        const m = new Match();
-        m.score1 = 0;
-        m.score2 = 0;
-        m.user1 = contestant[0];
-        m.user2 = user;
-        await Match.save(m);//sauvegarde le match
+        const m = await new Match();
+        await Match.save(m);
+        await Match.update(m.id, {
+            score1: 0,
+            score2: 0,
+            user1Login: user1.ft_login,
+            user2Login: user2.ft_login,
+            user1 : user1,
+            user2 : user2,
+            status : Match.Status.NEW
+        })
+        return m;
+    }
+
+    async createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match)
+    {
         var room: Game = {
             match: m,
-            user1: contestant[0],
-            user2: user,
-            user1_login: contestant[0].ft_login,
-            user2_login: user.ft_login,
+            user1: user1,
+            user2: user2,
+            user1_login: user1.ft_login,
+            user2_login: user2.ft_login,
             id: m.id,
             room_id: m.id,
             nb_player: 2,
             score1: 0,
             score2: 0,
-            player1: contestant[1],
-            player2: client,
+            player1: player1,
+            player2: player2,
             Box1x:0,
             Box2x:0,     
             sx: 0,
@@ -440,26 +537,29 @@ export class GameService {
             ready: false,
             timer : null,
             render : null,
-            }
-            var l = Math.random();    
-            User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
-            User.update(user.ft_login, {status:User.Status.PLAYING});     
-            if (l < 0.5)
-              room.zdir = -0.05;
-            room.xangle = l * 0.5;
-            room.id = m.id;
-            room.room_id = m.id;
-            // cence effacer le contestant ici
-            this.dispoUser.delete(contestant);//efface le premier  des contestants
-            this.s.set(room.id , room);// donne la room id
-            console.log(room.id);
-            return room.id;
+        }
+        return room;
+    }
+
+    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
+    {
+        const m = await this.createMatch(contestant[0], user);
+        const room = await this.createRoom(contestant[0], contestant[1], user, client, m);
+        var l = Math.random();    
+        User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
+        User.update(user.ft_login, {status:User.Status.PLAYING});     
+        if (l < 0.5)
+          room.zdir = -0.05;
+        room.xangle = l * 0.5;
+        room.id = m.id;
+        room.room_id = m.id;
+        this.dispoUser.delete(contestant);
+        this.s.set(room.id , room);
+        return room.id;
     }
 
     ClientChange(id_role: number[], client:Socket)
     {
-        if(!id_role)
-            console.log('ID_ROLE NULL');
         if(id_role)
         {
             //var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
@@ -524,8 +624,6 @@ export class GameService {
     {
         for(var [key, value] of this.s.entries())
         {
-            if(value)
-                console.log(value);
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
             {
                 return true;
@@ -560,7 +658,6 @@ export class GameService {
         if(this.InsideGame(user)/*user.status == User.Status.PLAYING*/)// si le user est deja en train de jouer ... Marche pas parce que meme player
         {
             console.log('EST DEJA DANS UNE GAME');
-            console.log('FINDGAME ' + this.FindGame(user));
             return [this.FindGame(user), true];
         }
         if(this.InsideDispo(user)/*user.status == User.Status.MATCHING*/)// MARCHE PAS COMME CA
@@ -622,24 +719,28 @@ export class GameService {
     }
 
 
-    player2x_right(id:number)
+    player2x_right(id:number, client:Socket)
     {
-        this.s.get(id).Box2x += 0.6;
+        if(this.s.get(id).player2 == client)
+            this.s.get(id).Box2x += 2;
     }
 
-    player2x_left(id:number)
+    player2x_left(id:number, client:Socket)
     {
-        this.s.get(id).Box2x -= 0.6;
+        if(this.s.get(id).player2 == client)
+            this.s.get(id).Box2x -= 2;
     }
 
-    player1x_right(id:number)
+    player1x_right(id:number, client:Socket)
     {
-        this.s.get(id).Box1x += 0.6;
+        if(this.s.get(id).player1 == client)
+            this.s.get(id).Box1x += 2;
     }
 
-    player1x_left(id:number)
+    player1x_left(id:number, client:Socket)
     {
-        this.s.get(id).Box1x -= 0.6;
+        if(this.s.get(id).player1 == client)
+            this.s.get(id).Box1x -= 2;
     }
 
     getRender(id:number):any
@@ -757,25 +858,18 @@ export class GameService {
             return this.stream.get(data);// par default sera a 0
     }
 
-    async CreateMatchID(data:number)// plus xp
+    async CreateMatchID(data:number)// MET LES XP
     {
         console.log('MATCH history');
         var room = this.s.get(data);
         if(room)
         {
-            // ne find pas les bons users
-            // surement mauvaise association entre username et client
-            var u1 = await User.findOneBy({socket: room.player1.id});// cherche user1
-            var u2 = await User.findOneBy({socket: room.player2.id});// cherche user2
+            
+            const u1 = await User.findOne({where: {ft_login: room.player1.data.login}});
+            const u2 = await User.findOne({where: {ft_login: room.player2.data.login}});
             if(u1 == null && u2 == null)// si les deux joueurs sont des visitor
-            {
-                console.log('Tout les deux null');
                 return;
-            }
-            // j ai directement les playeurs
-            var match = Match.create();
-            match.user1 = u1;
-            match.user2 = u2;
+            Match.update(data, {score1: room.score1, score2: room.score2});
             if(u1)
             {
                 if(room.score1 > room.score2)
@@ -790,11 +884,7 @@ export class GameService {
                 if(room.score2 < room.score1)
                     u2.looseXP(50);
             }
-            match.score1 = room.score1;
-            match.score2 = room.score2;
-            await Match.save(match);
-            var listMatch = await Match.find();
-            console.log(listMatch);
+            Match.update(data, {status: Match.Status.ENDED});
         }
     }
 

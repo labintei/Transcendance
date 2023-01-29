@@ -114,9 +114,6 @@ function SkyBox() {
   return null;
 }
 
-// changer la position de la Camera si role === 2
-
-
 export default function World(props: any) {
 
   const [userData, setUserData] = useState<any>(null)
@@ -126,14 +123,20 @@ export default function World(props: any) {
   var camposz = useStore((s:any) => s.cz);
 
   var t = useStore((s:any) => s.time);
-  const map = useStore((s: any) => s.bgdChoice)
+
+  const changePad:any = useStore((s:any) => s.changePadColor);
+  const changeBall:any = useStore((s:any) => s.changeBallColor);
 
   React.useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
     }).then(async res => {
       const data = res.data;
-      setUserData(data)
+      setUserData(data);
+      if (data.padColor !== undefined)
+        changePad(data.padColor);
+      if (data.ballColor !== undefined)
+        changeBall(data.ballColor);
       console.log(data)
     })
     .catch(error => {

@@ -22,7 +22,7 @@ export class SearchController {
         { ownerLogin: req.user }
       )
       .where(
-        "user.username ILIKE :testUsername",
+        "user.username ILIKE :testUsername AND user.ft_login <> '" + req.user + "'",
         { testUsername: partialUsername.replace(/([%_])/g, "\\$1") + '%' }
       )
       .select([

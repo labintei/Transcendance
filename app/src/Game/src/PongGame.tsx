@@ -21,6 +21,9 @@ export default function PongGame(props: any) {
  //const afficherparams = function(){
     let o = new URLSearchParams(window.location.href);
     console.log(o.get("matchid"));
+    const {matchid} = useParams();
+  // -> id ...
+    console.log(matchid);
   //}
     //window.location.href = window.location.href;
     //setFinish(0);
@@ -118,11 +121,9 @@ export default function PongGame(props: any) {
     })
     return () => {
       socket.off('start');
-      //socket.emit('endgame');
+      socket.emit('endgame');// reteste
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
-
-
 
 
   useEffect(() => {
@@ -168,6 +169,8 @@ export default function PongGame(props: any) {
       <div>{vbis}</div>
       Score: 
       <div>{s} - {sbis}</div>
+      Params:
+      <div>{matchid}</div>
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
