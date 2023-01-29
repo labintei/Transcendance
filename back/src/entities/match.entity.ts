@@ -59,39 +59,40 @@ export class Match extends BaseEntity {
     const scorePercentLoss = 0;
     //  Resolve user counters.
     if (this.score1 == this.score2) {
-      ++this.user1.draws;
-      ++this.user2.draws;
+      User.update((this.user1.ft_login) , {draws : this.user1.draws + 1});
+      User.update((this.user2.ft_login) , {draws : this.user2.draws + 1});
     }
     else if (this.score1 > this.score2) {
-      ++this.user1.victories;
-      ++this.user2.defeats;
+      User.update((this.user1.ft_login), {victories : this.user1.victories + 1});
+      User.update((this.user2.ft_login), {defeats : this.user2.defeats + 1});
     }
     else {
-      ++this.user2.victories;
-      ++this.user1.defeats;
+      User.update((this.user2.ft_login), {victories : this.user2.victories + 1});
+      User.update((this.user1.ft_login), {defeats : this.user2.defeats + 1});
     }
-    // Resolve users XP gains/losses.
-    /*if (this.score1 >= this.score2)
-      this.user1.gainXP(
+    if (this.score1 >= this.score2)
+      await this.user1.MgainXP(
         (this.user2.xpAmountForNextLevel * fixedPercentGain) / 100 +
         (this.user2.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
-      this.user1.gainXP(
+      await this.user1.MgainXP(
         (this.user2.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user2.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
       );
     if (this.score2 >= this.score1)
-      this.user2.gainXP(
+      await this.user2.MgainXP(
         (this.user1.xpAmountForNextLevel * fixedPercentGain) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
-      this.user2.gainXP(
+      await this.user2.MgainXP(
         (this.user1.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
-      );*/
-    User.refreshRanks();
+      );
+    console.log('HEAR');
+    await User.refreshRanks();// console.log(ne marche pas)
+    console.log('PROBLEME');
   }
 
   static async clearOngoing() {
