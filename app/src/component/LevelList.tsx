@@ -2,7 +2,7 @@ import React from 'react';
 import axios from 'axios';
 import './LevelList.css';
 import { Navigate } from 'react-router-dom';
-import {defaultavatar} from './const';
+import {defaultavatar, ChallengeButton} from './const';
 
 type PRank = {
     id: number
@@ -15,7 +15,8 @@ type PRank = {
 type State = {
   listl:Array<PRank>,
   logged:boolean,
-  rank:number
+  rank:number,
+  username:string
 }
 
 export default class LevelList extends React.Component {
@@ -23,7 +24,7 @@ export default class LevelList extends React.Component {
 
   constructor (props:any) {
     super(props);
-    this.state = {listl:[], logged:true, rank:42};
+    this.state = {listl:[], logged:true, rank:42, username:""};
     this.requestUser();
   }
 
@@ -31,8 +32,8 @@ export default class LevelList extends React.Component {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
     }).then(res => {
-      if (res.data.rank !== undefined)
-        this.setState({rank:res.data.rank});
+      if (res.data.rank !== undefined && res.data.username !== undefined)
+        this.setState({rank:res.data.rank, username:res.data.username});
     }).catch(error => {
       this.setState({logged:false});
     });
@@ -92,10 +93,10 @@ export default class LevelList extends React.Component {
       return ("low-rank")
   }
 
-  challenge_available(status:string, id:number) {
+  challenge_available(status:string, name:string) {
     if (status === "Online")
       return (
-        <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
+        <ChallengeButton username={name}></ChallengeButton>
       )
     else
         return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
@@ -119,7 +120,7 @@ export default class LevelList extends React.Component {
                 <p>{this.render_score(prank.rank)}</p>
                 <div className='avatar' style={this.styleImgAsDiv(prank.avatar_location)}><span title={prank.status} className={prank.status}></span></div>
                 <p>{prank.name}</p>
-                {this.challenge_available(prank.status, prank.id)}
+                {prank.name === this.state.username ? <></> : this.challenge_available(prank.status, prank.name)}
               </li>
             )
         }

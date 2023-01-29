@@ -97,7 +97,7 @@ export default class PlayerProfile extends React.Component {
   }
 
   changeName() {
-    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:this.state.query}, {withCredentials:true}).then(() => {
+    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:encodeURIComponent(this.state.query)}, {withCredentials:true}).then(() => {
       let temp:Person = this.state.player;
       temp.name = this.state.query;
       this.setState({player:temp, nameEdit:false, errormsg:null});
@@ -216,15 +216,15 @@ export default class PlayerProfile extends React.Component {
         <h3>Rank {this.state.player.rank}</h3>
         <ul id="stats-list">
             <li>
-                <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" />
+                <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" title='Total matches' />
                 <p>{this.state.player.victories + this.state.player.defeats + this.state.player.draws}</p>
             </li>
             <li>
-                <img className="image" src="https://cdn0.iconfinder.com/data/icons/education-340/100/Tilda_Icons_1ed_cup-512.png" alt="Trophy Icon" />
+                <img className="image"  title='Number of wins' src="https://cdn0.iconfinder.com/data/icons/education-340/100/Tilda_Icons_1ed_cup-512.png" alt="Trophy Icon"/>
                 <p>{this.state.player.victories}</p>
             </li>
             <li>
-                <img className="image" src="https://cdn0.iconfinder.com/data/icons/font-awesome-solid-vol-2/512/heart-broken-512.png" alt="Broken heart Icon" />
+                <img className="image"  title='Number of defeats' src="https://cdn0.iconfinder.com/data/icons/font-awesome-solid-vol-2/512/heart-broken-512.png" alt="Broken heart Icon" />
                 <p>{this.state.player.defeats}</p>
             </li>
         </ul>

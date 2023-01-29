@@ -1,4 +1,4 @@
-import { Injectable , OnModuleInit } from "@nestjs/common";
+import { ConflictException, Injectable , OnModuleInit } from "@nestjs/common";
 import { RouterModule } from "@nestjs/core";
 //import { Room } from 'src/game/room.interface';
 import { Socket} from "socket.io";
@@ -223,24 +223,25 @@ export class GameService {
         const blocked = await UserRelationship.findOneBy([
             {
                 ownerLogin: user1login,
-                relatedLogin: user2login
+                relatedLogin: user2login,
+                status: UserRelationship.Status.BLOCKED
             },
             {
                 ownerLogin: user2login,
-                relatedLogin: user1login
+                relatedLogin: user1login,
+                status: UserRelationship.Status.BLOCKED
             }
         ] as FindOptionsWhere<UserRelationship>);
-        if((!blocked) || 
-        (blocked.status != UserRelationship.Status.BLOCKED) && 
-        (user1login != user2login))
+        if((!blocked && user1login !== user2login)) {
             return true;
+        }
         return false;
     }
 
 
     async CreateInvit(user1: User , user2: User)
     {
-        if(this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
+        if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
             for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
             {
@@ -253,7 +254,8 @@ export class GameService {
             // mettre le status en NEW
             this.CreateInvitation(user1,user2, m.id);
             return m.id;
-        }
+        } else
+            return -1;
     }
 
 
@@ -423,36 +425,47 @@ export class GameService {
 
     sphere(room:Game): number[]
     {
-        var width = 1;
-
         var sz = Math.floor(room.sz);
-        var sx = Math.round(room.sx * 10) / 100;
         var b2x = Math.round(room.Box2x * 10) / 100;
         var b1x = Math.round(room.Box1x * 10) / 100;
 
-        room.sx += room.zdir;
+        room.sx += room.xangle;
         room.sz += room.zdir;
+
+
+      // if(room.sx > 0.1)
+      //   room.sx -= 0.005;
+      // if(room.sx < (-0.1))
+      //   room.sx += 0.005;
 
       if(room.zdir > 0.1)
         room.zdir -= 0.005;
       if(room.zdir < (-0.1))
         room.zdir += 0.005;
-
-    if(sz === (4) &&
-    ((sx >= (b1x - 0.8)) && 
-    (sx <= (b1x + 1.8))))
-    {
+        let newVal = Math.round(room.sz * 10) / 10
+        if(newVal === (3.9) &&
+        //? box size is 2
+        ((room.sx >= (b1x - 1)) && 
+        (room.sx <= (b1x + 1))))
+        {
+      // console.log("ball pos is " + room.sx)
+      // console.log("box pos is " + b1x)
+      // console.log("ball dist is " + ball_dist)
+      // TODO: ajouter un angle en fonction de la position de la balle
+      let ball_dist =  b1x - room.sx
+      room.xangle -= ball_dist;
         room.zdir = -0.3;
     }  
     if(sz === (-5) && 
-        ((sx >= (b2x - 1.8)) &&
-        (sx <= (b2x + 0.8))))
+        ((room.sx >= (b2x - 1.8)) &&
+        (room.sx <= (b2x + 0.8))))
     {
         room.zdir = 0.3;
+      let ball_dist =  b1x - room.sx
+      room.xangle += ball_dist;
     }
     
-    var sxint = Math.round(room.sx);
-      if(sx === -5 || sx === 5)
+      if(Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
         room.xangle *= -1;
       if (sz > 7 || sz < -7)
       {
@@ -774,25 +787,25 @@ export class GameService {
     player2x_right(id:number, client:Socket)
     {
         if(this.s.get(id).player2 == client)
-            this.s.get(id).Box2x += 0.6;
+            this.s.get(id).Box2x += 2;
     }
 
     player2x_left(id:number, client:Socket)
     {
         if(this.s.get(id).player2 == client)
-            this.s.get(id).Box2x -= 0.6;
+            this.s.get(id).Box2x -= 2;
     }
 
     player1x_right(id:number, client:Socket)
     {
         if(this.s.get(id).player1 == client)
-            this.s.get(id).Box1x += 0.6;
+            this.s.get(id).Box1x += 2;
     }
 
     player1x_left(id:number, client:Socket)
     {
         if(this.s.get(id).player1 == client)
-            this.s.get(id).Box1x -= 0.6;
+            this.s.get(id).Box1x -= 2;
     }
 
     getRender(id:number):any

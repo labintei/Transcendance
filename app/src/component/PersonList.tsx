@@ -192,17 +192,13 @@ export default class PersonList extends React.Component {
               :
                 <p>{person.status}</p>
               }</>
-              <ChallengeButton username={person.name}></ChallengeButton>
               { person.blocked ?
-              <><button 
-                  onClick={() => this.friendManage(person.id, flist)}
-                  id={person.friend ? "remove-f-button" : "add-f-button"}
-                  title={person.friend ? "remove friend" : "add friend"}
-                ></button>
+              <>
                 <button onClick={() => this.blockManage(person.id, flist)} id="unblock-button" title="unblock"></button>
                 </>
               : person.friend ?
                 <>
+                <ChallengeButton username={person.name}></ChallengeButton>
                 <button onClick={() => this.friendManage(person.id, flist)} id="remove-f-button" title="remove friend"></button>
                 {
                   person.matchid !== null ?
@@ -211,7 +207,9 @@ export default class PersonList extends React.Component {
                 }
                 </>
               :
-                <><button onClick={() => this.friendManage(person.id, flist)} id="add-f-button" title="add friend"></button>
+                <>
+                <ChallengeButton username={person.name}></ChallengeButton>
+                <button onClick={() => this.friendManage(person.id, flist)} id="add-f-button" title="add friend"></button>
                 <button onClick={() => this.blockManage(person.id, flist)} id="block-button" title="block"></button>
                 </>
               }
