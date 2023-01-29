@@ -1,32 +1,12 @@
-import { ConflictException, Injectable , OnModuleInit } from "@nestjs/common";
-import { RouterModule } from "@nestjs/core";
-//import { Room } from 'src/game/room.interface';
+import {  Injectable  } from "@nestjs/common";
 import { Socket} from "socket.io";
-import session from "express-session";
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
-import { User/*, UserStatus */, } from 'src/entities/user.entity';// j exporte l enum
+import { User } from 'src/entities/user.entity';// j exporte l enum
+import { FindOptionsWhere } from "typeorm";
+import { Console } from "console";
 
 
-import { match } from "assert";
-import { find } from "rxjs";
-import { FindOptionsWhere, getManager, NoVersionOrUpdateDateColumnError, OptimisticLockCanNotBeUsedError } from "typeorm";
-import { SqljsEntityManager } from "typeorm/entity-manager/SqljsEntityManager";
-
-/*
-enum UserStatus {
-    ONLINE = "Online",
-    OFFLINE = "Offline",
-    MATCHING = "Matching",
-    PLAYING = "Playing",
-    BANNED = "Banned"
-}*/
-
-
-// public io: Server = null
-//    this.
-
-// client.data.login
 
 export class Game {
     public match: Match;
@@ -54,13 +34,6 @@ export class Game {
     public ready: boolean;
     public timer: any;
     public render: any;
-
-    //Box1_left: () => number;
-    //Box1_right: () => number;
-    //Setbox1x(num: number): void;
-
-    //setBox1x(num:number): number{return (this.Box1x + 0,2);}
-    // mettre toutes les donnees necessaire
 }
 
 export class Invitation {
@@ -78,78 +51,21 @@ export class GameService {
  
     public stream: Map<number, Array<Socket>>;
     public s: Map<number, Game>;
-    public invit: Map<number, Game>;
-    
-    // je dois le l enlever
-    //public dispo:  Set<number>;
     public dispoUser: Set<[User, Socket]>
-
-    // je vais partir de ce cas 0,1,2 
-    // bool1 client1 est invite / bool2 client2 est invite
-    public invitation: Set<Invitation>// user1 , user2 sont ils dans la room
-    //public roominvitation: Map()// sera serait et devra etre streamble
+    public invitation: Set<Invitation>
 
     constructor(){
         this.stream = new Map();
         this.s = new Map();
-        //this.dispo = new Set();
         this.dispoUser = new Set();
         this.invitation = new Set();
-        //this.dispo = new Array();
     }
-
-
-/*
-    async CreateInvit(user1_login:string, user2_login:string): Promise<Number>
-    {
-        const user1 = await User.findOne({where: {ft_login: user1_login}});
-        const user2 = await User.findOne({where: {ft_login: user2_login}});
-        const i : Invitation = {
-            user1: user1,
-            player1: null,
-            user2: user2,
-            player2: null,
-            connect1: false,
-            connect2: false,
-        }
-        this.invitation.add(i);// creer l objet Invitation
-        // je vais creer l objet match et l associee
-        return
-    }*/
- 
-    /*
-    for(var [key, value] of iteratordispo)
-    {
-        if(value[0])
-        {
-            const blocked = await UserRelationship.findOneBy([
-                {
-                    ownerLogin: user.ft_login,
-                    relatedLogin: value[0].ft_login
-                },
-                {
-                    ownerLogin: value[0].ft_login,
-                    relatedLogin: user.ft_login
-                }
-            ] as FindOptionsWhere<UserRelationship>);
-            if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
-                return value;
-        }
-    }
-    return null;
-*/
 
     async IsInvitation(client:Socket, data:number): Promise<boolean>
     {
         var l  = (client.request as any).user;
-        console.log('Client login ' + l);
-        //console.log('FT LOGIN ' + (client.request as any).user);
-        //const user = await User.findOneBy({ft_login: client.data.login})
-        //console.log('client ' + user.ft_login + ' data ' +  data);
         for( var [key, value] of this.invitation.entries())
         {
-            console.log('MATCHID ' + data + 'USER 1 '  + value.user1.ft_login + ' USER2 ' + value.user2.ft_login);
-            
             if(value && value.match_id == data && (
                     (l == value.user1.ft_login) || 
                     (l == value.user2.ft_login)))
@@ -174,19 +90,16 @@ export class GameService {
 
     async DeleteInvitation(data:number)
     {
-
         for( var [key, value] of this.invitation.entries())
         {
             if(value && value.match_id == data)
                 this.invitation.delete(value);
         }
-        //return null;
     }
 
     async LaunchInvitation(client:Socket, data:number): Promise<[number,boolean]>
     {
         const I = await this.getInvitation(client, data);// obtient l invitation
-        console.log(I);// est donc null
         if(I.user1.ft_login == client.data.login)
         {
             I.player1 = client;
@@ -196,7 +109,7 @@ export class GameService {
         {
             I.player2 = client;
             I.connect2 = true;
-        }// connect, replace les clients si besoin
+        }
         if(I.connect1 === true && I.connect2 === true)
         {
             var m = await Match.findOneBy({id: I.match_id});// creer la room
@@ -211,11 +124,18 @@ export class GameService {
             room.room_id = m.id;
             this.s.set(room.id , room);
             this.DeleteInvitation(I.match_id);
-            console.log('Invitation apres ' + this.invitation.size)
             return [I.match_id,true];
         }
         else
             return [null, false];
+    }
+
+
+    getUsernames(data:number): [string,string]
+    {
+        var room = this.s.get(data);
+        if(room)
+            return([room.user1.username, room.user2.username])
     }
 
     async NotBlock(user1login:string, user2login:string): Promise<boolean>
@@ -258,41 +178,11 @@ export class GameService {
             return -1;
     }
 
-
     isFinish(data:number)
     {
-        if(this.s.get(data).score1 >= 5 || this.s.get(data).score2 >= 5)
+        if(this.s.get(data).score1 >= 2 || this.s.get(data).score2 >= 2 || this.s.get(data).time > 300)
             return true;
         return false;
-    }
-
-
-    async Getlist(): Promise<Array<[number,string,string]>>
-    {
-        let list: Array<[number,string,string]> = [];
-        if(this.s)
-        {
-            for(var [key, value] of this.s.entries())
-            {
-                if(value)
-                {
-                    if(value.ready === true)
-                    {
-                        var ft_login;
-                        var ft_login2;
-                      ft_login = await User.findOneBy({socket: value.player1.id});
-                      ft_login2 = await User.findOneBy({socket: value.player2.id});
-                      
-                        if(!ft_login)
-                            ft_login = 'visitor';
-                        if(!ft_login2)
-                            ft_login2 = 'visitor';
-                      list.push([key, ft_login, ft_login2]);
-                     }
-                }
-            }
-        }
-        return list
     }
 
     DisconnectionGameId(id:number)
@@ -322,7 +212,6 @@ export class GameService {
                     clearInterval(value.render);
                     clearInterval(value.timer);
                     var id = value.room_id;
-                    //this.dispo.delete(id);
                     this.s.delete(id);
                     return clients;
                 }
@@ -365,30 +254,6 @@ export class GameService {
         return false;  
     }
 
-/*
-    IsinGame(client:Socket)// correstion a une disconnection
-    {       
-        for(var [key, value] of this.s.entries())
-        {
-            if(value)
-            {
-                if(value.player1 == client ||
-                    value.player2 == client)
-                {
-                    clearInterval(value.render);
-                    clearInterval(value.timer);
-                    var id = value.room_id;
-                    //this.dispo.delete(id);
-                    this.s.delete(id);
-                    return true;
-                }
-            }
-        }
-        return false;
-    }
-*/
-
-
     sphereroom(id:number): number[]
     {
         if(!this.s.get(id))
@@ -398,14 +263,6 @@ export class GameService {
         }
         var g = this.sphere(this.s.get(id));
         return g;
-    }
-
-    getScore(data:number)
-    {
-        var room = this.s.get(data);
-        if(room)
-            return [room.score1,room.score2];
-        return [0,0];
     }
 
     getPos(data:number): number[]
@@ -419,8 +276,7 @@ export class GameService {
         }
         if(room)
             return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
-        //return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1))];
-        return ([0,0,0,0,0,0,0])// valeur par default tout a 0
+        return ([0,0,0,0,0,0,0])
     }
 
     sphere(room:Game): number[]
@@ -432,65 +288,45 @@ export class GameService {
         room.sx += room.xangle;
         room.sz += room.zdir;
 
-      // if(room.sx > 0.1)
-      //   room.sx -= 0.005;
-      // if(room.sx < (-0.1))
-      //   room.sx += 0.005;
-
-      if(room.zdir > 0.1)
-        room.zdir -= 0.005;
-      if(room.zdir < (-0.1))
-        room.zdir += 0.005;
+        if(room.zdir > 0.1)
+         room.zdir -= 0.005;
+        if(room.zdir < (-0.1))
+          room.zdir += 0.005;
         let newVal = Math.round(room.sz * 10) / 10
-     if (
-    newVal === 3.9 &&
-    room.sx >= b1x - 1 &&
-    room.sx <= b1x + 1
-  ) {
-      console.log("box1")
-    // console.log("ball pos is " + room.sx)
-    // console.log("box pos is " + b1x)
-    // console.log("ball dist is " + ball_dist)
-    // TODO: ajouter un angle en fonction de la position de la balle
-    let ball_dist = b1x - room.sx;
-  //   room.xangle -= ball_dist;
-
-    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
-    room.zdir = -0.3;
-  }
-  if (sz === -5 && room.sx >= b2x - 1.8 && room.sx <= b2x + 0.8) {
-      console.log("box2")
-    room.zdir = 0.3;
-    console.log("box1 posit x is" + b1x + " and ball roomm x is " + room.sx);
-    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
-  }
-
-
-  // ? BORDERS
-  if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
-    room.xangle *= -1;
-
-  // ? LOST POINT
-  if (sz > 7 || sz < -7) {
-    if (sz > 7) room.score2++;
-    if (sz < -7) room.score1++;
-    room.sx = 0;
-    room.sz = 0;
-    var l = Math.random();
-    var side = Math.random();
-    if (l < 0.5) room.zdir = -0.05;
-    room.xangle = l * 0.1;
-    if (side < 0.5) room.xangle *= -1;
-    return [
-      0,
-      0,
-      Number(room.Box1x.toFixed(1)),
-      Number(room.Box2x.toFixed(1)),
-      room.time,
-      room.score1,
-      room.score2,
-    ];
-  }
+        if (
+            newVal === 3.9 &&
+            room.sx >= b1x - 1 &&
+            room.sx <= b1x + 1
+        ) {
+        room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+        room.zdir = -0.3;
+        }
+        if (sz === -5 && room.sx >= b2x - 1.8 && room.sx <= b2x + 0.8) {
+            room.zdir = 0.3;
+            room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+        }
+        if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
+            room.xangle *= -1;
+        if (sz > 7 || sz < -7) {
+            if (sz > 7) room.score2++;
+            if (sz < -7) room.score1++;
+            room.sx = 0;
+            room.sz = 0;
+            var l = Math.random();
+            var side = Math.random();
+            if (l < 0.5) room.zdir = -0.05;
+            room.xangle = l * 0.1;
+            if (side < 0.5) room.xangle *= -1;
+            return [
+            0,
+            0,
+            Number(room.Box1x.toFixed(1)),
+            Number(room.Box2x.toFixed(1)),
+            room.time,
+            room.score1,
+            room.score2,
+            ];
+        }
   return [
     Number(room.sx.toFixed(3)),
     Number(room.sz.toFixed(3)),
@@ -504,8 +340,7 @@ export class GameService {
 
     async NotonlyBlock(user:User): Promise<[User,Socket]>
     {
-        console.log('CONTESTANT');
-        const iteratordispo = this.dispoUser.entries();//[User,Client]
+        const iteratordispo = this.dispoUser.entries();
         for(var [key, value] of iteratordispo)
         {
             if(value[0])
@@ -513,14 +348,16 @@ export class GameService {
                 const blocked = await UserRelationship.findOneBy([
                     {
                         ownerLogin: user.ft_login,
-                        relatedLogin: value[0].ft_login
+                        relatedLogin: value[0].ft_login,
+                        status: UserRelationship.Status.BLOCKED
                     },
                     {
                         ownerLogin: value[0].ft_login,
-                        relatedLogin: user.ft_login
+                        relatedLogin: user.ft_login,
+                        status: UserRelationship.Status.BLOCKED
                     }
                 ] as FindOptionsWhere<UserRelationship>);
-                if(((!(blocked)) || (blocked.status != UserRelationship.Status.BLOCKED)) && (value[0].ft_login != user.ft_login))
+                if((!blocked) && (value[0].ft_login != user.ft_login))
                     return value;
             }
         }
@@ -529,12 +366,10 @@ export class GameService {
 
     ReplaceClient(user:User, client:Socket): boolean
     {
-        for(var [key, value] of this.s.entries())// va passer sur toute les game
+        for(var [key, value] of this.s.entries())
         {
             if(value && (user === value.user1 || user === value.user2))
-            {
                 return true;
-            }
         }
         return false;
     }
@@ -580,7 +415,7 @@ export class GameService {
 
     Invitation(user:User): Invitation
     {
-        for(var [key, value] of this.invitation.entries())// va passer sur toute les game
+        for(var [key, value] of this.invitation.entries())
         {
             if(value && (user === (value.user1) || user === value.user2))
                 return value;
@@ -594,7 +429,9 @@ export class GameService {
       m.user2 = user2;
       m.user1Login = user1.ft_login;
       m.user2Login = user2.ft_login;
-      return Match.save(m);
+      await Match.save(m);
+      console.log(m);
+      return m;
     }
 
     createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game
@@ -630,15 +467,14 @@ export class GameService {
     {
         const m = await this.createMatch(contestant[0], user);
         const room = this.createRoom(contestant[0], contestant[1], user, client, m);
-        var l = Math.random();    
+        var l = Math.random();
         User.update(m.user1Login, {status:User.Status.PLAYING});
         User.update(m.user2Login, {status:User.Status.PLAYING});     
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.5;
         room.id = m.id;
-        room.room_id = m.id;
-        this.dispoUser.delete(contestant);
+        await this.dispoUser.delete(contestant);
         this.s.set(room.id , room);
         return room.id;
     }
@@ -647,21 +483,17 @@ export class GameService {
     {
         if(id_role)
         {
-            //var room = this.s.get(id_role[0]);// n arrive paas a acceder a ca
             if(id_role[1] === 1)
                 this.s.get(id_role[0]).player1 = client;
-            //room.player1 = client;
             if(id_role[1] === 2)
                 this.s.get(id_role[0]).player2 = client;
-            //room.player2 = client;
         }
     }
 
-    // marche pour le player 1 mais pas le 2
     async Idrole(client:Socket): Promise<number[]>
     {
         const user = await User.findOne({where: {ft_login: client.data.login}});
-        for(var [key, value] of this.s.entries())// va passer sur toute les game
+        for(var [key, value] of this.s.entries())
         {
             if(value && (user.ft_login === value.user1.ft_login || user.ft_login === value.user2.ft_login))
             {
@@ -673,10 +505,6 @@ export class GameService {
         }
         return null;
     }
-
-
-    // genere un boolean si le client est replace avec la game associe
-
 
     ReplaceMatched(user:User, client:Socket)
     {
@@ -695,12 +523,8 @@ export class GameService {
     {
         for(var [key, value] of this.s.entries())
         {
-            if(value)
-                console.log(value);
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
-            {
                 return key;
-            }
         }
         return null;  
     }
@@ -710,9 +534,7 @@ export class GameService {
         for(var [key, value] of this.s.entries())
         {
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
-            {
                 return true;
-            }
         }
         return false;  
     }
@@ -774,14 +596,6 @@ export class GameService {
             return this.s.get(id).ready;
         return false;
     }
-
-
-/*
-    get(id): Game
-    {
-        return this.s.find(id);
-    }*/
-
 
     addtime(data:number)
     {
@@ -851,42 +665,21 @@ export class GameService {
     getBox2(id:number): number
     {
         if(this.s.get(id))
-        {
-            //console.log(this.s.get(id).Box2x)
-            //return this.s.get(id).Box2x;
             return (Number(this.s.get(id).Box2x.toFixed(1)));
-        }
         return 0;
     }
 
 
-    endStream(client:Socket, id:number)//
+    endStream(client:Socket, id:number)
     {
-        //public stream: Map<number, Array<Socket>>;
         if(id != -1)
-        {   // index of retourne l index ala first match value
-            const i = this.stream.get(id).indexOf(client, 0);// a partir de l element 0
-            if(i > -1)
-            {
-                this.stream.get(id).splice(i,1);// splice efface un element a partir de index
-            }
-            if(this.stream.get(id) === null)// si le stream est null efface l index
-            {
-                this.stream.delete(id);
-            }
-        }
-    }
-
-    async endGame(client: Socket, id: number)// je ne sait pas si j implemente directement le score a la fin ou pendant
-    {
-        const m:Game = this.s.get(id);
-        const match = await Match.findOneBy({id: id});
-        if(m.nb_player === 1)
         {
-            match.remove();
-            //this.dispo.delete(id);
+            const i = this.stream.get(id).indexOf(client, 0);
+            if(i > -1)
+                this.stream.get(id).splice(i,1);
+            if(this.stream.get(id) === null)
+                this.stream.delete(id);
         }
-        this.s.delete(id);
     }
 
     getRoom(id:number): Game
@@ -914,25 +707,8 @@ export class GameService {
             console.log(value);
             if(value && value.id == id)
                 return true;
-            /*
-            if(value && value[0])
-            {
-                if(value[0] == user)
-                    value[1] = client;
-            }*/
         }
         return false;
-        /*
-        //var j = this.s.get(id).room_id;
-        console.log(j);
-        //console.log(id);
-        console.log((j == id));
-        if(j == id)
-            return true;
-        return false;
-       // if(this.s.get(id))
-        //    return true;
-        //return false;*/
     }
 
     async findRoom(id:number)
@@ -964,17 +740,18 @@ export class GameService {
 
     async CreateMatchID(data:number)// MET LES XP
     {
-        console.log('MATCH history');
         var room = this.s.get(data);
         if(room)
-        {
-            
-            const u1 = await User.findOne({where: {ft_login: room.player1.data.login}});
-            const u2 = await User.findOne({where: {ft_login: room.player2.data.login}});
-            if(u1 == null && u2 == null)// si les deux joueurs sont des visitor
+        {    
+            const u1 = await User.findOneBy({ft_login: room.player1.data.login});
+            const u2 = await User.findOneBy({ft_login: room.player2.data.login});
+            if(u1 == null || u2 == null)
                 return;
-            Match.update(data, {score1: room.score1, score2: room.score2});
-            (await Match.findOneBy({id:data})).resolve();
+            await Match.update(data, {score1: room.score1, score2: room.score2, status: Match.Status.ENDED});
+            const m = (await Match.findOne({where: {id:data}, 
+                relations: {
+                    user1 : true, user2 : true} }));
+            m.resolve();
         }
     }
 

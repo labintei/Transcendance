@@ -50,7 +50,11 @@ export default function PongGame(props: any) {
   // URL SEARCH PARAMS
   //console.log(URLSearchParams.entries());
 
+  let username1:string = "";
+  let username2:string = "";
+
   const [Finish, setFinish] = useState(0);
+  const [usernames, setUsernames] = useState(["",""]);
 
   // marche po
   const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
@@ -70,6 +74,7 @@ export default function PongGame(props: any) {
   // marche
   const Setx:any = useStore((s:any) => s.Setx);
   const Setz:any = useStore((s:any) => s.Setz);
+  const Ready:any = useStore((s:any) => s.gameReady);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
 // marche pas
@@ -107,7 +112,7 @@ export default function PongGame(props: any) {
       console.log(data);
       setRole(data[1]);
       setId(data[0]);
-      SetReady();
+      SetReady(true);
       if(data[1] === 1)
       {
         h1(0);
@@ -120,11 +125,14 @@ export default function PongGame(props: any) {
         h2(5);
         h3(-9);
       }
-      
+      setUsernames([data[2][0], data[2][1]])
+      username1 = data[2][0];
+      username2 = data[2][1];
     })
     return () => {
       socket.off('start');
       socket.emit('endgame');// reteste
+      SetReady(false);
     }
   }, [h1,h2,h3,SetReady,setId, setRole])
 
@@ -166,6 +174,15 @@ export default function PongGame(props: any) {
   return (
     <div className="App" tabIndex={0} >
     <World/>
+  
+    <div className='title'>
+    { Ready && ( 
+     <>
+     {usernames[0]} VS {usernames[1]}
+     </>
+    )}
+
+    </div>
     <div className='score'>
       <div className='elem'>
       Time:
@@ -174,6 +191,8 @@ export default function PongGame(props: any) {
       <div>{s} - {sbis}</div>
       Params:
       <div>{matchid}</div>
+      Name:
+     
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>

@@ -29,42 +29,27 @@ export class GameGateway implements OnGatewayDisconnect {
 
   async handleDisconnect(client:Socket)// n empiete pas sur la deconnection de base
   {
-    console.log('DISCONNECTION GAME GATEWAY');
-    console.log(this.gameservice.IsinDispoDelete(client));
-    //console.log(this.gameservice.IsinGame(client));
-    //this.gameservice.DisconnectionGame(client);
+    this.gameservice.IsinDispoDelete(client);
   }
   
-  // Le cas ou tu as a la fois une invitation et un matching 
-  // On part du principe que on peut pas demarrer ni l un ni l autre si deja en train de jouer
-  //socket.emit('start_invit_stream');
-  // probleme tu peut pas a la fois etre invite et regarder ton propre stream
   @SubscribeMessage('start_invit_stream')
   async stream_invit(client:Socket, data:number)
   {
-    console.log('client ' + client + ' data ' + data);
-    if(await this.gameservice.IsInvitation(client, data))// si c est une invitation
+    if(await this.gameservice.IsInvitation(client, data))
     {
       console.log('IS INVITATION');
-      if(this.gameservice.IsInside(client))// si il est daje en train de jouer
-      {
-        console.log('probleme ici');
-        return ;// n implemente pas et attends qu il reload ca page pour le mettre dans la room
-      }
-      else// launch la game et wait le deuxieme participant
+      if(this.gameservice.IsInside(client))
+        return ;
+      else
       {
         var bothconnect = await this.gameservice.LaunchInvitation(client, data);// si vrai lancera la game des deux cotes
         if(bothconnect[1] == true)
-        {
           this.rendergame(bothconnect[0])
-        }
       }
     }
-    else // n est pas une invitation
+    else
     {
       console.log('IS STREAM');
-      console.log(data);
-      //console.log(await this.gameservice.getRoom(data));
       var c =  this.gameservice.room(data);
       var room = this.gameservice.Roomreturn(data);
       console.log(room);
@@ -72,9 +57,9 @@ export class GameGateway implements OnGatewayDisconnect {
       if(c == false)
       {
         console.log('ROOM EXISTE PAS');
-        //return ;// la room n existe pas
+        return ;
       }
-      if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
+      if(this.gameservice.startstream(client, data))
       {
         console.log('ARRIVE ICI');
         var render_stream;
@@ -82,17 +67,13 @@ export class GameGateway implements OnGatewayDisconnect {
           GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
         }, 160)
       }
-    }
-
   }
-
-
-
+}
   @SubscribeMessage('endgame')
   out_page(client:Socket)
   {
     console.log("TU AS QUUITTER LA PAGE");
-    console.log(this.gameservice.IsinDispoDelete(client));
+    this.gameservice.IsinDispoDelete(client);
   }
 
   @SubscribeMessage('testlaulau')
@@ -106,14 +87,14 @@ export class GameGateway implements OnGatewayDisconnect {
 
   }
 
-  //public static async
+  //public static async username1:string , username2:string [username1, username3]
   async rendergame(data:number)
   {
     var room = this.gameservice.getClients(data);
     if(room[0])
-      room[0].emit('start', [data, 1]);
+      room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
     if(room[1])
-      room[1].emit('start', [data, 2]);
+      room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
     
     console.log(data);
     var i = setInterval(() => {
@@ -166,52 +147,13 @@ export class GameGateway implements OnGatewayDisconnect {
     {
       console.log('RENDER NUMBER ' + l[0]);
       this.rendergame(l[0]);
-      /*
-        var room = this.gameservice.getClients(l[0]);
-        if(room[0])
-          room[0].emit('start', [l[0],1]);
-        if(room[1])
-          room[1].emit('start', [l[0],2]);
-        var i = setInterval(() => {
-        var clients = this.gameservice.getClients(l[0]);
-        var a = this.gameservice.sphereroom(l[0]);
-        if(clients[0] != null)
-            clients[0].emit('newpos', a);
-        if(clients[1] != null)
-            clients[1].emit('newpos', a);
-       }, 50);
-       
-       var time = 0;
-       var score = [0,0];
-       var j = setInterval(() => {
-        if(this.gameservice.isFinish(l[0]))
-        {
-          var clients = this.gameservice.getClients(l[0]);
-          if(clients[0])
-            clients[0].emit('endgame');
-          if(clients[1])
-            clients[1].emit('endgame');
-          this.gameservice.CreateMatchID(l[0]);
-          this.gameservice.DisconnectionGameId(l[0]);
-        }
-        else
-          this.gameservice.addtime(l[0])
-      }, 1000);
-      this.gameservice.SetTimer(l[0],j);
-      this.gameservice.SetRender(l[0],i);
-      return ;*/
     }
   }
 
   @SubscribeMessage('endgame')
   async endgame(client:Socket, data:number)
   {
-    console.log('END GAME NOT DISCONNECT')
-    //this.gameservice.DisconnectionGame(client);
   }
-
-
-
 
   @SubscribeMessage('left')
   async left(client: Socket, c:any)//: Promise<number>id-room role 1 ou deux
@@ -235,13 +177,6 @@ export class GameGateway implements OnGatewayDisconnect {
   @SubscribeMessage('verif')
   async verif(client:Socket, data:any)
   {
-  }
-
-  @SubscribeMessage('getlist')
-  async getlist(client:Socket)
-  {
-    var j = await this.gameservice.Getlist();
-    client.emit('getlist', j);
   }
 
 

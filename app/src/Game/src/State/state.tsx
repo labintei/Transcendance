@@ -71,8 +71,8 @@ export const useStore = create((set,get) => ({
   setscore: (num:number) => set((state:any)=>({s : num})),
   setscorebis: (num:number) => set((state:any)=>({sbis : num})),
 
-  SetReady: (num:number) => set((s:any)=>({gameReady: true})),
-
+  SetReady: (bool:boolean) => set((s:any)=>({gameReady: bool})),
+  //UnsetReady: () => set((s:any)=>({gameReady: false})),
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
   Setz: (num:number) => set((state:any)=>({sphere_z : num})),
 

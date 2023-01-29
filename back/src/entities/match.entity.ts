@@ -46,7 +46,7 @@ export class Match extends BaseEntity {
   user2: User;
 
   async resolve() {
-    this.status = Match.Status.ENDED;
+    //this.status = Match.Status.ENDED;
     const max_score = Math.max(this.score1, this.score2);
     const score_diff = max_score - Math.min(this.score1, this.score2);
     /*
@@ -71,7 +71,7 @@ export class Match extends BaseEntity {
       ++this.user1.defeats;
     }
     // Resolve users XP gains/losses.
-    if (this.score1 >= this.score2)
+    /*if (this.score1 >= this.score2)
       this.user1.gainXP(
         (this.user2.xpAmountForNextLevel * fixedPercentGain) / 100 +
         (this.user2.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
@@ -90,7 +90,7 @@ export class Match extends BaseEntity {
       this.user2.gainXP(
         (this.user1.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
-      );
+      );*/
     User.refreshRanks();
   }
 
