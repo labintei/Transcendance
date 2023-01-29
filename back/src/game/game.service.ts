@@ -275,7 +275,11 @@ export class GameService {
                 room = value;
         }
         if(room)
-            return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+        {
+            console.log(room.sx);
+            console.log(room.sz);
+            return [Number(room.sx.toFixed(3)) , Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+        }
         return ([0,0,0,0,0,0,0])
     }
 
@@ -475,6 +479,7 @@ export class GameService {
         room.xangle = l * 0.5;
         room.id = m.id;
         await this.dispoUser.delete(contestant);
+        console.log('ROOM ID');console.log(room.id);console.log(room);
         this.s.set(room.id , room);
         return room.id;
     }
