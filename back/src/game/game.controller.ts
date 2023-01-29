@@ -1,4 +1,4 @@
-import { ConflictException, Controller, Get, HttpException, HttpStatus, Param, Request, UseGuards } from '@nestjs/common';
+import { ConflictException, Controller, Get, HttpException, HttpStatus, Param, Put, Request, UseGuards } from '@nestjs/common';
 import { GameService } from './game.service'
 import { TransGuard } from 'src/auth/trans.guard';
 import { Match } from 'src/entities/match.entity';
@@ -13,7 +13,7 @@ import { Message } from 'src/entities/message.entity';
 export class GameController {
   constructor(private readonly gameService: GameService) {}
 
-  @Get(':username')
+  @Put(':username')
   async invitation(@Request() req , @Param('username') user: string): Promise<number> {
     const user1 = await User.findOneBy({ft_login: req.user});
     const user2 = await User.findOneBy({username: user});
@@ -57,7 +57,10 @@ export class GameController {
           user2Login: req.user,
           status: Match.Status.ENDED
         },
-      ]
+      ],
+      order: {
+        time: "DESC"
+      }
     });
   }
 

@@ -7,7 +7,7 @@ export function ChallengeButton(props:{username:string}):JSX.Element {
   const navigate = useNavigate();
 
   function createMatchAndRedirect() {
-    axios.get(process.env.REACT_APP_BACKEND_URL + "match/" + props.username, {
+    axios.put(process.env.REACT_APP_BACKEND_URL + "match/" + props.username, {}, {
       withCredentials:true
     }).then(res => {
       if (res.data !== undefined)
