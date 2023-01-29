@@ -33,13 +33,6 @@ export default function PongGame(props: any) {
     /*let { matchid } = useParams();
     console.log('Params  ' + matchid);
   */
-
-
-
-    //console.log(URLSearchParams)
-  
-
-
   /*
   const [time, setTime] = useState(0);
   const [score, setScore]  = useState([0,0]);
@@ -72,14 +65,8 @@ export default function PongGame(props: any) {
   const Setz:any = useStore((s:any) => s.Setz);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
-// marche pas
-  var j:number = 0;
-//  const t:any = useStore((s:any) => s.time);
-
   var v:any = useStore((s:any) => s.setbis);
   var vbis:number = useStore((s:any) => s.t);
-//  const setT:any = useStore((s:any) => s.Otime);
-
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
@@ -157,7 +144,7 @@ export default function PongGame(props: any) {
   }
 
 
-  //       Time:<Timer time={useStore((s:any) => s.time)}/>
+  //Time:<Timer time={useStore((s:any) => s.time)}/>
 
   //  Time:<Timer/>
   return (
