@@ -631,8 +631,8 @@ export class GameService {
         const m = await this.createMatch(contestant[0], user);
         const room = this.createRoom(contestant[0], contestant[1], user, client, m);
         var l = Math.random();    
-        User.update(m.user1Login, {status:User.Status.PLAYING, ongoingMatchId:m.id});
-        User.update(m.user2Login, {status:User.Status.PLAYING, ongoingMatchId:m.id});     
+        User.update(m.user1Login, {status:User.Status.PLAYING});
+        User.update(m.user2Login, {status:User.Status.PLAYING});     
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.5;
@@ -974,21 +974,7 @@ export class GameService {
             if(u1 == null && u2 == null)// si les deux joueurs sont des visitor
                 return;
             Match.update(data, {score1: room.score1, score2: room.score2});
-            if(u1)
-            {
-                if(room.score1 > room.score2)
-                    u1.gainXP(100);
-                if(room.score1 < room.score2)
-                    u1.looseXP(50);
-            }
-            if(u2)
-            {
-                if(room.score2 > room.score1)
-                    u2.gainXP(100);
-                if(room.score2 < room.score1)
-                    u2.looseXP(50);
-            }
-            Match.update(data, {status: Match.Status.ENDED});
+            (await Match.findOneBy({id:data})).resolve();
         }
     }
 
