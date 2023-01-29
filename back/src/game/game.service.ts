@@ -339,7 +339,6 @@ export class GameService {
         room.sx += room.xangle;
         room.sz += room.zdir;
 
-
       // if(room.sx > 0.1)
       //   room.sx -= 0.005;
       // if(room.sx < (-0.1))
@@ -350,48 +349,64 @@ export class GameService {
       if(room.zdir < (-0.1))
         room.zdir += 0.005;
         let newVal = Math.round(room.sz * 10) / 10
-        if(newVal === (3.9) &&
-        //? box size is 2
-        ((room.sx >= (b1x - 1)) && 
-        (room.sx <= (b1x + 1))))
-        {
-      // console.log("ball pos is " + room.sx)
-      // console.log("box pos is " + b1x)
-      // console.log("ball dist is " + ball_dist)
-      // TODO: ajouter un angle en fonction de la position de la balle
-      let ball_dist =  b1x - room.sx
-      room.xangle -= ball_dist;
-        room.zdir = -0.3;
-    }  
-    if(sz === (-5) && 
-        ((room.sx >= (b2x - 1.8)) &&
-        (room.sx <= (b2x + 0.8))))
-    {
-        room.zdir = 0.3;
-      let ball_dist =  b1x - room.sx
-      room.xangle += ball_dist;
-    }
-    
-      if(Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
-        room.xangle *= -1;
-      if (sz > 7 || sz < -7)
-      {
-        if(sz > 7)
-            room.score2++;
-        if(sz < -7)
-            room.score1++;
-        room.sx = 0;
-        room.sz = 0;
-        var l = Math.random();
-        var side = Math.random();
-        if (l < 0.5)
-          room.zdir = -0.05;
-        room.xangle = l * 0.1;
-        if(side < 0.5)
-            room.xangle *= -1;
-        return [0,0, Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
-      }   
-    return [Number(room.sx.toFixed(3)),Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+     if (
+    newVal === 3.9 &&
+    room.sx >= b1x - 1 &&
+    room.sx <= b1x + 1
+  ) {
+      console.log("box1")
+    // console.log("ball pos is " + room.sx)
+    // console.log("box pos is " + b1x)
+    // console.log("ball dist is " + ball_dist)
+    // TODO: ajouter un angle en fonction de la position de la balle
+    let ball_dist = b1x - room.sx;
+  //   room.xangle -= ball_dist;
+
+    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+    room.zdir = -0.3;
+  }
+  if (sz === -5 && room.sx >= b2x - 1.8 && room.sx <= b2x + 0.8) {
+      console.log("box2")
+    room.zdir = 0.3;
+    console.log("box1 posit x is" + b1x + " and ball roomm x is " + room.sx);
+    room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+  }
+
+
+  // ? BORDERS
+  if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
+    room.xangle *= -1;
+
+  // ? LOST POINT
+  if (sz > 7 || sz < -7) {
+    if (sz > 7) room.score2++;
+    if (sz < -7) room.score1++;
+    room.sx = 0;
+    room.sz = 0;
+    var l = Math.random();
+    var side = Math.random();
+    if (l < 0.5) room.zdir = -0.05;
+    room.xangle = l * 0.1;
+    if (side < 0.5) room.xangle *= -1;
+    return [
+      0,
+      0,
+      Number(room.Box1x.toFixed(1)),
+      Number(room.Box2x.toFixed(1)),
+      room.time,
+      room.score1,
+      room.score2,
+    ];
+  }
+  return [
+    Number(room.sx.toFixed(3)),
+    Number(room.sz.toFixed(3)),
+    Number(room.Box1x.toFixed(1)),
+    Number(room.Box2x.toFixed(1)),
+    room.time,
+    room.score1,
+    room.score2,
+  ];
 }
 
     async NotonlyBlock(user:User): Promise<[User,Socket]>
