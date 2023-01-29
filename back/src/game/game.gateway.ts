@@ -85,6 +85,8 @@ export class GameGateway implements OnGatewayDisconnect {
             clients[1].emit('newpos', a);
        }, 50);
        
+       var time = 0;
+       var score = [0,0];
        var j = setInterval(() => {
         if(this.gameservice.isFinish(l[0]))
         {
