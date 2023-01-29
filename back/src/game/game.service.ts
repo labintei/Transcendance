@@ -588,21 +588,13 @@ export class GameService {
         return null;
     }
 
-
-    async createMatch(user1:User, user2:User): Promise <Match>
-    {
-        const m = await new Match();
-        await Match.save(m);
-        await Match.update(m.id, {
-            score1: 0,
-            score2: 0,
-            user1Login: user1.ft_login,
-            user2Login: user2.ft_login,
-            user1 : user1,
-            user2 : user2,
-            status : Match.Status.NEW
-        })
-        return m;
+    async createMatch(user1: User, user2: User): Promise<Match> {
+      const m = await new Match();
+      m.user1 = user1;
+      m.user2 = user2;
+      m.user1Login = user1.ft_login;
+      m.user2Login = user2.ft_login;
+      return Match.save(m);
     }
 
     createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game
@@ -639,8 +631,8 @@ export class GameService {
         const m = await this.createMatch(contestant[0], user);
         const room = this.createRoom(contestant[0], contestant[1], user, client, m);
         var l = Math.random();    
-        User.update(contestant[0].ft_login, {status:User.Status.PLAYING});
-        User.update(user.ft_login, {status:User.Status.PLAYING});     
+        User.update(m.user1Login, {status:User.Status.PLAYING, ongoingMatchId:m.id});
+        User.update(m.user2Login, {status:User.Status.PLAYING, ongoingMatchId:m.id});     
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.5;
