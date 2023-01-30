@@ -1,31 +1,23 @@
-import {  Injectable  } from "@nestjs/common";
+import { Injectable  } from "@nestjs/common";
 import { Socket} from "socket.io";
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
-import { User } from 'src/entities/user.entity';// j exporte l enum
-import { CustomRepositoryCannotInheritRepositoryError, FindOptionsWhere } from "typeorm";
-import { Console } from "console";
-
-
+import { User } from 'src/entities/user.entity';
+import { FindOptionsWhere } from "typeorm";
+import { clearInterval } from "timers";
 
 export class Game {
     public match: Match;
     public user1: User;
     public user2: User;
-    public user1_login: string;
-    public user2_login: string;
     public id: number;
-    public room_id: number;
     public nb_player: number;
     public score1: number;
     public score2: number;
-
     public player1: Socket;
     public player2: Socket;
-    
     public Box1x: number;
     public Box2x: number;
-
     public sx: number;
     public sz: number;
     public zdir: number;
@@ -48,8 +40,8 @@ export class Invitation {
 
 @Injectable()
 export class GameService {
- 
-    public stream: Map<number, Array<Socket>>;
+
+    public stream: Map<number, [Array<Socket>, any]>;
     public s: Map<number, Game>;
     public dispoUser: Set<[User, Socket]>
     public invitation: Set<Invitation>
@@ -61,8 +53,7 @@ export class GameService {
         this.invitation = new Set();
     }
 
-    async IsInvitation(client:Socket, data:number): Promise<boolean>
-    {
+    async IsInvitation(client:Socket, data:number): Promise<boolean> {
         var l  = (client.request as any).user;
         for( var [key, value] of this.invitation.entries())
         {
@@ -75,21 +66,17 @@ export class GameService {
     }
 
 
-    async getInvitation(client:Socket, data:number): Promise<Invitation>
-    {
+    async getInvitation(client:Socket, data:number): Promise<Invitation> {
         const user1 =  await User.findOne({where: {ft_login: client.data.login}});
         for( var [key, value] of this.invitation.entries())
         {
-            if(value && value.match_id == data /*&& 
-                ((user1.ft_login == value.user1.ft_login) || 
-                (user1.ft_login == value.user2.ft_login))*/)
+            if(value && value.match_id == data)
                 return value;
         }
         return null;
     }
 
-    async DeleteInvitation(data:number)
-    {
+    async DeleteInvitation(data:number) {
         for( var [key, value] of this.invitation.entries())
         {
             if(value && value.match_id == data)
@@ -97,8 +84,7 @@ export class GameService {
         }
     }
 
-    async LaunchInvitation(client:Socket, data:number): Promise<[number,boolean]>
-    {
+    async LaunchInvitation(client:Socket, data:number): Promise<[number,boolean]> {
         const I = await this.getInvitation(client, data);// obtient l invitation
         if(I.user1.ft_login == client.data.login)
         {
@@ -114,15 +100,6 @@ export class GameService {
         {
             var m = await Match.findOneBy({id: I.match_id});// creer la room
             var room = await this.createRoom(I.user1, I.player1, I.user2, I.player2, m);// creer la room
-            var l = Math.random();    
-            User.update(I.user1.ft_login, {status:User.Status.PLAYING});
-            User.update(I.user2.ft_login, {status:User.Status.PLAYING});     
-            if (l < 0.5)
-              room.zdir = -0.05;
-            room.xangle = l * 0.5;
-            room.id = m.id;
-            room.room_id = m.id;
-            this.s.set(room.id , room);
             this.DeleteInvitation(I.match_id);
             return [I.match_id,true];
         }
@@ -131,15 +108,13 @@ export class GameService {
     }
 
 
-    getUsernames(data:number): [string,string]
-    {
+    getUsernames(data:number): [string,string] {
         var room = this.s.get(data);
         if(room)
             return([room.user1.username, room.user2.username])
     }
 
-    async NotBlock(user1login:string, user2login:string): Promise<boolean>
-    {
+    async NotBlock(user1login:string, user2login:string): Promise<boolean> {
         const blocked = await UserRelationship.findOneBy([
             {
                 ownerLogin: user1login,
@@ -159,8 +134,7 @@ export class GameService {
     }
 
 
-    async CreateInvit(user1: User , user2: User)
-    {
+    async CreateInvit(user1: User , user2: User) {
         if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
             for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
@@ -171,36 +145,30 @@ export class GameService {
                         return value.match_id;
             }
             const m = await this.createMatch(user1, user2);
-            // mettre le status en NEW
             this.CreateInvitation(user1,user2, m.id);
             return m.id;
         } else
             return -1;
     }
 
-    isFinish(data:number)
-    {
+    isFinish(data:number) {
         if(this.s.get(data).score1 >= 2 || this.s.get(data).score2 >= 2 || this.s.get(data).time > 300)
             return true;
         return false;
     }
 
-    DisconnectionGameId(id:number)
-    {
+    DisconnectionGameId(id:number) {
         var room = this.s.get(id);
         if(room)
         {
             clearInterval(room.render);
             clearInterval(room.timer);
-            var id = room.room_id;
-            //this.dispo.delete(id);
+            var id = room.id;
             this.s.delete(id);
         }
     }
 
-    DisconnectionGame(client:Socket): Socket[]// renvoit les deux clients
-    {
-        console.log('DISCONNECTION GAME');
+    DisconnectionGame(client:Socket): Socket[] {
         for(var [key, value] of this.s.entries())
         {
             if(value)
@@ -209,9 +177,10 @@ export class GameService {
                     value.player2 == client)
                 {
                     var clients = [value.player1,value.player2];
+                    this.DeleteStream(value.id);
                     clearInterval(value.render);
                     clearInterval(value.timer);
-                    var id = value.room_id;
+                    var id = value.id;
                     this.s.delete(id);
                     return clients;
                 }
@@ -220,26 +189,21 @@ export class GameService {
         return [null,null];
     }
 
-    IsInside(client:Socket)
-    {
+    IsInside(client:Socket) {
         for(var [key, value] of this.s.entries())
         {
             if(value)
             {
                 if(value.player1 == client ||
                     value.player2 == client)
-                {
-                    console.log('EST BIEN DANS GAME');
                     return true;
-                }
             }
         }
         return false;       
 
     }
 
-    IsinDispoDelete(client:Socket)
-    {
+    IsinDispoDelete(client:Socket) {
         for(var [key, value] of this.dispoUser.entries())
         {
             if(value)
@@ -254,34 +218,42 @@ export class GameService {
         return false;  
     }
 
-    sphereroom(id:number): number[]
-    {
-        if(!this.s.get(id))
+    IsInvitDelete(client:Socket) {
+        var l  = (client.request as any).user;
+        for( var [key, value] of this.invitation.entries())
         {
-            console.log('N EXISTE PAS');
-            return [0,0];
+            if(value && ((l == value.user1.ft_login) || (l == value.user2.ft_login)))
+            {
+                if(l == value.user1.ft_login)
+                {
+                    l.player1 = null;
+                    l.connect1 = false;
+                }
+                if(l == value.user2.ft_login)
+                {
+                    l.player2 = null;
+                    l.connect2 = false;
+                }
+            }
         }
+        return false;
+    }
+
+    sphereroom(id:number): number[] {
+        if(!this.s.get(id))
+            return [0,0];
         var g = this.sphere(this.s.get(id));
         return g;
     }
 
-    getPos(data:number): number[]
-    {
-        let room;
-        for(var [key, value] of this.s.entries())
-        {
-            if(value && value.id == data)
-                room = value;
-        }
+    getPos(data:number): number[] {
+        var room = this.s.get(data);
         if(room)
-        {
             return [Number(room.sx.toFixed(3)) , Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
-        }
         return ([0,0,0,0,0,0,0])
     }
 
-    sphere(room:Game): number[]
-    {
+    sphere(room:Game): number[] {
         var sz = Math.floor(room.sz);
         var b2x = Math.round(room.Box2x * 10) / 100;
         var b1x = Math.round(room.Box1x * 10) / 100;
@@ -339,8 +311,7 @@ export class GameService {
   ];
 }
 
-    async NotonlyBlock(user:User): Promise<[User,Socket]>
-    {
+    async NotonlyBlock(user:User): Promise<[User,Socket]> {
         const iteratordispo = this.dispoUser.entries();
         for(var [key, value] of iteratordispo)
         {
@@ -365,8 +336,7 @@ export class GameService {
         return null;
     }
 
-    ReplaceClient(user:User, client:Socket): boolean
-    {
+    ReplaceClient(user:User, client:Socket): boolean {
         for(var [key, value] of this.s.entries())
         {
             if(value && (user === value.user1 || user === value.user2))
@@ -376,8 +346,7 @@ export class GameService {
     }
 
 
-    CreateInvitation(user1:User,user2:User,match_id:number)
-    {
+    CreateInvitation(user1:User,user2:User,match_id:number) {
         const i : Invitation = {
             match_id: match_id,
             user1: user1,
@@ -390,40 +359,6 @@ export class GameService {
         this.invitation.add(i);
     }
 
-    ClientInvitationConnection(user:User,client:Socket)
-    {
-        if(this.invitation)
-        {
-            for(var [key, value] of this.invitation.entries())
-            {
-             if(value && (user === (value.user1) || user === value.user2))
-             {
-                 if(value.user1 == user)
-                 {
-                     value.player1 = client;
-                     value.connect1 = true;
-                 }
-                 if(value.user2 == user)
-                 {
-                     value.player2 = client;
-                     value.connect2 = true;
-                 }
-             }
-            }
-        }
-    }
-
-
-    Invitation(user:User): Invitation
-    {
-        for(var [key, value] of this.invitation.entries())
-        {
-            if(value && (user === (value.user1) || user === value.user2))
-                return value;
-        }
-        return null;
-    }
-
     async createMatch(user1: User, user2: User): Promise<Match> {
       const m = await new Match();
       m.user1 = user1;
@@ -434,16 +369,13 @@ export class GameService {
       return m;
     }
 
-    createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game
-    {
+    createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game {
+        var l = Math.random();
         var room: Game = {
             match: m,
             user1: user1,
             user2: user2,
-            user1_login: user1.ft_login,
-            user2_login: user2.ft_login,
             id: m.id,
-            room_id: m.id,
             nb_player: 2,
             score1: 0,
             score2: 0,
@@ -460,28 +392,24 @@ export class GameService {
             timer : null,
             render : null,
         }
-        return room;
-    }
-
-    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number>
-    {
-        const m = await this.createMatch(contestant[0], user);
-        const room = this.createRoom(contestant[0], contestant[1], user, client, m);
-        var l = Math.random();
-        User.update(m.user1Login, {status:User.Status.PLAYING});
-        User.update(m.user2Login, {status:User.Status.PLAYING});     
+        User.update(room.user1.ft_login, {status:User.Status.PLAYING});
+        User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.5;
         room.id = m.id;
+        this.s.set(room.id , room);
+        return room;
+    }
+
+    async createGame(contestant:[User,Socket], user:User, client:Socket): Promise <number> {
+        const m = await this.createMatch(contestant[0], user);
+        const room = this.createRoom(contestant[0], contestant[1], user, client, m);
         await this.dispoUser.delete(contestant);
-        console.log('ROOM ID');console.log(room.id);console.log(room);
-        this.s.set(Number(room.id) , room);
         return room.id;
     }
 
-    ClientChange(id_role: number[], client:Socket)
-    {
+    ClientChange(id_role: number[], client:Socket) {
         if(id_role)
         {
             if(id_role[1] === 1)
@@ -491,8 +419,7 @@ export class GameService {
         }
     }
 
-    async Idrole(client:Socket): Promise<number[]>
-    {
+    async Idrole(client:Socket): Promise<number[]> {
         const user = await User.findOne({where: {ft_login: client.data.login}});
         for(var [key, value] of this.s.entries())
         {
@@ -507,8 +434,7 @@ export class GameService {
         return null;
     }
 
-    ReplaceMatched(user:User, client:Socket)
-    {
+    ReplaceMatched(user:User, client:Socket) {
         for(var [key, value] of this.dispoUser.entries())
         {
             if(value && value[0])
@@ -520,8 +446,7 @@ export class GameService {
         return null;  
     }
 
-    FindGame(user:User)
-    {
+    FindGame(user:User) {
         for(var [key, value] of this.s.entries())
         {
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
@@ -530,8 +455,7 @@ export class GameService {
         return null;  
     }
 
-    InsideGame(user:User)
-    {
+    InsideGame(user:User) {
         for(var [key, value] of this.s.entries())
         {
             if(value.user1.ft_login == user.ft_login || value.user2.ft_login == user.ft_login)
@@ -540,8 +464,7 @@ export class GameService {
         return false;  
     }
 
-    InsideDispo(user:User)
-    {
+    InsideDispo(user:User) {
         for(var [key,value] of this.dispoUser.entries())
         {
             if(value && value[0] == user)
@@ -554,118 +477,90 @@ export class GameService {
         return new Promise( resolve => setTimeout(resolve, ms) );
     }
 
-    async newGame(client:Socket): Promise<[number, boolean]>//Promise<number[]>
-    {
-        console.log('START');
+    async newGame(client:Socket): Promise<[number, boolean]> {
         const user = await User.findOne({where: {ft_login: client.data.login}});
         if(user == null)
-        {
-            console.log('USER NULL');
             return [null, false];
-        }
-        if(this.InsideGame(user)/*user.status == User.Status.PLAYING*/)// si le user est deja en train de jouer ... Marche pas parce que meme player
-        {
-            console.log('EST DEJA DANS UNE GAME');
+        if(this.InsideGame(user))
             return [this.FindGame(user), true];
-        }
-        if(this.InsideDispo(user)/*user.status == User.Status.MATCHING*/)// MARCHE PAS COMME CA
+        if(this.InsideDispo(user))
         {
-            console.log('EST EN TRAIN DE MATCHER');
             this.ReplaceMatched(user, client);
             return [null, true];
         }
         const contestant = await this.NotonlyBlock(user);
-        if(contestant == null)// Pas de Dispo Ou personne uniquement block
+        if(contestant == null)
         {
-            // J ARRIVE QUAND MEME ICI ?
             this.dispoUser.add([user, client]);
-            console.log('CONTESTANT NULL');
             User.update(user.ft_login, {status: User.Status.MATCHING});
-            //user.status = User.Status.MATCHING;// mais le user en MATCHING
             return null;
         }
-        else// a un contestant creer le Match et le GAME EN MEME TEMPS
-        {
-            console.log('Classic Contest');
+        else
             return [(await this.createGame(contestant, user, client)), false];
-        }
     }
 
-    addtime(data:number)
-    {
+    addtime(data:number){
         var room = this.s.get(data);
         if(room)
             room.time= room.time + 1;
     }
 
 
-    player2x_right(id:number, client:Socket)
-    {
+    player2x_right(id:number, client:Socket) {
         if(this.s.get(id).player2 == client)
             this.s.get(id).Box2x += 2;
     }
 
-    player2x_left(id:number, client:Socket)
-    {
+    player2x_left(id:number, client:Socket) {
         if(this.s.get(id).player2 == client)
             this.s.get(id).Box2x -= 2;
     }
 
-    player1x_right(id:number, client:Socket)
-    {
+    player1x_right(id:number, client:Socket) {
         if(this.s.get(id).player1 == client)
             this.s.get(id).Box1x += 2;
     }
 
-    player1x_left(id:number, client:Socket)
-    {
+    player1x_left(id:number, client:Socket) {
         if(this.s.get(id).player1 == client)
             this.s.get(id).Box1x -= 2;
     }
 
-    getRender(id:number):any
-    {
+    getRender(id:number):any {
         if(this.s.get(id))
             return this.s.get(id).render;
         return null;
     }
 
-    getTimer(id:number):any
-    {
+    getTimer(id:number):any {
         if(this.s.get(id))
             return this.s.get(id).timer;
         return null;
     }
 
-    SetRender(id:number, render:any)
-    {
+    SetRender(id:number, render:any) {
         if(this.s.get(id))
             return this.s.get(id).render = render;
     }
 
-    SetTimer(id:number, timer:any )
-    {
+    SetTimer(id:number, timer:any) {
         if(this.s.get(id))
             return this.s.get(id).timer = timer;
     }
 
-    getBox1(id:number): number
-    {
+    getBox1(id:number): number {
         if(this.s.get(id))
             return (Number(this.s.get(id).Box1x.toFixed(1)));
         return 0;
     }
 
-    getBox2(id:number): number
-    {
+    getBox2(id:number): number {
         if(this.s.get(id))
             return (Number(this.s.get(id).Box2x.toFixed(1)));
         return 0;
     }
 
-
-    endStream(client:Socket, id:number)
-    {
+    endStream(client:Socket, id:number) {
         if(id != -1)
         {
             const i = this.stream.get(id).indexOf(client, 0);
@@ -676,76 +571,52 @@ export class GameService {
         }
     }
 
-    getRoom(id:number): Game
+    DeleteStream(id:number)
     {
-        return this.s.get(id);
+        clearInterval(this.stream.get(id)[1]);
+        this.stream.delete(id);
     }
 
-    getClients(id:number): Socket[]
-    {
+
+    getClients(id:number): Socket[] {
         if(this.s.get(id))
             return [this.s.get(id).player1, this.s.get(id).player2];
         else
             return [null,null];
     }
 
-    Roomreturn(id:number): Game
-    {
-        return this.s.get(id);
-    }
-
-    room(id:number): boolean
-    {
-        console.log('ID ' + id);
-        console.log('PROBLEME ICI');
+    room(id:number): boolean {
         if(this.s.get(id))
-            console.log('FONCTIONNE');
-        for(var [key, value] of this.s.entries())
-        {
-            console.log(typeof key, typeof id);
-            console.log(key);
-            if(id == key)
-                console.log('TRUE');
-            if(id === key)
-                console.log('TRUE TYPE');
-            if(value && value.id == id)
-            {
-                console.log(value.id);
-                return true;
-            }
-        }
+            return true;
         return false;
     }
 
-    async findRoom(id:number)
-    {
-        this.s.get(id);
-    }
-
-    startstream(client:Socket, data:number): boolean
-    {
-        if(this.stream && this.stream.get(data))// si le stream existe deja
+    startstream(client:Socket, data:number): boolean {
+        if(this.stream && this.stream.get(data))
         {
-            this.stream.get(data).push(client);//ajoute le client a la liste de stream   
+            this.stream.get(data)[0].push(client);  
             return false;
         }
         else
         {
             var i = new Array<Socket>;
             i.push(client);
-            this.stream.set(data, i);
+            this.stream.set(data, [i , null]);
             return true;
         }
     }
 
-    getStream(data:number): Array<Socket>
-    {
-        if(this.stream)
-            return this.stream.get(data);// par default sera a 0
+    SetStreamRender(data:number, render:any){
+        if(this.stream.get(data))
+            this.stream.get(data)[1] = render;
     }
 
-    async CreateMatchID(data:number)// MET LES XP
-    {
+    getStream(data:number): [Array<Socket>,any]{
+        if(this.stream)
+            return this.stream.get(data);
+    }
+
+    async CreateMatchID(data:number) {
         var room = this.s.get(data);
         if(room)
         {    

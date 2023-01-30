@@ -1,17 +1,7 @@
 import { SubscribeMessage, WebSocketGateway, WebSocketServer , OnGatewayDisconnect } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
+import { Socket } from 'socket.io';
 import { GameService , Game} from 'src/game/game.service'
-import {Match} from 'src/entities/match.entity';
-import {User} from 'src/entities/user.entity';
-//import {Room} from 'src/game/room.interface'
 import { Inject } from '@nestjs/common';
-import { async, subscribeOn } from 'rxjs';
-// A enlever
-import { SocketGateway } from 'src/socket/socket.gateway';
-import { getCustomRepositoryToken } from '@nestjs/typeorm';
-import { threadId } from 'worker_threads';
-// a enlever
-
 
 @WebSocketGateway({
   origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
@@ -19,26 +9,18 @@ import { threadId } from 'worker_threads';
 })
 
 export class GameGateway implements OnGatewayDisconnect {
-/*
-  constructor(
-    private gameservice: GameService
-    ) {}*/
 
   constructor(@Inject(GameService) private gameservice: GameService) {}
 
-
-  async handleDisconnect(client:Socket)// n empiete pas sur la deconnection de base
-  {
+  async handleDisconnect(client:Socket) {
     this.gameservice.IsinDispoDelete(client);
   }
   
   @SubscribeMessage('start_invit_stream')
-  async stream_invit(client:Socket, d:number)
-  {
-    var data = Number(d);// converti proprement le parametre em string
+  async stream_invit(client:Socket, d:number) {
+    var data:number = Number(d);
     if(await this.gameservice.IsInvitation(client, data))
     {
-      console.log('IS INVITATION');
       if(this.gameservice.IsInside(client))
         return ;
       else
@@ -50,45 +32,24 @@ export class GameGateway implements OnGatewayDisconnect {
     }
     else
     {
-      console.log('IS STREAM');
-      var c =  this.gameservice.room(data * 1);
-      var room = this.gameservice.Roomreturn(data);
-      if(c == false)
-      {
-        console.log('ROOM EXISTE PAS')
+      if(this.gameservice.room(data) == false)
         return ;
-      }
       if(this.gameservice.startstream(client, data))
       {
-        console.log('ARRIVE ICI');
         var render_stream;
         render_stream =  setInterval(() => {
-          GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+          GameGateway.sendtostream(this.gameservice.getStream(data) , this.gameservice.getPos(data));
         }, 160)
       }
   }
 }
   @SubscribeMessage('endgame')
-  out_page(client:Socket)
-  {
-    console.log("TU AS QUUITTER LA PAGE");
+  out_page(client:Socket) {
+    this.gameservice.IsInvitDelete(client);
     this.gameservice.IsinDispoDelete(client);
   }
 
-  @SubscribeMessage('testlaulau')
-  async marchepo(client:Socket)
-  {
-  }
-
-  @SubscribeMessage('renderstream')
-  async render_stream()
-  {
-
-  }
-
-  //public static async username1:string , username2:string [username1, username3]
-  async rendergame(data:number)
-  {
+  async rendergame(data:number) {
     var room = this.gameservice.getClients(data);
     if(room[0])
       room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
@@ -124,17 +85,14 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
 
-
   @SubscribeMessage('start_game')
-  async new_game(client:Socket, data:number)
-  {
-    var l = await this.gameservice.newGame(client);// renvoit room-id et true replace ou pas
+  async new_game(client:Socket, data:number){
+    var l = await this.gameservice.newGame(client);
     if(l && (l[0] && l[1] == true))
     {
       console.log('reconnection a la game');
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', id_role);
-      //await this.gameservice.delay(50);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
@@ -147,72 +105,41 @@ export class GameGateway implements OnGatewayDisconnect {
     }
   }
 
-  @SubscribeMessage('endgame')
-  async endgame(client:Socket, data:number)
-  {
-  }
-
   @SubscribeMessage('left')
-  async left(client: Socket, c:any)//: Promise<number>id-room role 1 ou deux
-  {
-    if(c[0] === 1)// si le role correspond a 1
+  async left(client: Socket, c:any){
+    if(c[0] === 1)
       this.gameservice.player1x_left(c[1], client);
     if(c[0] === 2)
       this.gameservice.player2x_right(c[1], client);
   }
 
   @SubscribeMessage('right')
-  async right(client: Socket, c:any)//: Promise<number>
-  {
+  async right(client: Socket, c:any){
     if(c[0] === 1)
       this.gameservice.player1x_right(c[1], client);
     if(c[0] === 2)
       this.gameservice.player2x_left(c[1], client);
   }
 
-
-  @SubscribeMessage('verif')
-  async verif(client:Socket, data:any)
-  {
-  }
-
-
-  @SubscribeMessage('useremit')
-  async useremit(client:Socket, user:string)
-  {
-    // je vais faire une liste de User
-    var c = await User.find();
-    //const user = await User.findOneBy({ft_login: (client.request as any).user});
-
-    const l = await  User.findOneBy({ft_login: user})
-
-    if(l)
-    {
-      l.socket = client.id;
-    }
-  }
-
-  public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
-  {
+  public static async sendtostream(stream: Socket[], data:number[]){
     stream.map((s) => {s.emit('newpos', data);});
 	}
 
   @SubscribeMessage('start_stream')
-  async startstream(client:Socket, data:number)
-  {
+  async startstream(client:Socket, data:number){
     console.log('StartStream');
     if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
     {
       var render_stream;
       render_stream =  setInterval(() => {
-        GameGateway.sendtostream(this.gameservice.getStream(data), this.gameservice.getPos(data));
+        GameGateway.sendtostream(this.gameservice.getStream(data)[0] , this.gameservice.getPos(data));
       }, 160)
+      this.gameservice.SetStreamRender(data, render_stream);
     }
   }
 
   @SubscribeMessage('endstream')
-  async endstream(client:Socket, data:number)
-  {
+  async endstream(client:Socket, data:number){
     this.gameservice.endStream(client, data);
   }
 
