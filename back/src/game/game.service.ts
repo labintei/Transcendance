@@ -221,23 +221,26 @@ export class GameService {
 
     IsInvitDelete(client:Socket) {// Enleve de toutes les autres Invit
         var l  = (client.request as any).user;
-        for( var [key, value] of this.invitation.entries())
+        if(this.invitation.size)
         {
-            if(value && ((l == value.user1.ft_login) || (l == value.user2.ft_login)))
+            for( var [key, value] of this.invitation.entries())
             {
-                if(l == value.user1.ft_login)
+                if(value && value.user1 && value.user2 && ((l == value.user1.ft_login) || (l == value.user2.ft_login)))
                 {
-                    l.player1 = null;
-                    l.connect1 = false;
-                }
-                if(l == value.user2.ft_login)
-                {
-                    l.player2 = null;
-                    l.connect2 = false;
-                }
+                   if(l == value.user1.ft_login)
+                    {
+                         value.player1 = null;
+                         value.connect1 = false;
+                     }
+                    if(l == value.user2.ft_login)
+                    {
+                        value.player2 = null;
+                        value.connect2 = false;
+                    }
             }
+            }
+            return false;
         }
-        return false;
     }
 
     sphereroom(id:number): number[] {
@@ -516,22 +519,22 @@ export class GameService {
 
 
     player2x_right(id:number, client:Socket) {
-        if(this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client)
             this.s.get(id).Box2x += 2;
     }
 
     player2x_left(id:number, client:Socket) {
-        if(this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client)
             this.s.get(id).Box2x -= 2;
     }
 
     player1x_right(id:number, client:Socket) {
-        if(this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client)
             this.s.get(id).Box1x += 2;
     }
 
     player1x_left(id:number, client:Socket) {
-        if(this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client)
             this.s.get(id).Box1x -= 2;
     }
 

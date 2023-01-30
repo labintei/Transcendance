@@ -25,7 +25,7 @@ export class GameGateway implements OnGatewayDisconnect {
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', id_role);
       this.gameservice.ClientChange(id_role, client);
-      return ;// remplace le client dans la game
+      return ;
     }
     if(await this.gameservice.IsInvitation(client, data))
     {
@@ -42,6 +42,7 @@ export class GameGateway implements OnGatewayDisconnect {
     }
     else
     {
+      console.log("STREAM");
       if(this.gameservice.room(data) == false)
         return ;
       if(this.gameservice.startstream(client, data))

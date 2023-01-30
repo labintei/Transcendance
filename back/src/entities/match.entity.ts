@@ -46,7 +46,7 @@ export class Match extends BaseEntity {
   user2: User;
 
   async resolve() {
-    //this.status = Match.Status.ENDED;
+    this.status = Match.Status.ENDED;
     const max_score = Math.max(this.score1, this.score2);
     const score_diff = max_score - Math.min(this.score1, this.score2);
     /*
@@ -59,38 +59,39 @@ export class Match extends BaseEntity {
     const scorePercentLoss = 0;
     //  Resolve user counters.
     if (this.score1 == this.score2) {
-      User.update((this.user1.ft_login) , {draws : this.user1.draws + 1});
-      User.update((this.user2.ft_login) , {draws : this.user2.draws + 1});
+      ++this.user1.draws;
+      ++this.user2.draws;
     }
     else if (this.score1 > this.score2) {
-      User.update((this.user1.ft_login), {victories : this.user1.victories + 1});
-      User.update((this.user2.ft_login), {defeats : this.user2.defeats + 1});
+      ++this.user1.victories;
+      ++this.user2.defeats;
     }
     else {
-      User.update((this.user2.ft_login), {victories : this.user2.victories + 1});
-      User.update((this.user1.ft_login), {defeats : this.user2.defeats + 1});
+      ++this.user2.victories;
+      ++this.user1.defeats;
     }
+    // Resolve users XP gains/losses.
     if (this.score1 >= this.score2)
-      await this.user1.MgainXP(
+      this.user1.gainXP(
         (this.user2.xpAmountForNextLevel * fixedPercentGain) / 100 +
         (this.user2.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
-      await this.user1.MgainXP(
+      this.user1.gainXP(
         (this.user2.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user2.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
       );
     if (this.score2 >= this.score1)
-      await this.user2.MgainXP(
+      this.user2.gainXP(
         (this.user1.xpAmountForNextLevel * fixedPercentGain) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
-      await this.user2.MgainXP(
+      this.user2.gainXP(
         (this.user1.xpAmountForNextLevel * fixedPercentLoss) / 100 +
         (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
       );
-    await User.refreshRanks();// console.log(ne marche pas)
+    User.refreshRanks();
   }
 
   static async clearOngoing() {

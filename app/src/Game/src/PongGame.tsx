@@ -50,8 +50,6 @@ export default function PongGame(props: any) {
   },[matchid, socket])
 
   useEffect(() => {
-    
-    
     socket.on('start', (data) => {
       setRole(data[1]);
       setId(data[0]);

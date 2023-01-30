@@ -137,11 +137,6 @@ export class User extends BaseEntity {
     return ((this.level / x) ^ y);
   }
 
-  async MgainXP(amount: number): Promise<User> {
-    return User.MgainXP(this, amount);
-    //return User.MgainXP(this, amount);
-  }
-
   async gainXP(amount: number): Promise<User> {
     return User.gainXP(this, amount);
   }
@@ -157,18 +152,6 @@ export class User extends BaseEntity {
   }
 
   /** STATIC METHODS */
-
-  static async MgainXP(user: User, amount: number): Promise<User>
-  {
-    const rest = user.xpAmountForNextLevel - user.xp;
-    if (rest <= amount) {
-      User.update(user.ft_login, {level: user.level + 1});
-      await User.update(user.ft_login, {level: 0});
-      amount -= rest;
-    }
-    User.update(user.ft_login, {xp: Math.round(user.xp + amount)});
-    return user;
-  }
 
   static async gainXP(user: User, amount: number): Promise<User> {
     const rest = user.xpAmountForNextLevel - user.xp;
@@ -187,15 +170,6 @@ export class User extends BaseEntity {
     else
       user.xp = 0;
     return user.save();
-  }
-
-  static async MlooseXP(user: User, amount: number): Promise<User>
-  {
-    if (user.xp > amount)
-      User.update(user.ft_login, {xp : Math.round(user.xp + amount)});
-    else
-      User.update(user.ft_login, {xp : 0});
-    return user;
   }
 
   /*
