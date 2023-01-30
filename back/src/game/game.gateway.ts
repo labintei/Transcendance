@@ -44,7 +44,10 @@ export class GameGateway implements OnGatewayDisconnect {
     {
       console.log("STREAM");
       if(this.gameservice.room(data) == false)
+      {
+        //client.emit("")
         return ;
+      }
       if(this.gameservice.startstream(client, data))
       {
         var render_stream;
