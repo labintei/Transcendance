@@ -14,13 +14,15 @@ export class GameGateway implements OnGatewayDisconnect {
 
   async handleDisconnect(client:Socket) {
     this.gameservice.IsinDispoDelete(client);
+    this.gameservice.IsInvitDelete(client);
   }
   
   @SubscribeMessage('start_invit_stream')
   async stream_invit(client:Socket, d:number) {
-    var data:number = Number(d);
+    var data:number = Number(d); 
     if(await this.gameservice.IsInvitation(client, data))
     {
+      this.gameservice.IsinDispoDelete(client);// enleve de la liste des dispo
       if(this.gameservice.IsInside(client))
         return ;
       else
@@ -88,6 +90,7 @@ export class GameGateway implements OnGatewayDisconnect {
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number){
     var l = await this.gameservice.newGame(client);
+    this.gameservice.IsInvitDelete(client);// empeche de rentrer dans Invitation
     if(l && (l[0] && l[1] == true))
     {
       console.log('reconnection a la game');
