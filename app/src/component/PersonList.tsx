@@ -122,7 +122,6 @@ export default class PersonList extends React.Component {
                       one.avatar_location = person.avatarURL;
                 if (person.ongoingMatchId !== undefined)
                   one.matchid = person.ongoingMatchId;
-                one.matchid = 5;
                 listftmp.push(one);
             }
             id++;
