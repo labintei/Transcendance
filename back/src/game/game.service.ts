@@ -506,7 +506,8 @@ export class GameService {
 
     Isyourgame(client:Socket, data:number): boolean
     {
-        if(this.s.get(data) && ((this.s.get(data).user1.ft_login == client.data.login) || (this.s.get(data).user2.ft_login)))
+        var l  = (client.request as any).user;
+        if(this.s.get(data) && ((this.s.get(data).user1.ft_login == l) || (this.s.get(data).user2.ft_login == l)))
             return true;
         return false;
     }
@@ -623,15 +624,17 @@ export class GameService {
             this.stream.get(data)[1] = render;
     }
 
-    getStream(data:number): [Array<Socket>,any]{
+    getStream(data:number): Array<Socket>{
         if(this.stream)
-            return this.stream.get(data);
+            return this.stream.get(data)[0];
     }
 
     async CreateMatchID(data:number) {
         var room = this.s.get(data);
         if(room)
-        {    
+        {   
+            User.update(room.user1.ft_login, {status:User.Status.ONLINE});
+            User.update(room.user2.ft_login, {status:User.Status.ONLINE});  
             const u1 = await User.findOneBy({ft_login: room.player1.data.login});
             const u2 = await User.findOneBy({ft_login: room.player2.data.login});
             if(u1 == null || u2 == null)
@@ -640,7 +643,7 @@ export class GameService {
             const m = (await Match.findOne({where: {id:data}, 
                 relations: {
                     user1 : true, user2 : true} }));
-            m.resolve();
+            //m.resolve();
         }
     }
 
