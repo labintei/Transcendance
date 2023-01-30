@@ -22,8 +22,11 @@ export class SearchController {
         { ownerLogin: req.user }
       )
       .where(
-        "user.username ILIKE :testUsername AND user.ft_login <> '" + req.user + "'",
-        { testUsername: partialUsername.replace(/([%_])/g, "\\$1") + '%' }
+        "user.username ILIKE :testUsername AND user.ft_login != :userLogin",
+        {
+          testUsername: partialUsername.replace(/([%_])/g, "\\$1") + '%',
+          userLogin: req.user
+        }
       )
       .select([
         "user.ft_login",
