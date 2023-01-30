@@ -2,6 +2,7 @@ import { SubscribeMessage, WebSocketGateway, WebSocketServer , OnGatewayDisconne
 import { Socket } from 'socket.io';
 import { GameService , Game} from 'src/game/game.service'
 import { Inject } from '@nestjs/common';
+import { Match } from 'src/entities/match.entity';
 
 @WebSocketGateway({
   origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
@@ -44,10 +45,12 @@ export class GameGateway implements OnGatewayDisconnect {
     }
     else
     {
-      console.log("STREAM");
-      if(this.gameservice.room(data) == false)
-      {
-        //client.emit("")
+      if(this.gameservice.room(data) == false) {
+        const m:Match = await Match.findOneBy({id:data});
+        if (m && m.status === Match.Status.ENDED)
+          client.emit("Ended_game");
+        else
+          client.emit("Not_Exist");
         return ;
       }
       if(this.gameservice.startstream(client, data))

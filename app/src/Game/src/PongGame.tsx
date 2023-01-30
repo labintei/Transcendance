@@ -12,13 +12,15 @@ export default function PongGame(props: any) {
   let {matchid} = useParams();
 
   const [Finish, setFinish] = useState(0);
-  const [usernames, setUsernames] = useState(["",""]);
+  const [message, setMessage] = useState("");
 
   //const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
 
   var B:any = useStore((s:any)=> s.Player1);
   var C:any = useStore((s:any)=> s.Player2);
   
+  const role = useStore((s:any)=> s.role);
+
   const setRole:any = useStore((s:any)=> s.SetRole);
   const setId:any = useStore((s:any)=> s.SetId);
 
@@ -66,7 +68,7 @@ export default function PongGame(props: any) {
         h2(5);
         h3(-9);
       }
-      setUsernames([data[2][0], data[2][1]])
+      setMessage(data[2][0] + " VS " + data[2][1])
     })
     return () => {
       socket.off('start');
@@ -84,18 +86,33 @@ export default function PongGame(props: any) {
       Setz(data[1]);
       B(data[2]);
       C(data[3]);
-      score1(data[5]);
-      score2(data[6])});
+      if (role === 2) {
+        score2(data[5]);
+        score1(data[6])
+      } else {
+        score1(data[5]);
+        score2(data[6])
+      }
+    });
     return () => {
       socket.off('newpos');
     }
   },[B,C,Setx,Setz,score1,score2,vbis,v,socket])
 
+  useEffect(() => {
+    socket.on('Not_Exist', () => setMessage("This game does not exist !"));
+    return () => {
+      socket.off('Not_Exist')
+    }
+  }, [socket])
+
 
   useEffect(() => {
-    socket.on('endgame', () => {console.log('END');setFinish(1)});
+    socket.on('Ended_game', () => {setMessage("This game is over.")});
+    socket.on('endgame', () => {console.log('END');setFinish(1); setMessage("This game is over.")});
     return () => {
       socket.off('endgame');
+      socket.off('Ended_game');
     }
   },[setFinish,socket])
 
@@ -103,18 +120,12 @@ export default function PongGame(props: any) {
     setFinish(0);
     socket.emit('start_game');
   }
-
+  console.log(role);
   return (
     <div className="App" tabIndex={0} >
     <World/>
-  
     <div className='title'>
-    { Ready && ( 
-     <>
-     {usernames[0]} VS {usernames[1]}
-     </>
-    )}
-
+     {message}
     </div>
     <div className='score'>
       <div className='elem'>
@@ -129,7 +140,10 @@ export default function PongGame(props: any) {
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
-      <h2>Game Over</h2>
+      <h2>{s} - {sbis}</h2>
+      {
+        s > sbis ? <p>You Won !</p> : <p>You lost...</p>
+      }
       <div className='btnRestartGame' onClick={restartGame}>
         Rejouer
       </div>
