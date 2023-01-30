@@ -136,7 +136,7 @@ export class GameService {
     async CreateInvit(user1: User , user2: User) {
         if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
-            if(this.InsideGame(user1) || this.InsideGame(user2))// l un des deux joueurs jouer
+            if(this.InsideGame(user1))// Si tu es deja en train de jouer fini d abord ta game
                 return -1;
             for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
             {

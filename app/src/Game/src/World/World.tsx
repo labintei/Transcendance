@@ -18,7 +18,7 @@ import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
+import { Sky } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 import axios from "axios";

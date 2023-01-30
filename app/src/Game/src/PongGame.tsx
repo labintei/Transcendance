@@ -1,115 +1,58 @@
-import React, { useCallback, useEffect, useState , useContext} from 'react';
+import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import Menu from './Menu/menu';
-//import { socket } from '../../App' ;
-import { start } from 'repl';
-import { io} from "socket.io-client";
 import { getSocketContext } from 'WebSocketWrapper';
-import { Routes, Route, useParams } from 'react-router-dom';
-
-//const secu_url = process.env.REACT_APP_BACKEND_URL || '';
-//export const socket = useContext(getSocketContext);
-//export const socket = io(secu_url, {withCredentials: true});
-
+import { useParams } from 'react-router-dom';
 
 export default function PongGame(props: any) {
 
   const socket = useContext(getSocketContext);
-
- //const afficherparams = function(){
-    let o = new URLSearchParams(window.location.href);
-    console.log(o.get("matchid"));
-    let {matchid} = useParams();// si marche plus remettre en const
-  // -> id ...
-    console.log(matchid);
-  //}
-    //window.location.href = window.location.href;
-    //setFinish(0);
-    //socket.emit('start_game');
-    
-    // useParams doit etre utilise de set facon
-    /*let { matchid } = useParams();
-    console.log('Params  ' + matchid);
-  */
-
-
-
-    //console.log(URLSearchParams)
-  
-
-
-  /*
-  const [time, setTime] = useState(0);
-  const [score, setScore]  = useState([0,0]);
-*/
-  
-  //var tim = 0;
-
-  // URL SEARCH PARAMS
-  //console.log(URLSearchParams.entries());
-
-  let username1:string = "";
-  let username2:string = "";
+  let {matchid} = useParams();
 
   const [Finish, setFinish] = useState(0);
   const [usernames, setUsernames] = useState(["",""]);
 
-  // marche po
-  const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
+  //const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
 
-  var B:any = useStore((s:any)=> s.Player1);// MovePlayer1
+  var B:any = useStore((s:any)=> s.Player1);
   var C:any = useStore((s:any)=> s.Player2);
   
   const setRole:any = useStore((s:any)=> s.SetRole);
   const setId:any = useStore((s:any)=> s.SetId);
 
-
-  // score fonctionne je n ai pas vu de probleme
   const s:any = useStore((s:any) => s.s);
   const sbis:any = useStore((s:any) => s.sbis);
   const score1:any = useStore((s:any) => s.setscore);
   const score2:any = useStore((s:any) => s.setscorebis);
-  // marche
+
   const Setx:any = useStore((s:any) => s.Setx);
   const Setz:any = useStore((s:any) => s.Setz);
   const Ready:any = useStore((s:any) => s.gameReady);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
-// marche pas
-  var j:number = 0;
-//  const t:any = useStore((s:any) => s.time);
-
   var v:any = useStore((s:any) => s.setbis);
   var vbis:number = useStore((s:any) => s.t);
-//  const setT:any = useStore((s:any) => s.Otime);
 
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
 
-  // je dois donc le faire qu une seule fois
 
   useEffect(() => 
   {
-    //afficherparams();
-    //if(Spectator_mode == false)
     if(matchid)
       socket.emit('start_invit_stream', matchid);
     else
-      socket.emit('start_game');
-    //else
-    //  socket.emit('start_stream');   
+      socket.emit('start_game');   
     return() => {}
-  },[])
+  },[matchid, socket])
 
   useEffect(() => {
     
-    console.log('START');
     
     socket.on('start', (data) => {
-      console.log(data);
       setRole(data[1]);
       setId(data[0]);
       SetReady(true);
@@ -126,21 +69,18 @@ export default function PongGame(props: any) {
         h3(-9);
       }
       setUsernames([data[2][0], data[2][1]])
-      username1 = data[2][0];
-      username2 = data[2][1];
     })
     return () => {
       socket.off('start');
       socket.emit('endgame');// reteste
       SetReady(false);
     }
-  }, [h1,h2,h3,SetReady,setId, setRole])
+  }, [h1,h2,h3,SetReady,setId, setRole, socket])
 
 
   useEffect(() => {
     socket.on('newpos', (data) => {
-      //console.log(vbis);
-      if(vbis != data[4])
+      if(vbis !== data[4])
         v(data[4]);
       Setx(data[0]);
       Setz(data[1]);
@@ -151,7 +91,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('newpos');
     }
-  },[B,C,Setx,Setz,score1,score2,vbis,v])
+  },[B,C,Setx,Setz,score1,score2,vbis,v,socket])
 
 
   useEffect(() => {
@@ -159,18 +99,13 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('endgame');
     }
-  },[setFinish])
+  },[setFinish,socket])
 
   const restartGame = function(){
-    //window.location.href = window.location.href;
     setFinish(0);
     socket.emit('start_game');
   }
 
-
-  //       Time:<Timer time={useStore((s:any) => s.time)}/>
-
-  //  Time:<Timer/>
   return (
     <div className="App" tabIndex={0} >
     <World/>
@@ -201,7 +136,7 @@ export default function PongGame(props: any) {
         Rejouer
       </div>
     </div>
-    {/*<Menu/>*/} 
+    {<Menu/>} 
     </div>
     );
 }

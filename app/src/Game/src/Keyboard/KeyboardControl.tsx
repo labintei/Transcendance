@@ -1,15 +1,11 @@
 import { useEffect , useContext} from 'react'
 import { useStore } from '../State/state'
-//import { socket } from '../PongGame'
-//mport {socket} from '../PongGame' 
-//import { socket } from '../../../App' ;
 import { getSocketContext } from 'WebSocketWrapper';
 
 const pressed = [false]
 
 function useKeys(target:any, event:any, up = true) {
   
-  const socket = useContext(getSocketContext);
   useEffect(() => {
     const downHandler = (e:any) => {
       
@@ -41,8 +37,6 @@ export default function KeyBoardControls()
   const role = useStore((s:any) => s.role);
   const id = useStore((s:any) => s.id);
   const set = useStore((state: any) => state.set);
-
-  const Spectator = useStore((s:any) => s.spectator);
   const socket = useContext(getSocketContext);
 
   useKeys(['ArrowLeft', 'a', 'A'], (left:boolean) => 

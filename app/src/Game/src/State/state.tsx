@@ -1,6 +1,5 @@
 import { createRef } from 'react';
 import { create }  from 'zustand';
-//import { socket, Game_data } from "../PongGame"
 
 type Profile = {
   uname:string,
@@ -9,12 +8,8 @@ type Profile = {
   inMatch:boolean
 }
 
-// define the store
 export const useStore = create((set,get) => ({
 
-  /*return {
-  set,
-  get,*/
   map: "space",
   gameReady:false,
   votes: 0,
@@ -35,7 +30,7 @@ export const useStore = create((set,get) => ({
   id : 0,
 
 
-  sphere_x: 0,// initalisatio
+  sphere_x: 0,
   sphere_z: 0,
   
   player2_x: 0,
@@ -63,7 +58,7 @@ export const useStore = create((set,get) => ({
   })),
   
   Otime: (num:number) => set((state:any)=>({time : num})),
-  // ne marcha po
+
   Setcx: (num:number) => set((state:any)=>({cx : num})),
   Setcy: (num:number) => set((state:any)=>({cy : num})),
   Setcz: (num:number) => set((state:any)=>({cz : num})),
@@ -72,7 +67,7 @@ export const useStore = create((set,get) => ({
   setscorebis: (num:number) => set((state:any)=>({sbis : num})),
 
   SetReady: (bool:boolean) => set((s:any)=>({gameReady: bool})),
-  //UnsetReady: () => set((s:any)=>({gameReady: false})),
+
   Setx: (num:number) => set((state:any)=>({sphere_x : num})),
   Setz: (num:number) => set((state:any)=>({sphere_z : num})),
 
