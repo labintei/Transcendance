@@ -24,7 +24,7 @@ import {
 } from '@chatscope/chat-ui-kit-react';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faPen, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import { a } from '@react-spring/three';
 
 const avatar_temp = "logo192.png";
@@ -75,7 +75,22 @@ export default function Chat() {
   const [profilSidebar, setProfilSidebar] = useState<string>("");
   const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
 
+  const refChannel = useRef(currentChannel);
+
   const socket = useContext(getSocketContext);
+
+  function callback(data: any) {
+    if (data.channelId === refChannel.current.id)
+    {
+      const messages = [...refChannel.current.messages, data];
+      console.log(messages);
+      setCurrentChannel({...refChannel.current, messages: messages})
+    }
+  }
+
+  useEffect(() => {
+    refChannel.current = currentChannel;
+  })
 
   useEffect(() => {
     if (!socket.connected)
@@ -83,22 +98,23 @@ export default function Chat() {
     socket.on('error', () => { console.log('error') });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
-    socket.on('msgs', (data) => { console.log('message', data) }); // move to Message or ChannelMessage
+    socket.on('message', callback);
+
+    socket.on('hideChannel', (channel : Channel) => {
+      console.log("HIDE");
+      if (channel.id === refChannel.current.id)
+        setCurrentChannel(empty_chan);
+    })
 
     socket.on('joinedList', (data) => {
       console.log("[WS] joinedList");
       setChannels(data);
-      if (data.length !== 0) {
+      if (data.length !== 0 && refChannel.current.id === 0) {
         socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
           setCurrentChannel(newCurrentChannel);
         })}
       socket.emit('publicList');
     });
-
-    // socket.on('joinChannel', (channel : Channel) => {
-    //   socket.emit('joinedList');
-    //   socket.emit('getChannel', channel, (data : Channel) => {setCurrentChannel(channel)});
-    // });
 
     socket.emit('joinedList');
     // This code will run when component unmount
@@ -111,20 +127,10 @@ export default function Chat() {
   function RenderConversations() {
     const switchChannel = (channel: Channel) => (e: any) => {
       socket.emit('getChannel', channel, (data: Channel) => {
+        console.log(data);
         setCurrentChannel(data);
       });
     };
-
-      // socket.emit('getChannel', channel, (data : Channel) => {
-      //   setCurrentChannel(data);
-      //   let updateChannels = [...channels];
-      //   let index = updateChannels.findIndex((i) => i.id === data.id);
-      //   updateChannels[index] = data;
-      //   setChannels(updateChannels);
-      // })}
-
-      // console.log(channels);
-      // console.log(currentChannel);
 
     return (
       <ExpansionPanel title="Conversations list" open={true}>
@@ -141,6 +147,9 @@ export default function Chat() {
   }
 
   function RenderPublicConversations() {
+    const [state, setState] = useState<number>(0);
+    let password: HTMLInputElement | null = null;
+
     useEffect(() => {
       socket.on('publicList', (chans : Channel[]) => {
         let newPublicList : Channel[] = [];
@@ -159,8 +168,18 @@ export default function Chat() {
     }, [channels]);
 
     const onClick = (channel: Channel) => (e: any) => {
+      e.preventDefault();
+      if (channel.status === "Protected")
+      {
+        if (state === channel.id)
+          setState(0);
+        else
+          setState(channel.id);
+        return ;
+      }
+
       socket.emit('joinChannel', channel, (channel : Channel) => {
-        socket.emit('joinedList');
+        // socket.emit('joinedList');
         socket.emit('getChannel', channel, (channel : Channel) => {
           setCurrentChannel(channel)
         });
@@ -168,14 +187,39 @@ export default function Chat() {
       socket.emit('publicList');
     };
 
+    const onSubmit = (channel: Channel) => (e: any) => {
+      e.preventDefault();
+
+      channel.password = password!.value;
+
+      socket.emit('joinChannel', channel, (channel : Channel) => {
+        // socket.emit('joinedList');
+        socket.emit('getChannel', channel, (channel : Channel) => {
+          setCurrentChannel(channel)
+        });
+      });
+    }
+
     return (
       <ExpansionPanel title="Public conversations list">
         {publicChannels.map((channel, index) => {
           return (
+          <div key={index}>
             <Conversation
-              key={index}
               name={channel.name}
               onClick={onClick(channel)}/>
+            {state !== channel.id ? <></> :
+              <form onSubmit={onSubmit(channel)}>
+                <input
+                  type="input"
+                  placeholder="Password"
+                  ref={node => password = node}
+                  required
+                />
+              <Button>Create</Button>
+            </form>
+            }
+            </div>
           )})}
       </ExpansionPanel>
     );
@@ -205,22 +249,20 @@ export default function Chat() {
   function RenderChatContainer() {
     console.count("renderChatContainer")
 
-    // useEffect(() => {
-
-    // }, []);
-
     const leaveChannel = (e: any) => {
       console.log("leaving channel", currentChannel.name)
-      socket.emit('leaveChannel', currentChannel, () => {
-        socket.emit('joinedList')
-      })}
+      socket.emit('leaveChannel', currentChannel, (data : any) => {
+        console.log("leave emit", data)
+        socket.emit('joinedList');
+      })
+    }
 
     const openProfile = (ft_login: string) => (e: any) => {
       e.preventDefault();
       setProfilSidebar(ft_login);
     }
 
-    if (channels.length === 0)
+    if (currentChannel.id === 0)
     {
       return (
         <MessageList>
@@ -275,7 +317,7 @@ export default function Chat() {
                 // avatarPosition="tl"
               >
                 <Message.Header sender={message.sender.username} />
-                <Avatar src={avatar_temp} onClick={openProfile(message.sender.ft_login)}/>
+                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender.ft_login)}/>
               </Message>
             )
           })}
@@ -352,6 +394,20 @@ export default function Chat() {
 
   function RenderRightSidebar() {
 
+    function AdminPanel() {
+      return (
+        <>
+          <h1>
+            {currentChannel.name}
+          </h1>
+          <Button icon={<FontAwesomeIcon icon={faPen}/>}>
+            Change Name
+          </Button>
+        </>
+      );
+    }
+
+
     return (
       <Sidebar position="right">
         { profilSidebar !== "" ?
@@ -360,7 +416,7 @@ export default function Chat() {
           </>
           :
           <>
-            <h1>Admin Panel</h1>
+            <AdminPanel/>
           </>
         }
       </Sidebar>
@@ -376,6 +432,7 @@ export default function Chat() {
       content: content,
       channelId: currentChannel.id,
     }, () => { socket.emit("getChannel", currentChannel, (data : Channel) => {
+      console.log("AAAAAA");
       setCurrentChannel(data);
     })})
   }

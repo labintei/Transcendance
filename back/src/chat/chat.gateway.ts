@@ -124,13 +124,18 @@ export class ChatGateway {
         if (data.status === Channel.Status.DIRECT || !Object.values(Channel.Status).includes(data.status))
           throw new WsException("Bad channel status.")
         channel.status = data.status;
+        if (channel.status !== Channel.Status.PROTECTED)
+          channel.password = null;
         altered = true;
       }
-      if (data.password && data.password !== channel.password)
+      if (data.password !== undefined)
       {
         if (channel.status !== Channel.Status.PROTECTED)
           throw new WsException("Only protected channels can have a password.");
-        channel.password = await Channel.hashPassword(data.password);
+        if (data.password)
+          channel.password = await Channel.hashPassword(data.password);
+        else
+          channel.password = null;
         altered = true;
       }
       if (altered)
@@ -167,7 +172,7 @@ export class ChatGateway {
         throw new WsException("You already joined this channel.");
       if (chanUser?.rights === ChannelUser.Rights.BANNED)
         throw new WsException("You are banned from this channel.");
-      if (channel.status === Channel.Status.PRIVATE && (!chanUser || chanUser.status !== ChannelUser.Status.INVITED))
+      if (channel.status === Channel.Status.PRIVATE && chanUser?.status !== ChannelUser.Status.INVITED)
         throw new WsException("You must be invited to join a private channel");
       if (channel.status === Channel.Status.PROTECTED) {
         if (!data.password)
@@ -193,46 +198,45 @@ export class ChatGateway {
   }
 
   @SubscribeMessage('leaveChannel')
-  async leaveChannel(client: Socket, data: Channel): Promise<ChannelUser> {
+  async leaveChannel(client: Socket, data: Channel): Promise<boolean> {
     try {
       data.id = Number(data.id);
       if (!Number.isInteger(data.id) || data.id < 0)
         throw new WsException("Invalid channel id");
-      const channel = await Channel.findOneBy({ id: data.id });
+      let channel = await Channel.findOneBy({ id: data.id });
       if (!channel)
         throw new WsException("Channel id (" + data.id + ") was not found.");
       if (channel.status === Channel.Status.DIRECT)
         throw new WsException("You cannot leave a direct Channel.");
-      const chanUser = await ChannelUser.findOneBy({
+      let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: client.data.login
       });
       if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
         throw new WsException("You are not a member of this channel.");
+      let removeChannel = false;
       if (chanUser.isOwner()){
         const newOwner = await channel.getNewOwner();
         if (newOwner) {
           newOwner.rights = ChannelUser.Rights.OWNER;
           await newOwner.save();
-          await chanUser.remove();
         }
         else {
-          const rooms = SocketGateway.channelsToRooms([channel]);
-          this.io.in(rooms).socketsLeave(rooms);
+          await SocketGateway.channelEmit(channel.id, 'hideChannel', {id: channel.id});
+          await SocketGateway.allChannelLeavesRoom(channel.id);
           await channel.remove();
+          return true;
         }
-        return null;
+        chanUser.rights = null;
       }
-      if (!chanUser.rights) {
-        await chanUser.remove();
-        return null;
-      }
-      chanUser.status = null;
-      await chanUser.save();
-      client.leave(SocketGateway.channelsToRooms([channel])[0])
-      await channel.emitHide(chanUser.userLogin);
+      await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
+      await SocketGateway.userLeaveChannelRoom(chanUser.userLogin, chanUser.channelId);
       await channel.emitUpdate();
-      return chanUser
+      if (!chanUser.rights)
+        await chanUser.remove();
+      else
+        await chanUser.save();
+      return true;
     }
     catch (e) {
       this.err(client, 'leaveChannel', e);
@@ -243,28 +247,28 @@ export class ChatGateway {
   @SubscribeMessage('publicList')
   async publiclist(client: Socket): Promise<Channel[]> {
     const list = await Channel.publicList();
-    client.emit('publicList', list);
+    SocketGateway.userEmit(client.data.login, 'publicList', list);
     return list;
   }
 
   @SubscribeMessage('joinedList')
   async joinedList(client: Socket): Promise<Channel[]> {
     const list = await Channel.joinedList(client.data.login);
-    client.emit('joinedList', list);
+    SocketGateway.userEmit(client.data.login, 'joinedList', list);
     return list;
   }
 
   @SubscribeMessage('invitedList')
   async invitedList(client: Socket): Promise<Channel[]> {
     const list = await Channel.invitedList(client.data.login);
-    client.emit('invitedList', list);
+    SocketGateway.userEmit(client.data.login, 'invitedList', list);
     return list;
   }
 
   @SubscribeMessage('directList')
   async directList(client: Socket): Promise<Channel[]> {
     const list = await Channel.directList(client.data.login);
-    client.emit('directList', list);
+    SocketGateway.userEmit(client.data.login, 'directList', list);
     return list;
   }
 
@@ -287,8 +291,27 @@ export class ChatGateway {
     }
     catch (e) {
       this.err(client, 'getChannel', e);
+      return null;
     }
   }
+
+  @SubscribeMessage('getDirectChannel')
+  async getDirectChannel(client: Socket, data: User): Promise<Channel> {
+    try {
+      const other = await User.findOneBy({ft_login: data.ft_login});
+      if (!other)
+        throw new WsException("User " + data.ft_login + " was not found.");
+      const channelId = await Channel.getDirectChannelId(client.data.login, other.ft_login);
+      const channel = await Channel.getChannelWithUsersAndMessages(channelId);
+      if (!channel)
+        throw new WsException("ChannelId " + channelId + " was not found.");
+      return channel;
+    }
+    catch (e) {
+      this.err(client, 'getDirectChannel', e);
+      return null;
+    }
+  }  
 
   @SubscribeMessage('setPermissions')
   async setPermissions(client: Socket, data: ChannelUser): Promise<ChannelUser> {
@@ -336,7 +359,7 @@ export class ChatGateway {
       if (data.status !== undefined && data.status !== chanUser.status) {
         chanUser.status = data.status;
         if (data.status === null)
-          await channel.emitHide(chanUser.userLogin);
+          await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
       }
       if (chanUser.isOwner())
       {
@@ -354,6 +377,7 @@ export class ChatGateway {
     }
     catch (e) {
       this.err(client, 'setPermissions', e);
+      return null;
     }
   }
 

@@ -1,9 +1,11 @@
-import { Controller, ForbiddenException, Get, Param, Request, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
+import { BadRequestException, Controller, ForbiddenException, Get, Param, Request, Response, UnauthorizedException, UseGuards } from '@nestjs/common';
 import { Oauth42Guard } from './oauth42.guard';
 import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
+import { AuthGuard } from '@nestjs/passport';
+import { FakeGuard } from './fake.guard';
 
 
 function throwOrRedir(res, redir, error)
@@ -44,6 +46,15 @@ export class AuthController
     return "You are fully logged in.";
   }
 
+  //  ********** FOR DEVELOPMENT ONLY **********
+  //  Uncomment the endpoint below to be able to login as any registered user.
+  @Get('fake')
+  @UseGuards(FakeGuard)
+  async loginHack(@Request() req, @Response({ passthrough: true }) res)
+  {
+    return "logged in as " + req.user;
+  }
+
   /*
   **  On these routes, you can use the "redirectURL" query parameter to
   **  specify an urlencoded callback URL to redirect to after authentication
@@ -78,7 +89,7 @@ export class AuthController
     if (req.session.twoFASecret)
     {
       if (req.query.twoFAToken === undefined)
-        return throwOrRedir(res, redir, new ForbiddenException('missing query parameter : <twoFAToken>'));
+        return throwOrRedir(res, redir, new BadRequestException('missing query parameter : <twoFAToken>'));
       if (!authenticator.check(req.query.twoFAToken, req.session.twoFASecret))
         return throwOrRedir(res, redir, new ForbiddenException("2FA token is invalid."));
       req.session.twoFASecret = null;
