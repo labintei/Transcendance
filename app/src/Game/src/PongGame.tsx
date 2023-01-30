@@ -12,7 +12,7 @@ export default function PongGame(props: any) {
   let {matchid} = useParams();
 
   const [Finish, setFinish] = useState(0);
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState("Waiting for your opponent...");
 
   //const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
 
