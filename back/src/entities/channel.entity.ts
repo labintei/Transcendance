@@ -112,8 +112,7 @@ export class Channel extends BaseEntity {
     });
     channel.users = await ChannelUser.find({
       select: {
-        user: User.defaultFilter,
-        // rights: true
+        user: User.defaultFilter
       },
       relations: {
         user: true
@@ -126,6 +125,7 @@ export class Channel extends BaseEntity {
         rights: "ASC"
       }
     });
+    console.log(channel.users);
     channel.messages = await Message.find({
       select: {
         id: true,
