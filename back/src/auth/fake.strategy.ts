@@ -7,12 +7,6 @@ import { Request } from 'express';
 @Injectable()
 export class FakeStrategy extends PassportStrategy(Strategy, 'fake')
 {
-  constructor() {
-    super(/*{
-      usernameField: 'login'
-    }*/);
-  }
-
   async validate(req: Request): Promise<any> {
     if (typeof req.query.login !== "string" || !req.query.login)
       throw new BadRequestException("Invalid <login> query parameter");

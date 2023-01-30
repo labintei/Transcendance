@@ -18,7 +18,7 @@ import { threadId } from 'worker_threads';
   credentials: true,
 })
 
-export class GameGateway/* implements OnGatewayDisconnect */{
+export class GameGateway implements OnGatewayDisconnect {
 /*
   constructor(
     private gameservice: GameService
@@ -26,20 +26,25 @@ export class GameGateway/* implements OnGatewayDisconnect */{
 
   constructor(@Inject(GameService) private gameservice: GameService) {}
 
-/*
-  async handleDisconnect(client:Socket)
+
+  async handleDisconnect(client:Socket)// n empiete pas sur la deconnection de base
   {
     console.log('DISCONNECTION GAME GATEWAY');
-    console.log(this.gameservice.IsinGame(client));
-    this.gameservice.DisconnectionGame(client);
-  }*/
+    console.log(this.gameservice.IsinDispoDelete(client));
+    //console.log(this.gameservice.IsinGame(client));
+    //this.gameservice.DisconnectionGame(client);
+  }
 
+  @SubscribeMessage('endgame')
+  out_page(client:Socket)
+  {
+    console.log("TU AS QUUITTER LA PAGE");
+    console.log(this.gameservice.IsinDispoDelete(client));
+  }
 
   @SubscribeMessage('testlaulau')
   async marchepo(client:Socket)
   {
-    //this.gameservice.test();
-    console.log('Bien Implementer');
   }
 
   @SubscribeMessage('renderstream')
@@ -47,6 +52,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   {
 
   }
+
 
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number)
@@ -56,14 +62,14 @@ export class GameGateway/* implements OnGatewayDisconnect */{
     {
       console.log('reconnection a la game');
       var id_role = await this.gameservice.Idrole(client);
-      client.emit('start', id_role);// j avais rajoute une [] dessus ce qui faisait un tableau de tableau
-      await this.gameservice.delay(4000);
+      client.emit('start', id_role);
+      //await this.gameservice.delay(50);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
     if(l && l[1] == true)
       return ;
-    if(l && (l[0] && l[1] == false))
+    if(l && (l[0] && l[1] == false))// GAME
     {
         var room = this.gameservice.getClients(l[0]);
         if(room[0])
@@ -77,7 +83,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
             clients[0].emit('newpos', a);
         if(clients[1] != null)
             clients[1].emit('newpos', a);
-       }, 160);
+       }, 50);
        
        var time = 0;
        var score = [0,0];
@@ -104,9 +110,8 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   @SubscribeMessage('endgame')
   async endgame(client:Socket, data:number)
   {
-    //console.log(this.gameservice.IsinGame(client));
-    console.log('SOCKET SERVER ON ENDGAME : ' +  this.gameservice.IsinGame(client));
-    this.gameservice.DisconnectionGame(client);
+    console.log('END GAME NOT DISCONNECT')
+    //this.gameservice.DisconnectionGame(client);
   }
 
 
@@ -114,18 +119,18 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   async left(client: Socket, c:any)//: Promise<number>id-room role 1 ou deux
   {
     if(c[0] === 1)// si le role correspond a 1
-      this.gameservice.player1x_left(c[1]);
+      this.gameservice.player1x_left(c[1], client);
     if(c[0] === 2)
-      this.gameservice.player2x_right(c[1]);
+      this.gameservice.player2x_right(c[1], client);
   }
 
   @SubscribeMessage('right')
   async right(client: Socket, c:any)//: Promise<number>
   {
     if(c[0] === 1)
-      this.gameservice.player1x_right(c[1]);
+      this.gameservice.player1x_right(c[1], client);
     if(c[0] === 2)
-      this.gameservice.player2x_left(c[1]);
+      this.gameservice.player2x_left(c[1], client);
   }
 
 
@@ -142,27 +147,19 @@ export class GameGateway/* implements OnGatewayDisconnect */{
   }
 
 
-
   @SubscribeMessage('useremit')
   async useremit(client:Socket, user:string)
   {
     // je vais faire une liste de User
     var c = await User.find();
-    console.log(c);
-    console.log('HEAR USEREMIT');
-    console.log('USER ' + user);
-
     //const user = await User.findOneBy({ft_login: (client.request as any).user});
 
     const l = await  User.findOneBy({ft_login: user})
 
     if(l)
     {
-      console.log('ID client ' + client.id);
       l.socket = client.id;
     }
-    console.log(l.socket);// id est bien associe au user
-
   }
 
   public static async sendtostream(stream: Socket[], data:number[])// gameservice probleme n existe pas dans socket.gateway il faut preshot
@@ -170,7 +167,7 @@ export class GameGateway/* implements OnGatewayDisconnect */{
     stream.map((s) => {s.emit('pos', data);});
 	}
 
-  @SubscribeMessage('startstream')
+  @SubscribeMessage('start_stream')
   async startstream(client:Socket, data:number)
   {
     console.log('StartStream');

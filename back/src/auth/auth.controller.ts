@@ -5,6 +5,7 @@ import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
 import { AuthGuard } from '@nestjs/passport';
+import { FakeGuard } from './fake.guard';
 
 
 function throwOrRedir(res, redir, error)
@@ -48,12 +49,11 @@ export class AuthController
   //  ********** FOR DEVELOPMENT ONLY **********
   //  Uncomment the endpoint below to be able to login as any registered user.
   @Get('fake')
-  @UseGuards(AuthGuard('fake'))
+  @UseGuards(FakeGuard)
   async loginHack(@Request() req, @Response({ passthrough: true }) res)
   {
     return "logged in as " + req.user;
   }
-
 
   /*
   **  On these routes, you can use the "redirectURL" query parameter to

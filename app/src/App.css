@@ -33,6 +33,19 @@ menu > li > button:hover {
   background-color: #1ac586;
   color:black;
 }
+/* Other coloring option /
+menu {
+  background-color: rgb(67, 13, 117);
+}
+
+menu > li > button {
+  background-color: rgb(60, 102, 136);
+}
+
+menu > li > button:hover {
+  background-color: rgb(171, 171, 171);
+}
+/**/
 
 .App-content {
   padding:0;
