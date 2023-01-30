@@ -2,6 +2,8 @@ import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
+const rightsTimeoutMargin = 60000;  // 1 Minute
+
 enum ChannelUserRights {
   OWNER = "Owner",
   ADMIN = "Admin",
@@ -69,6 +71,28 @@ export class ChannelUser extends BaseEntity {
       && this.rights !== ChannelUser.Rights.BANNED
       && this.status === ChannelUser.Status.JOINED);
   }
+
+  /*async revokeTimer() {
+    
+  }
+
+  async revokeRights() {
+    this.rights = null;
+    if (!this.status)
+      await this.remove();
+    else
+      await this.save();
+  }
+
+  async setRightsTimeout(rights: ChannelUser.Rights) {
+    const timeout setTimeout
+  }
+
+  static async checkRightsOnStartup() {
+    const now = new Date();
+    const currents = async await 
+
+  }*/
 
 }
 

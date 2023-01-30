@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not} from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
@@ -112,8 +112,7 @@ export class Channel extends BaseEntity {
     });
     channel.users = await ChannelUser.find({
       select: {
-        user: User.defaultFilter,
-        rights: true
+        user: User.defaultFilter
       },
       relations: {
         user: true
@@ -187,12 +186,8 @@ export class Channel extends BaseEntity {
   static async joinedList(login: string): Promise<Channel[]> {
     return Channel.find({
       select: Channel.defaultFilter,
-      relations: {
-        users: {
-          user: true
-        }
-      },
       where: {
+        status: Not(Channel.Status.DIRECT),
         users: {
           userLogin: login,
           status: ChannelUser.Status.JOINED
@@ -214,23 +209,30 @@ export class Channel extends BaseEntity {
   }
 
   static async directList(login: string): Promise<Channel[]> {
-    return Channel.find({
-      select: {
-        ...Channel.defaultFilter,
-        users: {
-          user: User.defaultFilter
-        }
-      },
-      relations: {
-        users: true
-      },
-      where: {
-        status: Channel.Status.DIRECT,
-        users: {
-          userLogin: login
-        }
-      }
-    });
+    return await Channel.createQueryBuilder("channel")
+      .innerJoin(
+        ChannelUser,
+        "ownChanUser",
+        "ownChanUser.channelId = channel.id AND ownChanUser.userLogin = :user_login",
+        { user_login: login }
+      )
+      .where(
+        "channel.status = :channelStatus",
+        { channelStatus: Channel.Status.DIRECT }
+      )
+      .leftJoinAndMapMany(
+        "users",
+        ChannelUser,
+        "otherChanUser",
+        "otherChanUser.channelId = channel.id AND ownChanUser.userLogin != :user_login",
+        { user_login: login }
+      )
+      .select([
+        "channel.id",
+        "channel.status",
+        "otherChanUser.username"
+        ])
+      .getMany();
   }
 
 }
