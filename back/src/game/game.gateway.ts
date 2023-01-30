@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import { GameService , Game} from 'src/game/game.service'
 import { Inject } from '@nestjs/common';
 import { Match } from 'src/entities/match.entity';
+import { delay } from 'rxjs';
 
 @WebSocketGateway({
   origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
@@ -74,6 +75,7 @@ export class GameGateway implements OnGatewayDisconnect {
       room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
     if(room[1])
       room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
+    delay(50);
     var i = setInterval(() => {
       var clients = this.gameservice.getClients(data);
       var a = this.gameservice.sphereroom(data);

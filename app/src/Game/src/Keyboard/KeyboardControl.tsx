@@ -43,7 +43,6 @@ export default function KeyBoardControls()
   {
     if(left /*&& Spectator == false*/)
     {
-      console.log([role,id]);
       socket.emit('left', [role,id]);
     }
   })
@@ -52,7 +51,6 @@ export default function KeyBoardControls()
   { 
     if(right /*&& Spectator == false*/)
     {
-      console.log([role,id]);
       socket.emit('right', [role,id]);
     }
   })

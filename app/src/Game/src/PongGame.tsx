@@ -56,6 +56,9 @@ export default function PongGame(props: any) {
       setRole(data[1]);
       setId(data[0]);
       SetReady(true);
+      console.log(data[1]);
+      console.log(data[1] === 1);
+      console.log(data[1] == 1);
       if(data[1] === 1)
       {
         h1(0);
@@ -120,7 +123,6 @@ export default function PongGame(props: any) {
     setFinish(0);
     socket.emit('start_game');
   }
-  console.log(role);
   return (
     <div className="App" tabIndex={0} >
     <World/>
