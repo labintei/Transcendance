@@ -136,7 +136,7 @@ export default function PongGame(props: any) {
         Rejouer
       </div>
     </div>
-    {<Menu/>} 
+    {/*<Menu/>*/} 
     </div>
     );
 }

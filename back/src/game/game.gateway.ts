@@ -97,6 +97,7 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number){
+    console.log("ICI");
     var l = await this.gameservice.newGame(client);
     this.gameservice.IsInvitDelete(client);// empeche de rentrer dans Invitation
     if(l && (l[0] && l[1] == true))
