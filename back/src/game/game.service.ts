@@ -136,6 +136,8 @@ export class GameService {
     async CreateInvit(user1: User , user2: User) {
         if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
+            if(this.InsideGame(user1) || this.InsideGame(user2))// l un des deux joueurs jouer
+                return -1;
             for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
             {
                 if(value)
@@ -217,7 +219,7 @@ export class GameService {
         return false;  
     }
 
-    IsInvitDelete(client:Socket) {
+    IsInvitDelete(client:Socket) {// Enleve de toutes les autres Invit
         var l  = (client.request as any).user;
         for( var [key, value] of this.invitation.entries())
         {
@@ -497,6 +499,13 @@ export class GameService {
         }
         else
             return [(await this.createGame(contestant, user, client)), false];
+    }
+
+    Isyourgame(client:Socket, data:number): boolean
+    {
+        if(this.s.get(data) && ((this.s.get(data).user1.ft_login == client.data.login) || (this.s.get(data).user2.ft_login)))
+            return true;
+        return false;
     }
 
     addtime(data:number){

@@ -19,10 +19,18 @@ export class GameGateway implements OnGatewayDisconnect {
   
   @SubscribeMessage('start_invit_stream')
   async stream_invit(client:Socket, d:number) {
-    var data:number = Number(d); 
+    var data:number = Number(d);
+    if(await this.gameservice.Isyourgame(client, data))
+    {
+      var id_role = await this.gameservice.Idrole(client);
+      client.emit('start', id_role);
+      this.gameservice.ClientChange(id_role, client);
+      return ;// remplace le client dans la game
+    }
     if(await this.gameservice.IsInvitation(client, data))
     {
       this.gameservice.IsinDispoDelete(client);// enleve de la liste des dispo
+      this.gameservice.IsInvitDelete(client);// Se deconnecte des autres invitations
       if(this.gameservice.IsInside(client))
         return ;
       else
@@ -41,7 +49,7 @@ export class GameGateway implements OnGatewayDisconnect {
         var render_stream;
         render_stream =  setInterval(() => {
           GameGateway.sendtostream(this.gameservice.getStream(data) , this.gameservice.getPos(data));
-        }, 160)
+        }, 50)
       }
   }
 }
@@ -93,7 +101,6 @@ export class GameGateway implements OnGatewayDisconnect {
     this.gameservice.IsInvitDelete(client);// empeche de rentrer dans Invitation
     if(l && (l[0] && l[1] == true))
     {
-      console.log('reconnection a la game');
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', id_role);
       this.gameservice.ClientChange(id_role, client);
