@@ -188,7 +188,7 @@ export class ChatGateway {
       chanUser.status = ChannelUser.Status.JOINED;
       await chanUser.save();
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
-      channel.emitUpdate();
+      channel.userListUpdate();
       return Channel.getChannelWithUsersAndMessages(channel.id);
     }
     catch (e) {
@@ -375,7 +375,7 @@ export class ChatGateway {
       }
       else
         chanUser = await chanUser.save();
-      await channel.emitUpdate();
+      await channel.userListUpdate();
       return chanUser;
     }
     catch (e) {

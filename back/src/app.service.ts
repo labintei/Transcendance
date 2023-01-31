@@ -2,20 +2,57 @@ import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Match } from './entities/match.entity';
 import { UserRelationship } from './entities/userrelationship.entity';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { ChannelUser } from './entities/channeluser.entity';
 
 @Injectable()
 export class AppService implements OnModuleInit {
 
+  constructor(private injectedSchedulerRegistry: SchedulerRegistry) {}
+
+  private static schedulerRegistry: SchedulerRegistry = null;
+
   async onModuleInit() {
+    AppService.schedulerRegistry = this.injectedSchedulerRegistry;
+
     //  ********** FOR DEVELOPMENT ONLY **********
     //  Uncomment the single line below to activate the example generation on application load.
-    await this.generateExamples();
-    
+    await AppService.generateExamples();
+    //  ******************************************
+  
     await User.clearOnlines();
     await Match.clearOngoing();
+    await ChannelUser.setRightsTimeoutsOnStartup();
   }
 
-  async generateExamples() {
+  static deleteTimeout(name:string) {
+    try {
+      const timeout = this.schedulerRegistry.getTimeout(name);
+      clearTimeout(timeout);
+      this.schedulerRegistry.deleteTimeout(name);
+    } catch (e) {}
+  }
+
+  static setTimeout(name:string, callback: () => void, delay_ms: number): NodeJS.Timeout {
+    this.deleteTimeout(name);
+    const timeout = setTimeout(callback, delay_ms);
+    this.schedulerRegistry.addTimeout(name, timeout);
+    return timeout
+  }
+
+  static getTimeout(name:string): NodeJS.Timeout | null {
+    let timeout = null
+    try {
+      timeout = this.schedulerRegistry.getTimeout(name);
+    } catch (e) {}
+    return timeout;
+  }
+
+  static getRegisteredTimeoutNames(): string[] {
+    return this.schedulerRegistry.getTimeouts();
+  }
+
+  static async generateExamples() {
     if (await User.count())
       return;
     await User.save([

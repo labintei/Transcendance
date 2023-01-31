@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not, AfterUpdate} from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
@@ -55,8 +55,16 @@ export class Channel extends BaseEntity {
 
   async emitUpdate() {
     await this.refreshListIfPublic();
+    await this.userListUpdate();
+  }
+
+  async userListUpdate() {
     if (this.id)
-      await SocketGateway.channelEmit(this.id, 'updateChannel', {id: this.id});
+      Channel.userListUpdate(this.id);
+  }
+
+  static async userListUpdate(channelId: number) {
+    await SocketGateway.channelEmit(channelId, 'updateChannel', {id: channelId});
   }
 
   async getNewOwner(): Promise<ChannelUser> {
