@@ -90,9 +90,6 @@ export class User extends BaseEntity {
   @Column({ type: 'varchar', length: 7, default: "#FFFFFF" })
   ballColor: string;
 
-  @Column({ nullable: true })
-  socket: string;
-
   @OneToMany(() => UserRelationship, (relationship) => (relationship.owner))
   relationships: UserRelationship[];
 

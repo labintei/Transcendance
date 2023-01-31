@@ -219,9 +219,6 @@ export class Channel extends BaseEntity {
   static async directList(login: string): Promise<Channel[]> {
     const list = await Channel.find({
       select: Channel.defaultFilter,
-      relations: {
-        users: true
-      },
       where: {
         status: Channel.Status.DIRECT,
         users: {
@@ -230,12 +227,33 @@ export class Channel extends BaseEntity {
       }
     });
     for (let channel of list) {
-      channel.users.unshift(await ChannelUser.findOneBy({
-        channelId: channel.id,
-        userLogin: Not(login)
-      }));
+      channel.users = [
+        await ChannelUser.findOne({
+          select: {
+            user: User.defaultFilter
+          },
+          relations: {
+            user: true
+          },
+          where: {
+            channelId: channel.id,
+            userLogin: Not(login)
+          }
+        }),
+        await ChannelUser.findOne({
+          select: {
+            user: User.defaultFilter
+          },
+          relations: {
+            user: true
+          },
+          where: {
+            channelId: channel.id,
+            userLogin: login
+          }
+        })
+      ];
     }
-    console.log(list[0]);
     return list;
   }
 
