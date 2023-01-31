@@ -244,10 +244,8 @@ export default function Chat() {
       // console.log("debug debug", channel);
 
       const chanUser = channel.users.find((user) => login.value !== user.userLogin);
-      console.log("debug debug", channel);
-      // return (chanUser!.user.username);
-
-      return "Secret direct message";
+      // console.log("debug debug", channel);
+      return (chanUser!.user.username);
     }
 
     return (
