@@ -1,8 +1,11 @@
+import { SchedulerRegistry } from "@nestjs/schedule";
+import { AppService } from "src/app.service";
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
 const rightsTimeoutMargin = 60000;  // 1 Minute
+const timeoutNamePrefix = 'rigthsTimeout-';
 
 enum ChannelUserRights {
   OWNER = "Owner",
@@ -72,27 +75,42 @@ export class ChannelUser extends BaseEntity {
       && this.status === ChannelUser.Status.JOINED);
   }
 
-  /*async revokeTimer() {
-    
+  private rightsTimeoutName(): string {
+    return 'rightsTimeout-' + this.channelId + '-' + this.userLogin;
   }
 
-  async revokeRights() {
+  private async revokeRights() {
+    const channelId = this.channelId;
     this.rights = null;
-    if (!this.status)
-      await this.remove();
-    else
+    this.rightsEnd = null;
+    if (this.status)
       await this.save();
+    else
+      await this.remove();
+    Channel.userListUpdate(channelId);
   }
 
-  async setRightsTimeout(rights: ChannelUser.Rights) {
-    const timeout setTimeout
+  async updateRightsTimeout() {
+    AppService.deleteTimeout(this.rightsTimeoutName());
+    if (!this.rightsEnd)
+      return;
+    const delay = this.rightsEnd.getTime() - Date.now();
+    if (delay >= rightsTimeoutMargin)
+      AppService.setTimeout(
+        this.rightsTimeoutName(),
+        async () => { await this.revokeRights() },
+        delay);
+    else
+      await this.revokeRights();
   }
 
-  static async checkRightsOnStartup() {
+  static async setRightsTimeoutsOnStartup() {
     const now = new Date();
-    const currents = async await 
-
-  }*/
+    const allChanUsers = await ChannelUser.findBy({});
+    for (let chanUser of allChanUsers) {
+      await chanUser.updateRightsTimeout();
+    }
+  }
 
 }
 

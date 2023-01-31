@@ -156,12 +156,6 @@ export class User extends BaseEntity {
       this.xp = 0;
   }
 
-  async emitUpdate() {
-    const joinedList = await Channel.joinedList(this.ft_login);
-    for (let channel of joinedList)
-      channel.emitUpdate();
-  }
-
   /** STATIC METHODS */
 
   /*
@@ -216,6 +210,7 @@ export class User extends BaseEntity {
     User.update({}, { status: User.Status.OFFLINE });
     UserSocket.delete({});
   }
+
 }
 
 export namespace User {

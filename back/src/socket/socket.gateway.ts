@@ -3,6 +3,8 @@ import { Server, Socket } from 'socket.io';
 import { Channel } from 'src/entities/channel.entity';
 import { UserSocket } from 'src/entities/usersocket.entity';
 import { User } from 'src/entities/user.entity';
+import { SchedulerRegistry } from '@nestjs/schedule';
+import { AppService } from 'src/app.service';
 
 const chanRoomPrefix = "channel_";
 const pingTimeout = 5000;
@@ -32,14 +34,14 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       user.status = User.Status.ONLINE;
       await user.save();
     }
-    console.log('Websocket Client Connected : ' + client.data.login + ' id(' + client.id + ')');
+    console.log('Websocket Client Connected : ' + client.data.login + ' [id:' + client.id + ']');
     const joinedList = await Channel.joinedList(client.data.login);
     for (let channel of joinedList)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
     SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
     client.data.pingOK = true;
     this.ping(client);
-}
+  }
 
   async handleDisconnect(client: Socket) {
     const userSocket = await UserSocket.delete({ id: client.id });
@@ -56,27 +58,34 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       user.status = User.Status.OFFLINE;
       await user.save();
     }
-    console.log('Websocket Client Disconnected : ' + client.data.login + ' id(' + client.id + ')');
+    console.log('Websocket Client Disconnected : ' + client.data.login + ' [id:' + client.id + ']');
     const joinedList = await Channel.joinedList(client.data.login);
     SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
     for (let channel of joinedList)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
   }
 
-  async ping(client: Socket) {
+  private static pingTimeoutName(socketId: string): string {
+    return 'pingTimeout-' + socketId;
+  }
+
+  ping(client: Socket) {
+    AppService.deleteTimeout(SocketGateway.pingTimeoutName(client.id));
     if (!client.data.pingOK)
-      await client.disconnect(true);
+      client.disconnect(true);
     else {
       client.data.pingOK = false;
-      await client.emit('ping');
-      setTimeout(() => {
-        this.ping(client)
-      }, pingTimeout);
+      client.emit('ping');
+      AppService.setTimeout(
+        SocketGateway.pingTimeoutName(client.id),
+        () => { this.ping(client) },
+        pingTimeout
+      );
     }
   }
 
   @SubscribeMessage('pong')
-  async pong(client: Socket) {
+  pong(client: Socket) {
     client.data.pingOK = true;
   }
 
