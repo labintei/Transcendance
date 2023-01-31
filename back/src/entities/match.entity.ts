@@ -73,25 +73,28 @@ export class Match extends BaseEntity {
     // Resolve users XP gains/losses.
     if (this.score1 >= this.score2)
       this.user1.gainXP(
-        (this.user2.xpAmountForNextLevel * fixedPercentGain) / 100 +
-        (this.user2.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
+        (this.user2.xpAmountForNextLevel() * fixedPercentGain) / 100 +
+        (this.user2.xpAmountForNextLevel() * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
       this.user1.gainXP(
-        (this.user2.xpAmountForNextLevel * fixedPercentLoss) / 100 +
-        (this.user2.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
+        (this.user2.xpAmountForNextLevel() * fixedPercentLoss) / 100 +
+        (this.user2.xpAmountForNextLevel() * scorePercentLoss) * (score_diff / max_score) / 100
       );
     if (this.score2 >= this.score1)
       this.user2.gainXP(
-        (this.user1.xpAmountForNextLevel * fixedPercentGain) / 100 +
-        (this.user1.xpAmountForNextLevel * scorePercentGain) * (score_diff / max_score) / 100
+        (this.user1.xpAmountForNextLevel() * fixedPercentGain) / 100 +
+        (this.user1.xpAmountForNextLevel() * scorePercentGain) * (score_diff / max_score) / 100
       );
     else
       this.user2.gainXP(
-        (this.user1.xpAmountForNextLevel * fixedPercentLoss) / 100 +
-        (this.user1.xpAmountForNextLevel * scorePercentLoss) * (score_diff / max_score) / 100
+        (this.user1.xpAmountForNextLevel() * fixedPercentLoss) / 100 +
+        (this.user1.xpAmountForNextLevel() * scorePercentLoss) * (score_diff / max_score) / 100
       );
-    User.refreshRanks();
+    await this.user1.save();
+    await this.user2.save();
+    await this.save();
+    await User.refreshRanks();
   }
 
   static async clearOngoing() {

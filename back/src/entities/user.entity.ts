@@ -131,18 +131,27 @@ export class User extends BaseEntity {
     this.isOnline = ((await UserSocket.countBy({userLogin: this.ft_login})) > 0);
   }
 
-  public get xpAmountForNextLevel(): number {
+  public xpAmountForNextLevel(): number {
     const x = 0.03;
     const y = 1.5;
-    return ((this.level / x) ^ y);
+    return Math.floor((this.level / x) ^ y);
   }
 
-  async gainXP(amount: number): Promise<User> {
-    return User.gainXP(this, amount);
+  public gainXP(amount: number) {
+    const rest = this.xpAmountForNextLevel() - this.xp;
+    if (rest <= amount) {
+      ++this.level;
+      this.xp = 0;
+      amount -= rest;
+    }
+    this.xp += amount;
   }
 
-  async looseXP(amount: number): Promise<User> {
-    return User.looseXP(this, amount);
+  public looseXP(amount: number) {
+    if (this.xp > amount)
+      this.xp -= amount;
+    else
+      this.xp = 0;
   }
 
   async emitUpdate() {
@@ -152,25 +161,6 @@ export class User extends BaseEntity {
   }
 
   /** STATIC METHODS */
-
-  static async gainXP(user: User, amount: number): Promise<User> {
-    const rest = user.xpAmountForNextLevel - user.xp;
-    if (rest <= amount) {
-      ++user.level;
-      user.xp = 0;
-      amount -= rest;
-    }
-    user.xp += amount;
-    return user.save();
-  }
-
-  static async looseXP(user: User, amount: number): Promise<User> {
-    if (user.xp > amount)
-      user.xp -= amount;
-    else
-      user.xp = 0;
-    return user.save();
-  }
 
   /*
   **  Retreives the sorted list of all usernames containing the given login

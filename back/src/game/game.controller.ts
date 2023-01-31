@@ -44,6 +44,10 @@ export class GameController {
   @Get('history')
   async gethistory(@Request() req): Promise<Match[]> {
     return Match.find({
+      select: {
+        user1: User.defaultFilter,
+        user2: User.defaultFilter
+      },
       relations: {
         user1:true,
         user2:true
