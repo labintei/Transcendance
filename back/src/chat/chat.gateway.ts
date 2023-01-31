@@ -374,7 +374,10 @@ export class ChatGateway {
         chanUser = null;
       }
       else
+      {
         chanUser = await chanUser.save();
+        chanUser.updateRightsTimeout();
+      }
       await channel.userListUpdate();
       return chanUser;
     }
