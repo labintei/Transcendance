@@ -4,6 +4,7 @@ import { ChannelUser } from './channeluser.entity';
 import { UserSocket } from './usersocket.entity';
 import { UserRelationship } from './userrelationship.entity';
 import { Match } from './match.entity';
+import { SocketGateway } from 'src/socket/socket.gateway';
 
 const userDefaultFilter: FindOptionsSelect<User> = {
   ft_login: true,
@@ -206,6 +207,12 @@ export class User extends BaseEntity {
   static async clearOnlines() {
     User.update({}, { status: User.Status.OFFLINE });
     UserSocket.delete({});
+  }
+
+  static async listsUpdate(login: string) {
+    await SocketGateway.userEmit(login, 'joinedList', Channel.joinedList(login));
+    await SocketGateway.userEmit(login, 'invitedList', Channel.invitedList(login));
+    await SocketGateway.userEmit(login, 'directList', Channel.directList(login));
   }
 
 }

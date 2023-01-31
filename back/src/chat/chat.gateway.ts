@@ -186,7 +186,7 @@ export class ChatGateway {
       chanUser.status = ChannelUser.Status.JOINED;
       await chanUser.save();
       this.io.in(client.id).socketsJoin(SocketGateway.channelsToRooms([channel]));
-      channel.userListUpdate();
+      channel.contentUpdate();
       return Channel.getChannelWithUsersAndMessages(channel.id);
     }
     catch (e) {
@@ -320,16 +320,26 @@ export class ChatGateway {
       const ownStatus = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
       if (!ownStatus || !ownStatus.isAdmin())
         throw new WsException("You are not an administrator of this channel.");
+      if (data.userLogin === client.data.login)
+        throw new WsException("You cannot change you own permissions.");
       let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: data.userLogin
       });
-      if (!chanUser || chanUser.status !== ChannelUser.Status.JOINED)
-        throw new WsException("Target user is not a member of this channel.");
-      if ((data.rights === undefined || data.rights === chanUser.rights)
-        && (data.status === undefined || data.status === chanUser.status)
-        && (data.rightsEnd === undefined || data.rightsEnd === chanUser.rightsEnd))
+      if (!chanUser)
+        chanUser = ChannelUser.create({
+          status: null,
+          rights: null,
+          rightsEnd: null,
+          channelId: channel.id,
+          userLogin: data.userLogin
+        });
+      if ((data.rights === undefined || data.rights === chanUser?.rights)
+        && (data.status === undefined || data.status === chanUser?.status)
+        && (data.rightsEnd === undefined || data.rightsEnd === chanUser?.rightsEnd))
         throw new WsException("No changes in user permissions.");
+      if (data.status === ChannelUser.Status.INVITED && chanUser?.status)
+        throw new WsException("This user is a member or has already been invited.");
       if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
         throw new WsException("Invalid user rights.");
       if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
@@ -347,8 +357,6 @@ export class ChatGateway {
         throw new WsException("You must be the owner to set an administrator permission.");
       if (!ownStatus.isAdmin())
         throw new WsException("You must be an administrator to set a user permission.");
-      if (data.status === ChannelUser.Status.INVITED && chanUser.status === ChannelUser.Status.JOINED)
-        throw new WsException("You cannot invite a user who is already a member of this channel.");
       if (data.rights !== undefined && data.rights !== chanUser.rights) {
         chanUser.rights = data.rights;
         if (chanUser.rights === ChannelUser.Rights.BANNED && chanUser.status)
@@ -357,10 +365,14 @@ export class ChatGateway {
       }
       if (data.rightsEnd !== undefined && data.rightsEnd !== chanUser.rightsEnd)
         chanUser.rightsEnd = data.rightsEnd;
+      let invitedUpdate = false;
       if (data.status !== undefined && data.status !== chanUser.status) {
+        if (chanUser.status === ChannelUser.Status.INVITED || data.status === ChannelUser.Status.INVITED)
+          invitedUpdate = true;
         chanUser.status = data.status;
         if (data.status === null)
           await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
+        await channel.emitUpdate();
       }
       if (chanUser.isOwner())
       {
@@ -376,7 +388,8 @@ export class ChatGateway {
         chanUser = await chanUser.save();
         chanUser.updateRightsTimeout();
       }
-      await channel.userListUpdate();
+      await User.listsUpdate(chanUser.userLogin);
+      await channel.contentUpdate();
       return chanUser;
     }
     catch (e) {

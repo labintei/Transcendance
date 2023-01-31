@@ -80,6 +80,7 @@ export class ChannelUser extends BaseEntity {
 
   private async revokeRights() {
     const channelId = this.channelId;
+    const userLogin = this.userLogin;
     this.rights = null;
     this.rightsEnd = null;
     console.log ("Revoked rights of " + this.userLogin + " on channel " + this.channelId + ".");
@@ -87,7 +88,8 @@ export class ChannelUser extends BaseEntity {
       await this.save();
     else
       await this.remove();
-    Channel.userListUpdate(channelId);
+    User.listsUpdate(userLogin);
+    Channel.contentUpdate(channelId);
   }
 
   async updateRightsTimeout() {

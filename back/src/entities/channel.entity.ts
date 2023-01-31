@@ -55,15 +55,15 @@ export class Channel extends BaseEntity {
 
   async emitUpdate() {
     await this.refreshListIfPublic();
-    await this.userListUpdate();
+    await this.contentUpdate();
   }
 
-  async userListUpdate() {
+  async contentUpdate() {
     if (this.id)
-      Channel.userListUpdate(this.id);
+      Channel.contentUpdate(this.id);
   }
 
-  static async userListUpdate(channelId: number) {
+  static async contentUpdate(channelId: number) {
     await SocketGateway.channelEmit(channelId, 'updateChannel', {id: channelId});
   }
 
@@ -177,6 +177,8 @@ export class Channel extends BaseEntity {
       }).save();
       await SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
       await SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
+      User.listsUpdate(login1);
+      User.listsUpdate(login2);
       channel.emitUpdate();
     }
     return channel.id;
