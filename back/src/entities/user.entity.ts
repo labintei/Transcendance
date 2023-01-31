@@ -138,6 +138,7 @@ export class User extends BaseEntity {
   }
 
   public gainXP(amount: number) {
+    amount = Math.floor(amount);
     const rest = this.xpAmountForNextLevel() - this.xp;
     if (rest <= amount) {
       ++this.level;
@@ -148,6 +149,7 @@ export class User extends BaseEntity {
   }
 
   public looseXP(amount: number) {
+    amount = Math.floor(amount);
     if (this.xp > amount)
       this.xp -= amount;
     else
