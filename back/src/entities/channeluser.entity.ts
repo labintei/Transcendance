@@ -4,8 +4,7 @@ import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn
 import { Channel } from "./channel.entity";
 import { User } from "./user.entity";
 
-const rightsTimeoutMargin = 60000;  // 1 Minute
-const timeoutNamePrefix = 'rigthsTimeout-';
+const rightsTimeoutMargin = 30000;  // 30 seconds minimum.
 
 enum ChannelUserRights {
   OWNER = "Owner",
@@ -83,6 +82,7 @@ export class ChannelUser extends BaseEntity {
     const channelId = this.channelId;
     this.rights = null;
     this.rightsEnd = null;
+    console.log ("Revoked rights of " + this.userLogin + " on channel " + this.channelId + ".");
     if (this.status)
       await this.save();
     else
@@ -95,11 +95,13 @@ export class ChannelUser extends BaseEntity {
     if (!this.rightsEnd)
       return;
     const delay = this.rightsEnd.getTime() - Date.now();
-    if (delay >= rightsTimeoutMargin)
+    if (delay >= rightsTimeoutMargin) {
       AppService.setTimeout(
         this.rightsTimeoutName(),
         async () => { await this.revokeRights() },
         delay);
+      console.log ("Rights of " + this.userLogin + " on channel " + this.channelId + " will be revoked in " + delay + " ms.");
+    }
     else
       await this.revokeRights();
   }
