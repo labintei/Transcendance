@@ -125,7 +125,6 @@ export class Channel extends BaseEntity {
         rights: "ASC"
       }
     });
-    console.log(channel.users);
     channel.messages = await Message.find({
       select: {
         id: true,

@@ -9,20 +9,21 @@ import { getLoginContext } from 'WebSocketWrapper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBan, faCommentSlash, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 
-import { tUser, tChannelUser, tChannel } from './ChatPage';
+import { IUser, IChannelUser, IChannel } from './interface';
 import { Socket } from 'socket.io-client';
 
 interface AdminProps {
-    currentChannel : tChannel;
+    currentChannel : IChannel;
     socket: Socket;
 }
 
 export default function AdminPanel(props: AdminProps) {
     const login = useContext(getLoginContext);
+    const [state, setState] = useState<{login: string, type: string}>({login: "", type: ""});
 
     let timestamp: HTMLInputElement | null = null;
 
-    function isAdmin(users: tChannelUser[]) : boolean {
+    function isAdmin(users: IChannelUser[]) : boolean {
       console.log("isAdmin", users);
       const user = users.find((element: any) => element.user.ft_login === login.value);
 
@@ -31,19 +32,36 @@ export default function AdminPanel(props: AdminProps) {
       return user.rights === "Owner" || user.rights === "Admin"
     }
 
-    const setPermissionsUser = (user: tChannelUser, type: string) => (e: any) => {
+    const setPermissionsUser = (user: IChannelUser, type: string) => (e: any) => {
+      e.preventDefault();
+
       const updated_user = user;
       const time = new Date();
 
       if (type === "Kicked")
-        updated_user.rights = null;
-      if (type === "Banned" || type === "Muted") {
-        time.setSeconds(time.getSeconds() + 10);
-        updated_user.rights = type;
+        updated_user.status = null;
+      else if (state.type !== "") {
+        time.setSeconds(time.getSeconds() + parseInt(timestamp!.value));
+        updated_user.rights = state.type === "ban" ? "Banned" : "Muted";
         updated_user.rightsEnd = time;
       }
+      else
+        return ;
 
-      props.socket.emit('setPermissions', updated_user);
+      props.socket.emit('setPermissions', updated_user, () => {
+        setState({login: "", type: ""});
+      });
+    }
+
+    function invertState(login: string, type: string) {
+      const obj = {login: "", type: ""};
+
+      if (state.type !== type) {
+        obj.login = login;
+        obj.type = type;
+      }
+
+      setState(obj);
     }
 
     if (!isAdmin(props.currentChannel.users))
@@ -53,13 +71,14 @@ export default function AdminPanel(props: AdminProps) {
       <>
         <h1>Admin Admin !</h1>
         {props.currentChannel.users.map((data, index) => {
-          const user : tUser = data.user;
+          const user : IUser = data.user;
           return (
             <div key={index}>
                 <p>{user.username}</p>
                 <Button
                   icon={<FontAwesomeIcon icon={faCommentSlash} />}
                   title="Mute user"
+                  onClick={() => invertState(user.ft_login, "mute")}
                   >
                     Mute
                 </Button>
@@ -73,15 +92,24 @@ export default function AdminPanel(props: AdminProps) {
                 <Button
                   icon={<FontAwesomeIcon icon={faBan} />}
                   title="Ban user"
-                  onClick={setPermissionsUser(data, "Banned")}
+                  onClick={() => invertState(user.ft_login, "ban")}
                   >
                     Ban
                 </Button>
-                <input
-                  type="number"
-                  placeholder="Fouts des minutes tocards"
-                />
-            </div>
+                {state.login === user.ft_login ?
+                  <form onSubmit={setPermissionsUser(data, "")}>
+                    <input
+                      type="number"
+                      placeholder={state.type + " time in seconds"}
+                      ref={node => timestamp = node}
+                      required
+                    />
+                    <button>click click</button>
+                  </form>
+                :
+                  <></>
+                }
+              </div>
           )
         })}
       </>

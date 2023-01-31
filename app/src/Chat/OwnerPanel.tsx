@@ -8,11 +8,11 @@ import { getLoginContext } from 'WebSocketWrapper';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCheck, faKey, faLock, faLockOpen, faPen, faXmark } from '@fortawesome/free-solid-svg-icons';
 
-import { tUser, tChannel } from './ChatPage';
+import { IChannel } from './interface';
 import { Socket } from 'socket.io-client';
 
 interface OwnerProps {
-    currentChannel : tChannel;
+    currentChannel : IChannel;
     socket: Socket;
 }
 
@@ -21,11 +21,14 @@ export default function OwnerPanel(props: OwnerProps) {
 
     let name: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
+    let new_admin: HTMLInputElement | null = null;
 
     const login = useContext(getLoginContext);
 
     const updateName = (e: any) => {
       e.preventDefault();
+
+      console.log("hiya2");
 
       const updatedChannel = props.currentChannel;
 
@@ -37,12 +40,56 @@ export default function OwnerPanel(props: OwnerProps) {
     const updatePassword = (e: any) => {
       e.preventDefault();
 
+      console.log("hiya");
+
       const updatedChannel = props.currentChannel;
 
-      updatedChannel.password = password ? password.value : "";
-      updatedChannel.status = "Protected";
+      // updatedChannel.password = password ? password.value : "";
+      // updatedChannel.status = "Protected";
 
-      props.socket.emit('updateChannel', updatedChannel);
+      console.log("||||||", updatedChannel);
+
+      if (password === null)
+        return ;
+      if (password.value !== "") {
+        updatedChannel.password = password.value;
+        updatedChannel.status = "Protected";
+      }
+      else {
+        updatedChannel.status = "Public";
+      }
+
+      console.log("||||||", updatedChannel);
+
+
+      props.socket.emit('updateChannel', updatedChannel, () => {
+        setEdit("");
+      });
+    }
+
+    const setAdmin = (mode: string) => (e: any) => {
+      e.preventDefault();
+      
+      const updated_user = props.currentChannel.users.find(element => element.userLogin === new_admin!.value);
+
+      if (updated_user === undefined) {
+        // console.error("AAAA");
+        return ;
+      }
+
+      if (mode === "add") {
+        updated_user.rights = "Admin";
+      }
+      else if (updated_user.rights !== "Admin") {
+          console.error("User is not an admin");
+          return ;
+      }
+      else
+        updated_user.rights = null;
+
+      props.socket.emit('setPermissions', updated_user, () => {
+        new_admin!.value = "";
+      });
     }
 
     const lockChannel = (status: boolean) => (e: any) => {
@@ -78,27 +125,29 @@ export default function OwnerPanel(props: OwnerProps) {
             </Button>
           </>
         :
-        <>
-          <form onSubmit={updateName}>
-            <input
-              type="input"
-              placeholder="Enter new channel name..."
-              ref={node => name = node}
-              required
-            />
+          <>
+            <form onSubmit={updateName}>
+              <input
+                type="input"
+                placeholder="Enter new channel name..."
+                ref={node => name = node}
+                required
+              />
 
-            <Button
-              icon={<FontAwesomeIcon icon={faCheck}/>}
-            >
-              Validate
-            </Button>
-          </form>
-            <Button
-            icon={<FontAwesomeIcon icon={faXmark}/>}
-            onClick={() => setEdit("")}
-            >
-              Cancel
-            </Button>
+              <Button
+                icon={<FontAwesomeIcon icon={faCheck}/>}
+              >
+                Validate
+              </Button>
+              <Button
+                // type="button"
+                icon={<FontAwesomeIcon icon={faXmark}/>}
+                onClick={() => setEdit("")}
+              >
+                Cancel
+              </Button>
+            </form>
+
           </>
         }
 
@@ -122,32 +171,57 @@ export default function OwnerPanel(props: OwnerProps) {
           <Button
             icon={<FontAwesomeIcon icon={faKey}/>}
             onClick={() => setEdit("password")}
-            >
+          >
             Change Password
           </Button>
         :
-        <>
-          <form onSubmit={updatePassword}>
-            <input
-              type="input"
-              placeholder="Enter password"
-              ref={node => password = node}
-            />
+          <>
+            <form onSubmit={updatePassword}>
+              <input
+                type="input"
+                placeholder="Enter password"
+                ref={node => password = node}
+              />
 
-            <Button
-              icon={<FontAwesomeIcon icon={faCheck}/>}
-            >
-              Validate
-            </Button>
-          </form>
-            <Button
-            icon={<FontAwesomeIcon icon={faXmark}/>}
-            onClick={() => setEdit("")}
-            >
-              Cancel
-            </Button>
+              <Button
+                icon={<FontAwesomeIcon icon={faCheck}/>}
+              >
+                Validate
+              </Button>
+
+              <Button
+                icon={<FontAwesomeIcon icon={faXmark}/>}
+                onClick={() => setEdit("")}
+                >
+                  Cancel
+              </Button>
+            </form>
+
           </>
         }
+
+        <h2>Edit administrators</h2>
+        <form onSubmit={(e) => e.preventDefault()}>
+              <input
+                type="input"
+                placeholder="Insert login"
+                ref={node => new_admin = node}
+                required
+              />
+
+              <Button onClick={setAdmin("add")}
+                icon={<FontAwesomeIcon icon={faCheck}/>}
+              >
+                Add
+              </Button>
+
+              <Button
+                onClick={setAdmin("del")}
+                icon={<FontAwesomeIcon icon={faXmark}/>}
+              >
+                Remove
+              </Button>
+            </form>
       </>
     );
   }
