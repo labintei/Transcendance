@@ -27,7 +27,7 @@ export class GameGateway implements OnGatewayDisconnect {
       console.log(1);
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', id_role);
-      this.gameservice.ClientChange(id_role, client);
+      this.gameservice.ClientChange([id_role[0], id_role[1], this.gameservice.getUsernames(id_role[0])], client);
       return ;
     }
     if(await this.gameservice.IsInvitation(client, data))
@@ -114,7 +114,7 @@ export class GameGateway implements OnGatewayDisconnect {
     if(l && (l[0] && l[1] == true))
     {
       var id_role = await this.gameservice.Idrole(client);
-      client.emit('start', id_role);
+      client.emit('start', [id_role[0], id_role[1], this.gameservice.getUsernames(id_role[0])]);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
