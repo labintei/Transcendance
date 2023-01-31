@@ -317,10 +317,13 @@ export class ChatGateway {
       const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
         throw new WsException("Channel was not found.");
+      const user = await User.findOneBy({ ft_login: data.userLogin });
+      if (!user)
+        throw new WsException("Target User was not found.");
       const ownStatus = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
-      if (!ownStatus || !ownStatus.isAdmin())
+      if (!ownStatus?.isAdmin())
         throw new WsException("You are not an administrator of this channel.");
-      if (data.userLogin === client.data.login)
+      if (user.ft_login === client.data.login)
         throw new WsException("You cannot change you own permissions.");
       let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
@@ -332,7 +335,7 @@ export class ChatGateway {
           rights: null,
           rightsEnd: null,
           channelId: channel.id,
-          userLogin: data.userLogin
+          userLogin: user.ft_login
         });
       if ((data.rights === undefined || data.rights === chanUser?.rights)
         && (data.status === undefined || data.status === chanUser?.status)
@@ -379,16 +382,12 @@ export class ChatGateway {
         ownStatus.rights = ChannelUser.Rights.ADMIN;
         await ownStatus.save();
       }
-      if (!chanUser.status && !chanUser.rights) {
-        await chanUser.remove();
-        chanUser = null;
-      }
+      if (!chanUser.status && !chanUser.rights)
+        chanUser = await chanUser.remove();
       else
-      {
         chanUser = await chanUser.save();
-        chanUser.updateRightsTimeout();
-      }
-      await User.listsUpdate(chanUser.userLogin);
+      await chanUser.updateRightsTimeout();
+      await User.listsUpdate(user.ft_login);
       await channel.contentUpdate();
       return chanUser;
     }

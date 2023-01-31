@@ -93,8 +93,10 @@ export class ChannelUser extends BaseEntity {
   }
 
   async updateRightsTimeout() {
+    if (!this.channelId || !this.userLogin)
+      return;
     AppService.deleteTimeout(this.rightsTimeoutName());
-    if (!this.rightsEnd)
+    if (!this.rights || !this.rightsEnd)
       return;
     const delay = this.rightsEnd.getTime() - Date.now();
     if (delay >= rightsTimeoutMargin) {

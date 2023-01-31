@@ -210,9 +210,9 @@ export class User extends BaseEntity {
   }
 
   static async listsUpdate(login: string) {
-    await SocketGateway.userEmit(login, 'joinedList', Channel.joinedList(login));
-    await SocketGateway.userEmit(login, 'invitedList', Channel.invitedList(login));
-    await SocketGateway.userEmit(login, 'directList', Channel.directList(login));
+    await SocketGateway.userEmit(login, 'joinedList', await Channel.joinedList(login));
+    await SocketGateway.userEmit(login, 'invitedList', await Channel.invitedList(login));
+    await SocketGateway.userEmit(login, 'directList', await Channel.directList(login));
   }
 
 }
