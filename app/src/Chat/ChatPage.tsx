@@ -324,6 +324,9 @@ export default function Chat() {
       });
     }
 
+    if (publicChannels.length === 0)
+      return <></>
+
     return (
       <ExpansionPanel title="Public conversations list">
         {publicChannels.map((channel, index) => {
@@ -351,11 +354,14 @@ export default function Chat() {
 
   function RenderInvitedConversations() {
     const onClick = (channel: IChannel) => (e: any) => {
-      // setCurrentChannel(channel);
-      // socket.emit('joinChannel', channel, (data : Channel) => {
-      //   setChannels([...channels, data]);
-      // })};
+      socket.emit('getChannel', channel, (data: IChannel) => {
+        console.log("getChannel", data);
+        setCurrentChannel(data);
+      });
     }
+
+    if (invitedChannels.length === 0)
+      return <></>
 
     return (
       <ExpansionPanel title="Invited conversations list">
