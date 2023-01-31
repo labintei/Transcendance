@@ -27,7 +27,7 @@ export class GameController {
     var urlredir: string = process.env.REACT_APP_WEBSITE_URL + 'game/' + c;
     const channelId = await Channel.getDirectChannelId(user1.ft_login, user2.ft_login);
     const message = await Message.create({
-      content: urlredir,
+      content: "<a href='" + urlredir + "'>Accepte mon defi !</a>",
       senderLogin: user1.ft_login,
       channelId: channelId
     }).save();

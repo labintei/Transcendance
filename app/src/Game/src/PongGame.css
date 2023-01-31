@@ -2,6 +2,19 @@
   /* background-color: black; */
 }
 
+.title {
+  position: absolute;
+  left: 50%;
+  top: 85px;
+  width: 600px;
+  text-align: center;
+  font-size:xx-large;
+  font-weight: 700;
+  font-family: 'Courier New', Courier, monospace;
+  color:green;
+  transform: translate(-50%, -50%);
+}
+
 .info {
   position: absolute;
   color:white;
@@ -53,6 +66,7 @@
   text-align: center;
   padding: 25px;
   top: 20%;
+  top: 120px;
   left: 50vw;
   transform: translate(-50%);
 }

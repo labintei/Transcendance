@@ -43,7 +43,7 @@ export default function Menu() {
     </div>
     <div className="col" onClick={() => (setTheMap(1))}>
         <h2>Sky</h2>
-    <img src={sky} />
+    <img src={sky}/*{}*/ />
     </div>
     </div>
     <li onClick={() => (setStep(step - 1))}>Back</li> 

@@ -1,8 +1,8 @@
 /* eslint-disable */
-import { CubeTextureLoader } from "three";
+import { ArrayCamera, CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import * as React from 'react'
-import { useRef, useState } from 'react'
+import { useRef, useState , useContext} from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -18,11 +18,12 @@ import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
 import Box2 from "./Components/Box2";
-import { Cloud, Sky, Sparkles, Text } from "@react-three/drei";
+import { Sky } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 import axios from "axios";
-
+import { getSocketContext } from 'WebSocketWrapper';
+import { setInterval } from "timers/promises";
 
 const loader = new CubeTextureLoader();
 // The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
@@ -87,10 +88,21 @@ const CameraControls = () => {
     gl: { domElement },
   } = useThree();
 
+  var camposx  = useStore((s:any) => s.cx);
+  var camposy = useStore((s:any) => s.cy);
+  var camposz = useStore((s:any) => s.cz);
+
+  
   // 2. Plugging The Orbit Controls into the render loop with useFrame
   // Ref to the controls, so that we can update them on every frame using useFrame
   const controls: any = useRef();
-  useFrame((state) => controls.current.update());
+  useFrame((state) => {
+  camera.position.x = camposx;
+  camera.position.y = camposy;
+  camera.position.z = camposz;
+
+    controls.current.update()
+  });
 
   // 3. Initializing the Orbit Control
   return <orbitControls
@@ -116,11 +128,32 @@ function SkyBox() {
 
 export default function World(props: any) {
 
+
+
+
+
+  //const socket = useContext(getSocketContext);
+  
+  //const [cam, setCam] = useState([0,0,0]);
+  
+  let role = useStore((s:any) => s.role);
+
+/*
+  if (role === 1)
+  {
+   camposx = 0
+   camposy = 3
+   camposz = 7
+  }
+  if (role === 2)
+  {
+   camposx = 0
+   camposy = 5
+   camposz = -9
+  }*/
+
   const [userData, setUserData] = useState<any>(null)
 
-  var camposx = useStore((s:any) => s.cx);
-  var camposy = useStore((s:any) => s.cy);
-  var camposz = useStore((s:any) => s.cz);
 
   var t = useStore((s:any) => s.time);
 
@@ -143,10 +176,12 @@ export default function World(props: any) {
       console.log(error)
     });
   }, []);
-
+  let ooo = 0;
+  let iii = window.setInterval(function(){
+    ooo = Math.random();
+  },1000)
   return (  
-    <Canvas
-    camera={{ position: [camposx, camposy, camposz]}}>
+    <Canvas>
     <CameraControls />
     <KeyboardControls />
     <ambientLight intensity={0.5} />

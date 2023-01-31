@@ -1,7 +1,4 @@
 import { useRef, useState } from "react"
-/* Peut etre a effacer*/
-
-//import { CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import {

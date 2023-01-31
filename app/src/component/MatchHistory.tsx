@@ -1,12 +1,12 @@
 import React from 'react';
 import axios from 'axios';
 import './MatchList.css';
-import {defaultavatar} from "./const";
+import {ChallengeButton, defaultavatar} from "./const";
 import { Navigate } from 'react-router-dom';
 
 type Match = {
     id: number;
-    statusopp: number;
+    statusopp: string;
     name: string;
     avatar_loc: string;
     score1: number;
@@ -57,7 +57,7 @@ export default class MatchList extends React.Component {
         let listtmp: Array<Match> = [];
         for (var match of matchs) {
             let one: Match = {
-              id: 0, statusopp: 1, name: '', score1:0, score2:0, avatar_loc:defaultavatar
+              id: 0, statusopp: "Offline", name: '', score1:0, score2:0, avatar_loc:defaultavatar
             };
             let isOne:boolean = true;
             if (match.id !== undefined && match.score1 !== undefined && match.score2 !== undefined) {
@@ -66,6 +66,7 @@ export default class MatchList extends React.Component {
                   if (match.user1.username !== this.state.username)
                     isOne = false;
                   one.name = (isOne ? match.user2.username : match.user1.username);
+                  one.statusopp = (isOne ? match.user2.status : match.user1.status)
                 }
                 one.score1 = (isOne ? match.score1 : match.score2);
                 one.score2 = (isOne ? match.score2 : match.score1);
@@ -106,19 +107,10 @@ export default class MatchList extends React.Component {
     return (divStyle)
   }
 
-  renderStatus (s:number) {
-    if (s === 0) {
-      return ("Offline")
-    } else if (s === 1)
-      return ("Online")
-    else
-      return ("Playing")
-  }
-
-  challenge_available(status:number, id:string) {
-    if (status === 1)
+  challenge_available(status:string, id:string) {
+    if (status === "Online" || status === "Playing")
       return (
-        <button onClick={() => this.challengeClicked(id)}  id="challenge-button"></button>
+        <ChallengeButton username={id}></ChallengeButton>
       )
     else
         return (<img alt="challenge unavailable" src="/challenge_unavailable.png"></img>)
@@ -142,7 +134,7 @@ export default class MatchList extends React.Component {
                 <div className={this.render_status(match.score2, match.score1)}>
                   <p className='score2'>{match.score2}</p>
                   <p>{match.name}</p>
-                  <div className='avatar' style={this.styleImgAsDiv(match.avatar_loc)}><span className={this.renderStatus(match.statusopp)}></span></div>
+                  <div className='avatar' style={this.styleImgAsDiv(match.avatar_loc)}><span className={match.statusopp} title={match.statusopp}></span></div>
                 
                 </div>
             </li>
