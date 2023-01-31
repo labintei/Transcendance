@@ -29,6 +29,7 @@ import AdminPanel from './AdminPanel';
 import axios from 'axios';
 
 import { IChannel, IChannelUser, IMessage, IUser } from './interface';
+import ProfilPanel from './ProfilPanel';
 
 const avatar_temp = "logo192.png";
 
@@ -44,16 +45,17 @@ const temp_msg : IMessage[] = [
 const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as IChannel;
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
-const backend_url_block =backend_url + "blockeds/";
-const backend_url_friend =backend_url + "friends/";
+export const backend_url_block = backend_url + "blockeds/";
+export const backend_url_friend = backend_url + "friends/";
 
 
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
   const [channels, setChannels] = useState<IChannel[]>([]);
   const [invitedChannels, setInvitedChannels] = useState<IChannel[]>([]);
-  const [profilSidebar, setProfilSidebar] = useState<string>("");
+  const [profilSidebar, setProfilSidebar] = useState<IUser | null>(null);
   const [publicChannels, setPublicChannels] = useState<IChannel[]>([]);
+  const [directChannels, setDirectChannels] = useState<IChannel[]>([]);
 
   const [relations, setRelations] = useState<{friends: IUser[], blocked: IUser[]}>({friends: [], blocked: []});
 
@@ -69,6 +71,7 @@ export default function Chat() {
       console.log(messages);
       setCurrentChannel({...refChannel.current, messages: messages})
     }
+    socket.emit('directList');
   }
 
   function callbackUpdateChannel(data: IChannel) {
@@ -78,7 +81,8 @@ export default function Chat() {
         setCurrentChannel(data);
       });
     }
-    socket.emit('joinedList')
+    socket.emit('joinedList');
+    socket.emit('directList');
   }
 
   useEffect(() => {
@@ -112,7 +116,13 @@ export default function Chat() {
       socket.emit('publicList');
     });
 
+    socket.on('directList', (data) => {
+      console.log("[WS] directList", data);
+      setDirectChannels(data);
+    })
+
     socket.emit('joinedList');
+    socket.emit('directList');
 
     getRelations();
     // This code will run when component unmount
@@ -161,7 +171,7 @@ export default function Chat() {
       console.log(rec);
     })
   }
-  
+
   function unblockUser(user: IUser) {
     console.log(backend_url_block + user.username);
     axios.delete(backend_url_block + user.username, {
@@ -172,7 +182,7 @@ export default function Chat() {
       console.log(rec);
     })
   }
-  
+
   function isBlocked(username: string) : boolean {
     const user = relations.blocked.find(user => user.username === username);
     return (user !== undefined)
@@ -183,7 +193,7 @@ export default function Chat() {
 
     return (chanUser === undefined ? false : isBlocked(chanUser.user.username))
   }
-  
+
   function friendUser(user: IUser) {
     console.log(backend_url_friend + user.username);
     axios.put(backend_url_friend + user.username, {}, {
@@ -194,7 +204,7 @@ export default function Chat() {
       console.log(rec);
     })
   }
-  
+
   function unfriendUser(user: IUser) {
     console.log(backend_url_friend + user.username);
     axios.delete(backend_url_friend + user.username, {
@@ -205,7 +215,7 @@ export default function Chat() {
       console.log(rec);
     })
   }
-  
+
   function isFriend(username: string) : boolean {
     const user = relations.friends.find(user => user.username === username);
     return (user !== undefined)
@@ -232,16 +242,24 @@ export default function Chat() {
 
       // console.log("debug debug", channel);
 
-      // const chanUser = channel.users.find((user) => login.value !== user.userLogin);
-      // console.log("debug debug", chanUser);
-      // return (chanUser!.user.username);
+      const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+      console.log("debug debug", chanUser);
+      return (chanUser!.user.username);
 
-      return "Secret direct message";
+      // return "Secret direct message";
     }
 
     return (
       <ExpansionPanel title="Conversations list" open={true}>
         {channels.map((channel, index) => {
+          return (
+            <Conversation
+              key={index}
+              active={channel.id === currentChannel.id}
+              name={getName(channel)}
+              onClick={switchChannel(channel)}/>
+          )})}
+        {directChannels.map((channel, index) => {
           return (
             <Conversation
               key={index}
@@ -354,7 +372,11 @@ export default function Chat() {
   }
 
   function RenderChatContainer() {
-    console.count("renderChatContainer")
+    const [state, setState] = useState<string>("");
+
+    let invite: HTMLInputElement | null = null;
+
+    console.count("renderChatContainer");
 
     const leaveChannel = (e: any) => {
       console.log("leaving channel", currentChannel.name)
@@ -364,9 +386,9 @@ export default function Chat() {
       })
     }
 
-    const openProfile = (ft_login: string) => (e: any) => {
+    const openProfile = (user: IUser) => (e: any) => {
       e.preventDefault();
-      setProfilSidebar(ft_login);
+      setProfilSidebar(user);
     }
 
     const block = (users: IChannelUser[]) => (e: any) => {
@@ -405,6 +427,20 @@ export default function Chat() {
       } 
     }
 
+    const inviteUser = (e: any) => {
+      e.preventDefault();
+
+      const invited_user = {} as IChannelUser;
+
+      invited_user.status = "Invited";
+      invited_user.rights = null;
+      invited_user.channelId = currentChannel.id;
+      // invited_user.user.username = invite!.value;
+      invited_user.userLogin = invite!.value;
+
+      socket.emit('setPermissions', invited_user);
+    }
+
     if (currentChannel.id === 0)
     {
       return (
@@ -427,10 +463,26 @@ export default function Chat() {
 
             {currentChannel.status !== "Direct" ?
               <>
-                <AddUserButton
-                  style={{fontSize: "1.4em"}}
-                  title="Invite someone to the conversation"
-                  />
+                {state === "" ?
+                  <AddUserButton
+                    style={{fontSize: "1.4em"}}
+                    title="Invite someone to the conversation"
+                    onClick={() => setState("invite")}
+                    />
+                :
+                  <form onSubmit={inviteUser}>
+                    <input
+                      type="text"
+                      placeholder="Insert login"
+                      ref={node => invite = node}
+                      required
+                    />
+                    <AddUserButton
+                      style={{fontSize: "1.4em"}}
+                      title="Invite !"
+                      />
+                  </form>
+                }
                 <Button
                   style={{fontSize: "1.4em"}}
                   icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}
@@ -491,7 +543,7 @@ export default function Chat() {
                 // avatarPosition="tl"
               >
                 <Message.Header sender={message.sender.username} />
-                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender.ft_login)}/>
+                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender)}/>
               </Message>
             )
           })}
@@ -571,7 +623,7 @@ export default function Chat() {
 
   function RenderRightSidebar() {
     function shouldRender() : boolean {
-      if (profilSidebar !== "")
+      if (profilSidebar !== null)
         return true;
       if (currentChannel.status === "Direct")
         return false;
@@ -589,10 +641,16 @@ export default function Chat() {
 
     return (
       <Sidebar position="right">
-        { profilSidebar !== "" || currentChannel.id === 0?
+        { profilSidebar !== null ?
           <>
-            <ArrowButton direction="left" onClick={() => setProfilSidebar("")}/>
-            <h1>Profil panel : {profilSidebar}</h1>
+            <ArrowButton direction="left" onClick={() => setProfilSidebar(null)}/>
+            {/* <h1>Profil panel : {profilSidebar!.username}</h1> */}
+            <ProfilPanel
+              user={profilSidebar}
+              socket={socket}
+              relations={relations}
+              setRelations={setRelations}
+              />
           </>
           :
           <>
