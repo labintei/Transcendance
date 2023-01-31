@@ -217,30 +217,26 @@ export class Channel extends BaseEntity {
   }
 
   static async directList(login: string): Promise<Channel[]> {
-    return await Channel.createQueryBuilder("channel")
-      .innerJoin(
-        ChannelUser,
-        "ownChanUser",
-        "ownChanUser.channelId = channel.id AND ownChanUser.userLogin = :user_login",
-        { user_login: login }
-      )
-      .where(
-        "channel.status = :channelStatus",
-        { channelStatus: Channel.Status.DIRECT }
-      )
-      .leftJoinAndMapMany(
-        "users",
-        ChannelUser,
-        "otherChanUser",
-        "otherChanUser.channelId = channel.id AND ownChanUser.userLogin != :user_login",
-        { user_login: login }
-      )
-      .select([
-        "channel.id",
-        "channel.status",
-        "otherChanUser.username"
-        ])
-      .getMany();
+    const list = await Channel.find({
+      select: Channel.defaultFilter,
+      relations: {
+        users: true
+      },
+      where: {
+        status: Channel.Status.DIRECT,
+        users: {
+          userLogin: login
+        },
+      }
+    });
+    for (let channel of list) {
+      channel.users.unshift(await ChannelUser.findOneBy({
+        channelId: channel.id,
+        userLogin: Not(login)
+      }));
+    }
+    console.log(list[0]);
+    return list;
   }
 
 }
