@@ -22,6 +22,7 @@ import {
   ArrowButton
 } from '@chatscope/chat-ui-kit-react';
 
+import Linkify from 'react-linkify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faCheck, faKey, faLock, faLockOpen, faPen, faUser, faUserMinus, faUserSlash, faXmark } from '@fortawesome/free-solid-svg-icons';
 import OwnerPanel from './OwnerPanel';
@@ -243,10 +244,10 @@ export default function Chat() {
       // console.log("debug debug", channel);
 
       const chanUser = channel.users.find((user) => login.value !== user.userLogin);
-      console.log("debug debug", chanUser);
-      return (chanUser!.user.username);
+      console.log("debug debug", channel);
+      // return (chanUser!.user.username);
 
-      // return "Secret direct message";
+      return "Secret direct message";
     }
 
     return (
@@ -532,8 +533,6 @@ export default function Chat() {
               <Message
                 key={index}
                 model={{
-                  message: !isBlocked(message.sender.username) ?
-                    message.content : "This user is blocked.",
                   sentTime: message.time.toString(),
                   sender: message.sender.username,
                   direction: login.value === message.sender.ft_login ? "outgoing" : "incoming",
@@ -544,6 +543,15 @@ export default function Chat() {
               >
                 <Message.Header sender={message.sender.username} />
                 <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender)}/>
+                <Message.CustomContent>
+                  <Linkify componentDecorator={(decoratedHref, decoratedText, key) => 
+                    <a target="blank" rel="noopener" href={decoratedHref} key={key}>
+                      {decoratedText}
+                    </a>
+                  }>
+                    {!isBlocked(message.sender.username) ? message.content : "This user is blocked."}
+                  </Linkify>
+                </Message.CustomContent>
               </Message>
             )
           })}
@@ -648,6 +656,7 @@ export default function Chat() {
             <ProfilPanel
               user={profilSidebar}
               socket={socket}
+              setCurrent={setCurrentChannel}
               relations={relations}
               setRelations={setRelations}
               />
