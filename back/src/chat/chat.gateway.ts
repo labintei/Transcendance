@@ -36,8 +36,6 @@ export class ChatGateway {
         const channel = await Channel.findOneBy({id: data.channelId});
         if (!channel)
           throw new WsException("Channel id (" + data.id + ") was not found.");
-        if (channel.status === Channel.Status.DIRECT)
-          throw new WsException("You cannot send a channel message to a direct channel.");
         const chanUser = await ChannelUser.findOneBy({channelId: data.channelId, userLogin: client.data.login});
         if (!chanUser || !chanUser.canSpeak())
           throw new WsException("You cannot speak in this channel.");
