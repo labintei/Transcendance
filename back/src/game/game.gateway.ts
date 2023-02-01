@@ -27,9 +27,9 @@ export class GameGateway implements OnGatewayDisconnect {
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', [id_role[0], id_role[1], this.gameservice.getUsernames(id_role[1])]);
       if(this.gameservice.isinvitroom(id_role[0]) === true)
-        client.emit('mode', 'invitation');
+        client.emit('mode', ['invitation']);
       else
-        client.emit('mode', 'game');
+        client.emit('mode', ['game']);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
@@ -57,10 +57,16 @@ export class GameGateway implements OnGatewayDisconnect {
           client.emit("Not_Exist");
         return ;
       }
+      if((await this.gameservice.isBlock(client, data)))
+      {
+        client.emit("Blocked");
+        return ;
+      }
+      client.emit('mode',['stream', this.gameservice.getUsernames(data)]);
       if(this.gameservice.startstream(client, data))
       {
         var render_stream;
-        client.emit('mode','stream');
+        //client.emit('mode','stream');
         render_stream =  setInterval(() => {
           GameGateway.sendtostream(this.gameservice.getStream(data) , this.gameservice.getPos(data));
         }, 50)
@@ -79,17 +85,17 @@ export class GameGateway implements OnGatewayDisconnect {
     {
       room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
       if(this.gameservice.isinvitroom(data))
-        room[0].emit('mode','invitation');
+        room[0].emit('mode',['invitation']);
       else
-        room[0].emit('mode', 'game');
+        room[0].emit('mode', ['game']);
     }
     if(room[1])
     {
         room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
         if(this.gameservice.isinvitroom(data))
-          room[1].emit('mode', 'invitation');
+          room[1].emit('mode', ['invitation']);
         else
-          room[1].emit('mode', 'game');
+          room[1].emit('mode', ['game']);
     }
     
     delay(50);

@@ -618,6 +618,21 @@ export class GameService {
         return false;
     }
 
+
+    async isBlock(client:Socket, data:number): Promise<boolean>
+    {
+        var l  = (client.request as any).user;
+        if(this.s.get(data) && this.s.get(data).user1 && this.s.get(data).user2)
+        {
+            var login1 = this.s.get(data).user1.ft_login;
+            var login2 = this.s.get(data).user2.ft_login;
+            if((await this.NotBlock(l,login2)) && (await this.NotBlock(l,login1)))
+                return false;
+            return true;
+        }
+        return true;
+    }
+
     startstream(client:Socket, data:number): boolean {
         if(this.stream && this.stream.get(data))
         {
