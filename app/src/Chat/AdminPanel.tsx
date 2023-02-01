@@ -65,12 +65,29 @@ export default function AdminPanel(props: AdminProps) {
 
     return (
       <>
-        <h1>Admin Admin !</h1>
+        <h1
+          style={{
+            textAlign: "center"
+          }}
+        >
+          Administrator Panel
+        </h1>
         {props.currentChannel.users.map((data, index) => {
           const user : IUser = data.user;
           return (
             <div key={index}>
-                <p>{user.username}</p>
+                <p style={{
+                  textAlign: "center"
+                }}
+                >
+                  {user.username}</p>
+                <div
+                  style={{
+                    display: "flex",
+                    flexDirection: "row",
+                    justifyContent: "space-around",
+                  }}
+                  >
                 <Button
                   icon={<FontAwesomeIcon icon={faCommentSlash} />}
                   title="Mute user"
@@ -92,21 +109,22 @@ export default function AdminPanel(props: AdminProps) {
                   >
                     Ban
                 </Button>
-                {state.login === user.ft_login ?
-                  <form onSubmit={setPermissionsUser(data, "")}>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder={state.type + " time in minutes"}
-                      ref={node => timestamp = node}
-                      required
-                    />
-                    <button>click click</button>
-                  </form>
-                :
-                  <></>
-                }
               </div>
+              {state.login === user.ft_login ?
+                <form onSubmit={setPermissionsUser(data, "")}>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder={state.type + " time in minutes"}
+                    ref={node => timestamp = node}
+                    required
+                  />
+                  <button>{state.type}</button>
+                </form>
+              :
+                <></>
+              }
+            </div>
           )
         })}
       </>

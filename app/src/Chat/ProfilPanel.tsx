@@ -13,6 +13,8 @@ import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { backend_url_block, backend_url_friend } from './ChatPage';
 import { useNavigate } from 'react-router-dom';
+import { getLoginContext } from 'WebSocketWrapper';
+import { useContext } from 'react';
 
 interface ProfilProps {
     user : IUser;
@@ -24,6 +26,7 @@ interface ProfilProps {
 
 export default function ProfilPanel(props: ProfilProps) {
   const navigate = useNavigate();
+  const login = useContext(getLoginContext);
 
   function getRelations() {
     axios.all([
@@ -144,6 +147,7 @@ export default function ProfilPanel(props: ProfilProps) {
             style={{fontSize: "1.4em"}}
             title="Add this person as a friend"
             onClick={friendUser(props.user)}
+            disabled={props.user.ft_login === login.value}
             />
           :
             <Button
@@ -159,7 +163,8 @@ export default function ProfilPanel(props: ProfilProps) {
               icon={<FontAwesomeIcon icon={faUserSlash}/>}
               title="Block this person"
               onClick={blockUser(props.user)}
-              />
+            disabled={props.user.ft_login === login.value}
+            />
           :
             <Button
               style={{fontSize: "1.4em"}}
@@ -174,10 +179,14 @@ export default function ProfilPanel(props: ProfilProps) {
           icon={<FontAwesomeIcon icon={faGamepad}/>}
           title="Challenge this person"
           onClick={challenge(props.user.username)}
+          disabled={props.user.ft_login === login.value || isBlocked(props.user.username)}
           >
           Invite to game
         </Button>
-        <Button onClick={joinDirectChannel}>
+        <Button
+          onClick={joinDirectChannel}
+          disabled={props.user.ft_login === login.value}
+          >
           Private message
         </Button>
 

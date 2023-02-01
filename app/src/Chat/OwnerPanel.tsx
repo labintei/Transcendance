@@ -10,6 +10,7 @@ import { faCheck, faKey, faLock, faLockOpen, faPen, faXmark } from '@fortawesome
 
 import { IChannel } from './interface';
 import { Socket } from 'socket.io-client';
+import { notificationError } from './ChatPage';
 
 interface OwnerProps {
     currentChannel : IChannel;
@@ -27,8 +28,6 @@ export default function OwnerPanel(props: OwnerProps) {
 
     const updateName = (e: any) => {
       e.preventDefault();
-
-      console.log("hiya2");
 
       const updatedChannel = props.currentChannel;
 
@@ -60,10 +59,11 @@ export default function OwnerPanel(props: OwnerProps) {
     const setAdmin = (mode: string) => (e: any) => {
       e.preventDefault();
       
-      const updated_user = props.currentChannel.users.find(element => element.userLogin === new_admin!.value);
+      const updated_user = props.currentChannel.users.find(element => element.user.username === new_admin!.value);
 
       if (updated_user === undefined) {
         new_admin!.value = "";
+        notificationError("This username doesn't exist");
         return ;
       }
 
@@ -71,8 +71,8 @@ export default function OwnerPanel(props: OwnerProps) {
         updated_user.rights = "Admin";
       }
       else if (updated_user.rights !== "Admin") {
-          console.error("User is not an admin");
-          return ;
+        notificationError("You are an administrator");
+        return ;
       }
       else
         updated_user.rights = null;
@@ -104,7 +104,11 @@ export default function OwnerPanel(props: OwnerProps) {
       <>
         {edit !== "name" ? 
           <>
-            <h1>
+            <h1
+              style={{
+                textAlign: "center"
+              }}
+            >
               {props.currentChannel.name}
             </h1>
             <Button
@@ -190,11 +194,17 @@ export default function OwnerPanel(props: OwnerProps) {
           </>
         }
 
-        <h2>Edit administrators</h2>
+        <h3
+          style={{
+            textAlign: "center"
+          }}
+        >
+          Edit administrators
+        </h3>
         <form onSubmit={(e) => e.preventDefault()}>
               <input
                 type="input"
-                placeholder="Insert login"
+                placeholder="Insert username"
                 ref={node => new_admin = node}
                 required
               />

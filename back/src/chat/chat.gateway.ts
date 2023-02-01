@@ -69,7 +69,7 @@ export class ChatGateway {
         throw new WsException("A channel name is required.")
       const exists = await Channel.findOneBy({ name: data.name });
       if (exists && exists.id !== data.id)
-        throw new WsException("this channel name is already taken.")
+        throw new WsException("This channel name is already taken.")
       if (data.status === Channel.Status.DIRECT || !Object.values(Channel.Status).includes(data.status))
         throw new WsException("Bad channel status.")
       if (data.status === Channel.Status.PROTECTED && !data.password)
@@ -113,7 +113,7 @@ export class ChatGateway {
       if (data.name && data.name !== channel.name)
       {
         if (await Channel.findOneBy({ name: data.name }))
-          throw new WsException("this channel name is already taken.");
+          throw new WsException("This channel name is already taken.");
         channel.name = data.name;
         altered = true;
       }
