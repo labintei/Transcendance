@@ -179,7 +179,7 @@ export default function ProfilPanel(props: ProfilProps) {
           icon={<FontAwesomeIcon icon={faGamepad}/>}
           title="Challenge this person"
           onClick={challenge(props.user.username)}
-          disabled={props.user.ft_login === login.value}
+          disabled={props.user.ft_login === login.value || isBlocked(props.user.username)}
           >
           Invite to game
         </Button>
