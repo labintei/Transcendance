@@ -458,8 +458,13 @@ export default function Chat() {
       invited_user.status = "Invited";
       invited_user.rights = null;
       invited_user.channelId = currentChannel.id;
-      invited_user.user.username = invite!.value;
-      // invited_user.userLogin = invite!.value;
+      // invited_user.user = {} as IUser;
+      // invited_user.user.username = invite!.value;
+      // if (isBlocked(invited_user.user.username)) {
+        // setError("You cannot invite someone you've blocked");
+        // return ;
+      // }
+      invited_user.userLogin = invite!.value;
 
       socket.emit('setPermissions', invited_user);
     }
@@ -480,8 +485,8 @@ export default function Chat() {
         <ConversationHeader>
           {currentChannel.status !== "Direct" ? null :
           <Avatar
-            src={currentChannel.users[0].user.avatarURL}
-            name={currentChannel.users[0].user.username}
+            src={currentChannel.users[1].user.avatarURL}
+            name={currentChannel.users[1].user.username}
             />
           }
           <ConversationHeader.Content
@@ -501,7 +506,7 @@ export default function Chat() {
                   <form onSubmit={inviteUser}>
                     <input
                       type="text"
-                      placeholder="Insert login"
+                      placeholder="Insert username"
                       ref={node => invite = node}
                       required
                     />

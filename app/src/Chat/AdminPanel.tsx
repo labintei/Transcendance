@@ -129,22 +129,22 @@ export default function AdminPanel(props: AdminProps) {
                   >
                     Ban
                 </Button>
-                {state.login === user.ft_login ?
-                  <form onSubmit={setPermissionsUser(data, "")}>
-                    <input
-                      type="number"
-                      min="1"
-                      placeholder={state.type + " time in minutes"}
-                      ref={node => timestamp = node}
-                      required
-                    />
-                    <button>click click</button>
-                  </form>
-                :
-                  <></>
-                }
-                </div>
               </div>
+              {state.login === user.ft_login ?
+                <form onSubmit={setPermissionsUser(data, "")}>
+                  <input
+                    type="number"
+                    min="1"
+                    placeholder={state.type + " time in minutes"}
+                    ref={node => timestamp = node}
+                    required
+                  />
+                  <button>{state.type}</button>
+                </form>
+              :
+                <></>
+              }
+            </div>
           )
         })}
         <p className='error'>{error}</p>
