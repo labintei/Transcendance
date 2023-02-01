@@ -86,14 +86,9 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('mode', (data) => {
-<<<<<<< HEAD
-      console.log(data[0]);
-      Setmode(data[0]);
-=======
       console.log(data);
       Setmode(data);
       console.log(mode);
->>>>>>> e63ea8f4ed266611a86b612a7a18ce5a664ec939
       if(data === 'stream')
         setMessage(data[1] + " VS " + data[1])
     });
