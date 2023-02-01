@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-interface WebSocketWrapper {
+interface WebSocketWrapperProps {
   children: React.ReactNode;
 }
 
@@ -19,7 +19,7 @@ const defaultLogin = {
 export const getLoginContext = React.createContext(defaultLogin);
 export const getSocketContext = React.createContext(socket);
 
-export default function WebSocketWrapper( props : WebSocketWrapper ) {
+export default function WebSocketWrapper(props: WebSocketWrapperProps ) {
   const [login, setLogin] = useState<string>("");
 
   useEffect(() => {

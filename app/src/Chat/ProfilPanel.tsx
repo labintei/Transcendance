@@ -1,19 +1,18 @@
-import React, { useContext, useEffect, useState } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
-    AddUserButton,
+  AddUserButton,
   Avatar,
   Button,
 } from '@chatscope/chat-ui-kit-react';
-import { getLoginContext } from 'WebSocketWrapper';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBan, faCommentSlash, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import { faGamepad, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 
-import { IUser, IChannelUser, IChannel } from './interface';
+import { IUser, IChannel } from './interface';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
 import { backend_url_block, backend_url_friend } from './ChatPage';
+import { useNavigate } from 'react-router-dom';
 
 interface ProfilProps {
     user : IUser;
@@ -24,6 +23,8 @@ interface ProfilProps {
 }
 
 export default function ProfilPanel(props: ProfilProps) {
+  const navigate = useNavigate();
+
   function getRelations() {
     axios.get(backend_url_block, {
       withCredentials: true
@@ -118,6 +119,19 @@ export default function ProfilPanel(props: ProfilProps) {
 
   }
 
+  const challenge = (username: string) => (e: any) => {
+    e.preventDefault();
+    axios.put(process.env.REACT_APP_BACKEND_URL + "match/" + username, {}, {
+      withCredentials:true
+    }).then(res => {
+      if (res.data !== undefined)
+        navigate("../game/" + res.data);
+    }).catch(error => {
+      if (error.response.status === 401 || error.response.status === 403)
+        navigate("../login");
+    });
+  }
+
   return (
     <>
       <div style={{
@@ -170,12 +184,18 @@ export default function ProfilPanel(props: ProfilProps) {
               />
           }
         </div>
-        <Button>
+        <Button
+          // style={{fontSize: "1.4em"}}
+          icon={<FontAwesomeIcon icon={faGamepad}/>}
+          title="Challenge this person"
+          onClick={challenge(props.user.username)}
+          >
           Invite to game
         </Button>
         <Button onClick={joinDirectChannel}>
           Private message
         </Button>
+
       </div>
     </>
   );

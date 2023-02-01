@@ -1,5 +1,4 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { getSocketContext } from 'WebSocketWrapper';
 import { getLoginContext } from 'WebSocketWrapper';
 import { Navigate } from 'react-router-dom';
@@ -24,7 +23,7 @@ import {
 
 import Linkify from 'react-linkify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket, faCheck, faKey, faLock, faLockOpen, faPen, faUser, faUserMinus, faUserSlash, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faArrowRightFromBracket, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-solid-svg-icons';
 import OwnerPanel from './OwnerPanel';
 import AdminPanel from './AdminPanel';
 import axios from 'axios';
@@ -33,9 +32,6 @@ import { IChannel, IChannelUser, IMessage, IUser } from './interface';
 import ProfilPanel from './ProfilPanel';
 
 const avatar_temp = "logo192.png";
-
-// const backend_url = process.env.REACT_APP_BACKEND_URL || '';
-// const socket = io(backend_url, { withCredentials: true });
 
 const temp_msg : IMessage[] = [
   {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
@@ -140,7 +136,7 @@ export default function Chat() {
       socket.off('hideChannel');
       socket.off('updateChannel');
     };
-  }, [login.value]);
+  }, [login.value, callbackMessage, callbackUpdateChannel, getRelations, socket]);
 
   function getRelations() {
     axios.get(backend_url_block, {
@@ -196,7 +192,7 @@ export default function Chat() {
   }
 
   function isBlockedDirect() : boolean {
-    const chanUser = currentChannel.users.find(element => element.userLogin != login.value);
+    const chanUser = currentChannel.users.find(element => element.userLogin !== login.value);
 
     return (chanUser === undefined ? false : isBlocked(chanUser.user.username))
   }
@@ -229,7 +225,7 @@ export default function Chat() {
   }
 
   function isFriendDirect() : boolean {
-    const chanUser = currentChannel.users.find(element => element.userLogin != login.value);
+    const chanUser = currentChannel.users.find(element => element.userLogin !== login.value);
 
     return (chanUser === undefined ? false : isFriend(chanUser.user.username))
   }
@@ -243,14 +239,11 @@ export default function Chat() {
     };
 
     function getName(channel: IChannel) : string {
-      // console.log("debug debug", channel);
       if (channel.status !== "Direct")
         return (channel.name);
 
-      // console.log("debug debug", channel);
 
       const chanUser = channel.users.find((user) => login.value !== user.userLogin);
-      // console.log("debug debug", channel);
       return (chanUser!.user.username);
     }
 
@@ -285,7 +278,7 @@ export default function Chat() {
         let newPublicList : IChannel[] = [];
         console.log("[DEBUG]: channels:", channels);
         chans.filter((x : IChannel) => {
-          if (channels.find((a) => {return (a.id === x.id)}) === undefined)
+          if (channels.find(a => a.id === x.id) === undefined)
             newPublicList = [...newPublicList, x];
         });
         console.log("[DEBUG] : publicChannels:", newPublicList);
@@ -295,7 +288,7 @@ export default function Chat() {
       return (() => {
         socket.off('publicList'); 
       });
-    }, [channels]);
+    }, []);
 
     const onClick = (channel: IChannel) => (e: any) => {
       e.preventDefault();
@@ -407,7 +400,7 @@ export default function Chat() {
 
     const block = (users: IChannelUser[]) => (e: any) => {
       e.preventDefault();
-      const user = currentChannel.users.find(element => element.userLogin != login.value);
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
 
       if (user !== undefined) {
         blockUser(user.user);
@@ -416,7 +409,7 @@ export default function Chat() {
 
     const unblock = (users: IChannelUser[]) => (e: any) => {
       e.preventDefault();
-      const user = currentChannel.users.find(element => element.userLogin != login.value);
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
 
       if (user !== undefined) {
         unblockUser(user.user);
@@ -425,7 +418,7 @@ export default function Chat() {
 
     const friend = (users: IChannelUser[]) => (e: any) => {
       e.preventDefault();
-      const user = currentChannel.users.find(element => element.userLogin != login.value);
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
 
       if (user !== undefined) {
         friendUser(user.user);
@@ -434,7 +427,7 @@ export default function Chat() {
 
     const unfriend = (users: IChannelUser[]) => (e: any) => {
       e.preventDefault();
-      const user = currentChannel.users.find(element => element.userLogin != login.value);
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
 
       if (user !== undefined) {
         unfriendUser(user.user);

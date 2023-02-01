@@ -40,14 +40,7 @@ export default function OwnerPanel(props: OwnerProps) {
     const updatePassword = (e: any) => {
       e.preventDefault();
 
-      console.log("hiya");
-
       const updatedChannel = props.currentChannel;
-
-      // updatedChannel.password = password ? password.value : "";
-      // updatedChannel.status = "Protected";
-
-      console.log("||||||", updatedChannel);
 
       if (password === null)
         return ;
@@ -58,9 +51,6 @@ export default function OwnerPanel(props: OwnerProps) {
       else {
         updatedChannel.status = "Public";
       }
-
-      console.log("||||||", updatedChannel);
-
 
       props.socket.emit('updateChannel', updatedChannel, () => {
         setEdit("");
@@ -104,7 +94,7 @@ export default function OwnerPanel(props: OwnerProps) {
     function isOwner(users: any) : boolean {
       const owner = users.find((element: any) => element.rights === "Owner")
   
-      return owner.user.ft_login == login.value;
+      return owner.user.ft_login === login.value;
     }
 
     if (!isOwner(props.currentChannel.users))
