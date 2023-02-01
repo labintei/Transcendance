@@ -31,15 +31,7 @@ import axios from 'axios';
 import { IChannel, IChannelUser, IMessage, IUser } from './interface';
 import ProfilPanel from './ProfilPanel';
 
-const avatar_temp = "logo192.png";
-
-const temp_msg : IMessage[] = [
-  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
-  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
-  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
-];
-
-const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as IChannel;
+const empty_chan = {id: 0, status: "", name: "", messages: {}} as IChannel;
 
 const backend_url = process.env.REACT_APP_BACKEND_URL;
 export const backend_url_block = backend_url + "blockeds/";
@@ -222,21 +214,19 @@ export default function Chat() {
     return (chanUser === undefined ? false : isFriend(chanUser.user.username))
   }
 
+  function getName(channel: IChannel) : string {
+    if (channel.status !== "Direct")
+      return (channel.name);
+    const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+    return (chanUser!.user.username);
+  }
+
   function RenderConversations() {
     const switchChannel = (channel: IChannel) => (e: any) => {
       socket.emit('getChannel', channel, (data: IChannel) => {
         setCurrentChannel(data);
       });
     };
-
-    function getName(channel: IChannel) : string {
-      if (channel.status !== "Direct")
-        return (channel.name);
-
-
-      const chanUser = channel.users.find((user) => login.value !== user.userLogin);
-      return (chanUser!.user.username);
-    }
 
     return (
       <ExpansionPanel title="Conversations list" open={true}>
@@ -449,10 +439,15 @@ export default function Chat() {
     return (
       <ChatContainer>
         <ConversationHeader>
-          <Avatar src={avatar_temp} name={currentChannel.name} />
+          {currentChannel.status !== "Direct" ? null :
+          <Avatar
+            src={currentChannel.users[0].user.avatarURL}
+            name={currentChannel.users[0].user.username}
+            />
+          }
           <ConversationHeader.Content
-            userName={currentChannel.name}
-            info="I'm blue dabudidabuda"/>
+            userName={getName(currentChannel)}
+            />
           <ConversationHeader.Actions>
 
             {currentChannel.status !== "Direct" ?
@@ -530,7 +525,7 @@ export default function Chat() {
                   sender: message.sender.username,
                   direction: login.value === message.sender.ft_login ? "outgoing" : "incoming",
                   position: "single",
-                  type: "text"
+                  type: "html"
                 }}
                 // avatarPosition="tl"
               >
@@ -553,6 +548,7 @@ export default function Chat() {
         <MessageInput
             attachButton={false}
             onSend={sendMessage}
+            fancyScroll={false}
             placeholder="Type message here ..."
             autoFocus />
       </ChatContainer>
@@ -664,12 +660,9 @@ export default function Chat() {
     );
   }
 
-  function sendMessage(content : string) {
-    const message : IMessage = {} as IMessage;
-
-    message.content = content;
+  function sendMessage(innerHtml: string, textContent: string, innerText: string, nodes: NodeList) {
     socket.emit("sendMsg", {
-      content: content,
+      content: textContent,
       channelId: currentChannel.id,
     }, () => { socket.emit("getChannel", currentChannel, (data : IChannel) => {
       setCurrentChannel(data);
