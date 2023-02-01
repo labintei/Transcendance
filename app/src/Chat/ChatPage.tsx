@@ -45,7 +45,6 @@ const backend_url = process.env.REACT_APP_BACKEND_URL;
 export const backend_url_block = backend_url + "blockeds/";
 export const backend_url_friend = backend_url + "friends/";
 
-
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
   const [channels, setChannels] = useState<IChannel[]>([]);
@@ -55,6 +54,8 @@ export default function Chat() {
   const [directChannels, setDirectChannels] = useState<IChannel[]>([]);
 
   const [relations, setRelations] = useState<{friends: IUser[], blocked: IUser[]}>({friends: [], blocked: []});
+
+  const [state, setState] = useState<string>("Pending");
 
   const refChannel = useRef(currentChannel);
 
@@ -66,8 +67,12 @@ export default function Chat() {
   })
 
   useEffect(() => {
-    if (!socket.connected) {
-        return ;
+    if (state !== "Done") {
+      if (socket.connected)
+        setState("Done");
+      else
+        isLogged();
+      return ;
     }
 
     function callbackMessage(data: IMessage) {
@@ -128,7 +133,17 @@ export default function Chat() {
       socket.off('hideChannel');
       socket.off('updateChannel');
     };
-  }, [login.value, socket]);
+  }, [login.value, socket, state]);
+
+  function isLogged() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then((rec) => {
+      setState("Done");
+    }).catch(() => {
+      setState("Failed");
+    });
+  }
 
   function getRelations() {
     axios.all([
@@ -663,25 +678,27 @@ export default function Chat() {
 
   return (
     <div style={{
-      height: "600px",
+      height: "calc(100vh - 65px)",
       position: "relative",
       textAlign: "initial"
     }}>
-      { login.value === "" ? 
+      { state === "Failed" ? 
         <Navigate to="/login"></Navigate>
       :
-        <></>
+        state === "Pending" ?
+          <div>Loading...</div>
+        :
+        <MainContainer>
+          <Sidebar position="left" scrollable={false}>
+            <RenderCreateChannel />
+            <RenderConversations />
+            <RenderPublicConversations/>
+            <RenderInvitedConversations/>
+          </Sidebar>
+          <RenderRightSidebar />
+          <RenderChatContainer />
+        </MainContainer>
       }
-      <MainContainer>
-        <Sidebar position="left" scrollable={false}>
-          <RenderCreateChannel />
-          <RenderConversations />
-          <RenderPublicConversations/>
-          <RenderInvitedConversations/>
-        </Sidebar>
-        <RenderRightSidebar />
-        <RenderChatContainer />
-      </MainContainer>
     </div>
   );
 }
