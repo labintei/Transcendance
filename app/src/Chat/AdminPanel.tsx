@@ -41,7 +41,7 @@ export default function AdminPanel(props: AdminProps) {
       if (type === "Kicked")
         updated_user.status = null;
       else if (state.type !== "") {
-        time.setSeconds(time.getSeconds() + parseInt(timestamp!.value));
+        time.setSeconds(time.getSeconds() + (parseInt(timestamp!.value) * 60));
         updated_user.rights = state.type === "ban" ? "Banned" : "Muted";
         updated_user.rightsEnd = time;
       }
@@ -100,7 +100,8 @@ export default function AdminPanel(props: AdminProps) {
                   <form onSubmit={setPermissionsUser(data, "")}>
                     <input
                       type="number"
-                      placeholder={state.type + " time in seconds"}
+                      min="1"
+                      placeholder={state.type + " time in minutes"}
                       ref={node => timestamp = node}
                       required
                     />

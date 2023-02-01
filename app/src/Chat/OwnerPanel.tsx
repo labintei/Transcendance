@@ -73,7 +73,7 @@ export default function OwnerPanel(props: OwnerProps) {
       const updated_user = props.currentChannel.users.find(element => element.userLogin === new_admin!.value);
 
       if (updated_user === undefined) {
-        // console.error("AAAA");
+        new_admin!.value = "";
         return ;
       }
 

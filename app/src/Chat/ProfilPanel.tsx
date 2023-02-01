@@ -18,6 +18,7 @@ import { backend_url_block, backend_url_friend } from './ChatPage';
 interface ProfilProps {
     user : IUser;
     socket: Socket;
+    setCurrent: any,
     relations: {friends: IUser[], blocked: IUser[]},
     setRelations: any,
 }
@@ -107,6 +108,16 @@ export default function ProfilPanel(props: ProfilProps) {
     return (user !== undefined)
   }
 
+  const joinDirectChannel = (e: any) => {
+    e.preventDefault();
+
+    props.socket.emit('getDirectChannel', props.user, (data: IChannel) => {
+      props.setCurrent(data);
+      props.socket.emit('directList');
+    })
+
+  }
+
   return (
     <>
       <div style={{
@@ -161,6 +172,9 @@ export default function ProfilPanel(props: ProfilProps) {
         </div>
         <Button>
           Invite to game
+        </Button>
+        <Button onClick={joinDirectChannel}>
+          Private message
         </Button>
       </div>
     </>
