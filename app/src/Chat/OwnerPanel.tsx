@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   Button,
@@ -10,7 +10,7 @@ import { faCheck, faKey, faLock, faLockOpen, faPen, faXmark } from '@fortawesome
 
 import { IChannel } from './interface';
 import { Socket } from 'socket.io-client';
-import { parseEvent } from './ChatPage';
+import { notificationError } from './ChatPage';
 
 interface OwnerProps {
     currentChannel : IChannel;
@@ -19,29 +19,10 @@ interface OwnerProps {
 
 export default function OwnerPanel(props: OwnerProps) {
     const [edit, setEdit] = useState<string>("");
-    const [error, setError] = useState<string>("");
 
     let name: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
     let new_admin: HTMLInputElement | null = null;
-
-    useEffect(() => {
-      setError("");
-      props.socket.on('error', (data) => {
-        const err = parseEvent(data);
-        if (err === null)
-          return ;
-        if (err.type === "updateChannel")
-          setError(err.error);
-        else
-          setError("");
-        console.log(data, "[" + err.type + "]", err.error);
-      });
-
-      return (() => {
-        props.socket.off('error');
-      });
-    }, [props.socket]);
 
     const login = useContext(getLoginContext);
 
@@ -82,7 +63,7 @@ export default function OwnerPanel(props: OwnerProps) {
 
       if (updated_user === undefined) {
         new_admin!.value = "";
-        setError("Username doesn't exist.")
+        notificationError("This username doesn't exist");
         return ;
       }
 
@@ -90,8 +71,8 @@ export default function OwnerPanel(props: OwnerProps) {
         updated_user.rights = "Admin";
       }
       else if (updated_user.rights !== "Admin") {
-          // console.error("User is not an admin");
-          return ;
+        notificationError("You are an administrator");
+        return ;
       }
       else
         updated_user.rights = null;
@@ -241,7 +222,6 @@ export default function OwnerPanel(props: OwnerProps) {
                 Remove
               </Button>
             </form>
-        <p className='error'>{error}</p>
       </>
     );
   }

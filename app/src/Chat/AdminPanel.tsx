@@ -1,4 +1,4 @@
-import { useContext, useEffect, useState } from 'react';
+import { useContext, useState } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import { Button } from '@chatscope/chat-ui-kit-react';
 import { getLoginContext } from 'WebSocketWrapper';
@@ -8,7 +8,6 @@ import { faBan, faCommentSlash, faUserSlash } from '@fortawesome/free-solid-svg-
 
 import { IUser, IChannelUser, IChannel } from './interface';
 import { Socket } from 'socket.io-client';
-import { parseEvent } from './ChatPage';
 
 interface AdminProps {
     currentChannel : IChannel;
@@ -18,27 +17,8 @@ interface AdminProps {
 export default function AdminPanel(props: AdminProps) {
     const login = useContext(getLoginContext);
     const [state, setState] = useState<{login: string, type: string}>({login: "", type: ""});
-    const [error, setError] = useState<string>("");
 
     let timestamp: HTMLInputElement | null = null;
-
-    useEffect(() => {
-      setError("");
-      props.socket.on('error', (data) => {
-        const err = parseEvent(data);
-        if (err === null)
-          return ;
-        if (err.type === "setPermissions")
-          setError(err.error);
-        else
-          setError("");
-        console.log(data, "[" + err.type + "]", err.error);
-      });
-
-      return (() => {
-        props.socket.off('error');
-      });
-    }, [props.socket]);
 
     function isAdmin(users: IChannelUser[]) : boolean {
       const user = users.find((element: any) => element.user.ft_login === login.value);
@@ -147,7 +127,6 @@ export default function AdminPanel(props: AdminProps) {
             </div>
           )
         })}
-        <p className='error'>{error}</p>
       </>
     );
   }

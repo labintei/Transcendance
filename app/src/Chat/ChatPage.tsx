@@ -21,6 +21,10 @@ import {
   ArrowButton
 } from '@chatscope/chat-ui-kit-react';
 
+import { toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+
 import Linkify from 'react-linkify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faArrowRightFromBracket, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-solid-svg-icons';
@@ -43,6 +47,19 @@ export function parseEvent(event: string) : {type: string, error: string} | null
     type: `${match[1]}`,
     error: match[2]
   };
+}
+
+export function notificationError(msg: string) {
+  toast.error(msg, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    });
 }
 
 export default function Chat() {
@@ -93,8 +110,10 @@ export default function Chat() {
       socket.emit('directList');
     }
 
-    // socket.on('connect', () => { console.log('connected') });
-    // socket.on('disconnect', () => { console.log('disconnected') });
+    socket.on('error', (data) => {
+      const event = parseEvent(data);
+      notificationError(event!.error);
+    })
     socket.on('message', callbackMessage);
     socket.on('updateChannel', callbackUpdateChannel);
 
@@ -127,6 +146,7 @@ export default function Chat() {
     // This code will run when component unmount
     return () => {
       socket.off('message');
+      socket.off('error');
       socket.off('joinedList');
       socket.off('directList');
       socket.off('invitedList');
@@ -276,19 +296,7 @@ export default function Chat() {
         setPublicChannels(newPublicList); 
       });
 
-      socket.on('error', (data) => {
-        const err = parseEvent(data);
-        if (err === null)
-          return ;
-        if (err.type === "joinChannel")
-          setError(err.error);
-        else
-          setError("");
-        console.log(data, "[" + err.type + "]", err.error);
-      });
-
       return (() => {
-        socket.off('error');
         socket.off('publicList'); 
       });
     }, []);
@@ -383,25 +391,8 @@ export default function Chat() {
 
   function RenderChatContainer() {
     const [state, setState] = useState<string>("");
-    const [error, setError] = useState<string>("");
 
     let invite: HTMLInputElement | null = null;
-
-    useEffect(() => {
-      socket.on('error', (data) => {
-        const err = parseEvent(data);
-        if (err === null)
-          return ;
-        if (err.type === "sendMsg")
-          setError(err.error);
-        else
-          setError("");
-      });
-    
-      return (() => {
-        socket.off('error');
-      });
-    }, []);
 
     const leaveChannel = (e: any) => {
       socket.emit('leaveChannel', currentChannel, (data : any) => {
@@ -458,14 +449,12 @@ export default function Chat() {
       invited_user.status = "Invited";
       invited_user.rights = null;
       invited_user.channelId = currentChannel.id;
-      // invited_user.user = {} as IUser;
-      // invited_user.user.username = invite!.value;
-      // if (isBlocked(invited_user.user.username)) {
-        // setError("You cannot invite someone you've blocked");
-        // return ;
-      // }
-      invited_user.userLogin = invite!.value;
-
+      invited_user.user = {} as IUser;
+      invited_user.user.username = invite!.value;
+      if (isBlocked(invite!.value)) {
+        notificationError("You cannot invite someone you've blocked");
+        return ;
+      }
       socket.emit('setPermissions', invited_user);
     }
 
@@ -587,9 +576,6 @@ export default function Chat() {
               </Message>
             )
           })}
-          {error === "" ? null :
-            <MessageSeparator className="error">{error}</MessageSeparator>
-          }
         </MessageList>
 
         <MessageInput
@@ -604,27 +590,9 @@ export default function Chat() {
 
   function RenderCreateChannel() {
     const [check, setCheck] = useState({password: false, private: false});
-    const [error, setError] = useState<string>("");
 
     let channelName: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
-
-    useEffect(() => {
-      setError("");
-      socket.on('error', (data) => {
-        const err = parseEvent(data);
-        if (err === null)
-          return ;
-        if (err.type === "createChannel")
-          setError(err.error);
-        else
-          setError("");
-      });
-    
-      return (() => {
-        socket.off('error');
-      });
-    }, []);
 
     function onSubmit(e : any) {
       e.preventDefault();
@@ -680,7 +648,6 @@ export default function Chat() {
             Create
           </Button>
         </form>
-        <p className='error'>{error}</p>
       </ExpansionPanel>
     );
   }
