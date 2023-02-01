@@ -43,7 +43,6 @@ export class UserController
       if (exists && exists.ft_login !== req.user)
         throw new ConflictException("This Username is already taken.")
     }
-    console.log()
     return User.update(req.user, toUpdate);
   }
 
