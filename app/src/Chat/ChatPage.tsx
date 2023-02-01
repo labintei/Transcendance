@@ -122,8 +122,14 @@ export default function Chat() {
       setDirectChannels(data);
     })
 
+    socket.on('invitedList', (data) => {
+      console.log("[WS] invitedList", data);
+      setInvitedChannels(data);
+    })
+
     socket.emit('joinedList');
     socket.emit('directList');
+    socket.emit('invitedList');
 
     getRelations();
     // This code will run when component unmount
@@ -328,7 +334,7 @@ export default function Chat() {
       return <></>
 
     return (
-      <ExpansionPanel title="Public conversations list">
+      <ExpansionPanel title="Public conversations list" open={true}>
         {publicChannels.map((channel, index) => {
           return (
           <div key={index}>
@@ -354,9 +360,12 @@ export default function Chat() {
 
   function RenderInvitedConversations() {
     const onClick = (channel: IChannel) => (e: any) => {
-      socket.emit('getChannel', channel, (data: IChannel) => {
-        console.log("getChannel", data);
-        setCurrentChannel(data);
+      socket.emit('joinChannel', channel, (data: IChannel) => {
+      socket.emit('joinedList');
+      socket.emit('invitedList');
+      socket.emit('getChannel', channel, (channel : IChannel) => {
+        setCurrentChannel(channel)
+      });
       });
     }
 
@@ -364,7 +373,7 @@ export default function Chat() {
       return <></>
 
     return (
-      <ExpansionPanel title="Invited conversations list">
+      <ExpansionPanel title="Invited conversations list" open={true}>
         {invitedChannels.map((channel, index) => {
           return (
             <Conversation
