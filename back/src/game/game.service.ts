@@ -597,8 +597,11 @@ export class GameService {
 
     DeleteStream(id:number)
     {
-        clearInterval(this.stream.get(id)[1]);
-        this.stream.delete(id);
+        if(this.stream.get(id))
+        {
+            clearInterval(this.stream.get(id)[1]);
+            this.stream.delete(id);
+        }
     }
 
 
