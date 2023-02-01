@@ -4,6 +4,7 @@ import World from './World/World';
 import {useStore} from './State/state';
 import { getSocketContext } from 'WebSocketWrapper';
 import { useParams } from 'react-router-dom';
+import Menu from './Menu/menu';
 
 export default function PongGame(props: any) {
 
@@ -153,10 +154,6 @@ export default function PongGame(props: any) {
       <div>{vbis}</div>
       Score: 
       <div>{s} - {sbis}</div>
-      Params:
-      <div>{matchid}</div>
-      Name:
-     
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
@@ -168,7 +165,7 @@ export default function PongGame(props: any) {
         Rejouer
       </div>
     </div>
-    {/*<Menu/>*/} 
+    <Menu/> 
     </div>
     );
 }

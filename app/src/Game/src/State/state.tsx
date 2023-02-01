@@ -14,6 +14,7 @@ export const useStore = create((set,get) => ({
   gameReady:false,
   votes: 0,
   score: [0,0],
+  escaped: false,
   controls: {
     left: false,
     right: false,
@@ -97,7 +98,8 @@ export const useStore = create((set,get) => ({
   setReady: () => set((state:any) => ({ gameReady: true })),
   setNotReady: () => set((state:any) => ({ gameReady: false })),
   
-  setEscape: () => set((state:any) => ({ controls: [state.left, state.right, false]})),
-  setMap: (name:any) => set((state:any) => ({map: name}))
+  setEscape: () => set((state:any) => ({ escaped: !state.escaped})),
+  setMap: (name:any) => set((state:any) => ({map: name})),
+  setEscaped: () => set((state:any) => ({ escaped: true})),
  }
 ));

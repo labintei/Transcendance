@@ -529,7 +529,6 @@ export class GameService {
             room.time= room.time + 1;
     }
 
-
     player2x_right(id:number, client:Socket) {
         if(this.s.get(id) && this.s.get(id).player2 == client)
             this.s.get(id).Box2x += 2;
