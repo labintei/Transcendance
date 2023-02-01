@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Global, Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -14,7 +14,9 @@ import { UserRelationship } from './entities/userrelationship.entity';
 import { ChannelUser } from './entities/channeluser.entity';
 import { UserSocket } from './entities/usersocket.entity';
 import { Channel } from './entities/channel.entity';
+import { SchedulerRegistry } from '@nestjs/schedule';
 
+@Global()
 @Module({
   imports: [
     TypeOrmModule.forRoot({
@@ -46,6 +48,6 @@ import { Channel } from './entities/channel.entity';
     ChatModule
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [AppService, SchedulerRegistry],
 })
 export class AppModule {}

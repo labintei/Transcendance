@@ -27,7 +27,7 @@ export class GameController {
     var urlredir: string = process.env.REACT_APP_WEBSITE_URL + 'game/' + c;
     const channelId = await Channel.getDirectChannelId(user1.ft_login, user2.ft_login);
     const message = await Message.create({
-      content: "<a href='" + urlredir + "'>Accepte mon defi !</a>",
+      content: "I invite you to a game of pong !\n" + urlredir,
       senderLogin: user1.ft_login,
       channelId: channelId
     }).save();
@@ -44,6 +44,10 @@ export class GameController {
   @Get('history')
   async gethistory(@Request() req): Promise<Match[]> {
     return Match.find({
+      select: {
+        user1: User.defaultFilter,
+        user2: User.defaultFilter
+      },
       relations: {
         user1:true,
         user2:true

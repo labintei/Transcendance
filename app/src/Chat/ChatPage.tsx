@@ -1,9 +1,6 @@
-import React, { useContext, useEffect, useRef, useState } from 'react';
-import { io, Socket } from 'socket.io-client';
+import { useContext, useEffect, useRef, useState } from 'react';
 import { getSocketContext } from 'WebSocketWrapper';
-// import ChannelMessage from './ChannelMessage';
-// import ChannelSidebar from './ChannelSidebar';
-// import MessageInput from './MessageInput';
+import { getLoginContext } from 'WebSocketWrapper';
 import { Navigate } from 'react-router-dom';
 
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
@@ -20,117 +17,211 @@ import {
   Sidebar,
   ConversationHeader,
   Button,
-  AddUserButton
+  AddUserButton,
+  ArrowButton
 } from '@chatscope/chat-ui-kit-react';
 
+import Linkify from 'react-linkify';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowRightFromBracket, faPen, faUserSlash } from '@fortawesome/free-solid-svg-icons';
-import { a } from '@react-spring/three';
+import { faArrowRightFromBracket, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-solid-svg-icons';
+import OwnerPanel from './OwnerPanel';
+import AdminPanel from './AdminPanel';
+import axios from 'axios';
+
+import { IChannel, IChannelUser, IMessage, IUser } from './interface';
+import ProfilPanel from './ProfilPanel';
 
 const avatar_temp = "logo192.png";
 
-// const backend_url = process.env.REACT_APP_BACKEND_URL || '';
-// const socket = io(backend_url, { withCredentials: true });
-
-interface Message {
-  time: Date;
-  content: string;
-  sender: User;
-}
-
-interface User {
-  ft_login: string;
-  username: string;
-  status: string;
-  avatarURL: string;
-  level: number;
-  xp: number;
-  victories: number;
-  defeats: number;
-  draws: number;
-  rank: number;
-}
-
-interface Channel {
-  id: number;
-  status: string;
-  password: string;
-  name: string;
-  users: User[];
-  messages: Message[];
-}
-
-const temp_msg : Message[] = [
-  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
-  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
-  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as User},
+const temp_msg : IMessage[] = [
+  {time: new Date(), content: "Hello World this is a test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
+  {time: new Date(), content: "Hello World this is another test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
+  {time: new Date(), content: "Hello World this is still a test", sender: {ft_login: "ft_bob", username: "Bob"} as IUser} as IMessage,
 ];
 
-const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as Channel;
+const empty_chan = {id: 0, status: "", name: "", messages: temp_msg} as IChannel;
+
+const backend_url = process.env.REACT_APP_BACKEND_URL;
+export const backend_url_block = backend_url + "blockeds/";
+export const backend_url_friend = backend_url + "friends/";
+
 
 export default function Chat() {
-  const [currentChannel, setCurrentChannel] = useState<Channel>(empty_chan);
-  const [channels, setChannels] = useState<Channel[]>([]);
-  const [invitedChannels, setInvitedChannels] = useState<Channel[]>([]);
-  const [profilSidebar, setProfilSidebar] = useState<string>("");
-  const [publicChannels, setPublicChannels] = useState<Channel[]>([]);
+  const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
+  const [channels, setChannels] = useState<IChannel[]>([]);
+  const [invitedChannels, setInvitedChannels] = useState<IChannel[]>([]);
+  const [profilSidebar, setProfilSidebar] = useState<IUser | null>(null);
+  const [publicChannels, setPublicChannels] = useState<IChannel[]>([]);
+  const [directChannels, setDirectChannels] = useState<IChannel[]>([]);
+
+  const [relations, setRelations] = useState<{friends: IUser[], blocked: IUser[]}>({friends: [], blocked: []});
 
   const refChannel = useRef(currentChannel);
 
   const socket = useContext(getSocketContext);
-
-  function callback(data: any) {
-    if (data.channelId === refChannel.current.id)
-    {
-      const messages = [...refChannel.current.messages, data];
-      console.log(messages);
-      setCurrentChannel({...refChannel.current, messages: messages})
-    }
-  }
+  const login = useContext(getLoginContext);
 
   useEffect(() => {
     refChannel.current = currentChannel;
   })
 
   useEffect(() => {
-    if (!socket.connected)
+    if (!socket.connected) {
         return ;
-    socket.on('error', () => { console.log('error') });
+    }
+
+    function callbackMessage(data: IMessage) {
+      if (data.channelId === refChannel.current.id) {
+        const messages = [...refChannel.current.messages, data];
+        setCurrentChannel({...refChannel.current, messages: messages})
+      }
+      socket.emit('directList');
+    }
+
+    function callbackUpdateChannel(data: IChannel) {
+      if (data.id === refChannel.current.id) {
+        socket.emit('getChannel', refChannel.current, (data: IChannel) => {
+          setCurrentChannel(data);
+        });
+      }
+      socket.emit('joinedList');
+      socket.emit('directList');
+    }
+
+    socket.on('error', (data) => { console.log('error', data) });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
-    socket.on('message', callback);
+    socket.on('message', callbackMessage);
+    socket.on('updateChannel', callbackUpdateChannel);
 
-    socket.on('hideChannel', (channel : Channel) => {
-      console.log("HIDE");
+    socket.on('hideChannel', (channel : IChannel) => {
       if (channel.id === refChannel.current.id)
         setCurrentChannel(empty_chan);
     })
 
     socket.on('joinedList', (data) => {
-      console.log("[WS] joinedList");
       setChannels(data);
       if (data.length !== 0 && refChannel.current.id === 0) {
-        socket.emit('getChannel', data[0], (newCurrentChannel : Channel) => {
+        socket.emit('getChannel', data[0], (newCurrentChannel : IChannel) => {
           setCurrentChannel(newCurrentChannel);
         })}
       socket.emit('publicList');
     });
 
+    socket.on('directList', (data) => {
+      setDirectChannels(data);
+    })
+
+    socket.on('invitedList', (data) => {
+      setInvitedChannels(data);
+    })
+
     socket.emit('joinedList');
+    socket.emit('directList');
+    socket.emit('invitedList');
+
     // This code will run when component unmount
     return () => {
+      socket.off('error');
       socket.off('message');
       socket.off('joinedList');
+      socket.off('hideChannel');
+      socket.off('updateChannel');
     };
-  }, []);
+  }, [login.value, socket]);
+
+  function getRelations() {
+    axios.all([
+      axios.get(backend_url_block, {
+        withCredentials: true
+      }),
+      axios.get(backend_url_friend, {
+        withCredentials: true
+      })
+    ])
+    .then(axios.spread((rec1, rec2) => {
+      setRelations({
+        blocked: rec1.data,
+        friends: rec2.data,
+      })
+    }))
+    .catch((rec) => {
+    })
+  }
+
+  function blockUser(user: IUser) {
+    axios.put(backend_url_block + user.username, {}, {
+      withCredentials: true
+    }).then((rec) => {
+      getRelations();
+    }).catch((rec) => {
+    })
+  }
+
+  function unblockUser(user: IUser) {
+    axios.delete(backend_url_block + user.username, {
+      withCredentials: true
+    }).then((rec) => {
+      getRelations();
+    }).catch((rec) => {
+    })
+  }
+
+  function isBlocked(username: string) : boolean {
+    const user = relations.blocked.find(user => user.username === username);
+    return (user !== undefined)
+  }
+
+  function isBlockedDirect() : boolean {
+    const chanUser = currentChannel.users.find(element => element.userLogin !== login.value);
+
+    return (chanUser === undefined ? false : isBlocked(chanUser.user.username))
+  }
+
+  function friendUser(user: IUser) {
+    axios.put(backend_url_friend + user.username, {}, {
+      withCredentials: true
+    }).then((rec) => {
+      getRelations()
+    }).catch((rec) => {
+    })
+  }
+
+  function unfriendUser(user: IUser) {
+    axios.delete(backend_url_friend + user.username, {
+      withCredentials: true
+    }).then((rec) => {
+      getRelations()
+    }).catch((rec) => {
+    })
+  }
+
+  function isFriend(username: string) : boolean {
+    const user = relations.friends.find(user => user.username === username);
+    return (user !== undefined)
+  }
+
+  function isFriendDirect() : boolean {
+    const chanUser = currentChannel.users.find(element => element.userLogin !== login.value);
+
+    return (chanUser === undefined ? false : isFriend(chanUser.user.username))
+  }
 
   function RenderConversations() {
-    const switchChannel = (channel: Channel) => (e: any) => {
-      socket.emit('getChannel', channel, (data: Channel) => {
-        console.log(data);
+    const switchChannel = (channel: IChannel) => (e: any) => {
+      socket.emit('getChannel', channel, (data: IChannel) => {
         setCurrentChannel(data);
       });
     };
+
+    function getName(channel: IChannel) : string {
+      if (channel.status !== "Direct")
+        return (channel.name);
+
+
+      const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+      return (chanUser!.user.username);
+    }
 
     return (
       <ExpansionPanel title="Conversations list" open={true}>
@@ -139,7 +230,15 @@ export default function Chat() {
             <Conversation
               key={index}
               active={channel.id === currentChannel.id}
-              name={channel.name}
+              name={getName(channel)}
+              onClick={switchChannel(channel)}/>
+          )})}
+        {directChannels.map((channel, index) => {
+          return (
+            <Conversation
+              key={index}
+              active={channel.id === currentChannel.id}
+              name={getName(channel)}
               onClick={switchChannel(channel)}/>
           )})}
       </ExpansionPanel>
@@ -151,23 +250,24 @@ export default function Chat() {
     let password: HTMLInputElement | null = null;
 
     useEffect(() => {
-      socket.on('publicList', (chans : Channel[]) => {
-        let newPublicList : Channel[] = [];
-        console.log("[DEBUG]: channels:", channels);
-        chans.filter((x : Channel) => {
-          if (channels.find((a) => {return (a.id === x.id)}) === undefined)
-            newPublicList = [...newPublicList, x];
-        });
-        console.log("[DEBUG] : publicChannels:", newPublicList);
+      socket.on('publicList', (chans : IChannel[]) => {
+
+        const newPublicList = chans.reduce((acc: IChannel[], x: IChannel) => {
+          if (!channels.find(a => a.id === x.id)) {
+            acc.push(x);
+          }
+          return acc;
+        }, []);
+
         setPublicChannels(newPublicList); 
       });
 
       return (() => {
         socket.off('publicList'); 
       });
-    }, [channels]);
+    }, []);
 
-    const onClick = (channel: Channel) => (e: any) => {
+    const onClick = (channel: IChannel) => (e: any) => {
       e.preventDefault();
       if (channel.status === "Protected")
       {
@@ -178,30 +278,32 @@ export default function Chat() {
         return ;
       }
 
-      socket.emit('joinChannel', channel, (channel : Channel) => {
-        // socket.emit('joinedList');
-        socket.emit('getChannel', channel, (channel : Channel) => {
+      socket.emit('joinChannel', channel, (channel : IChannel) => {
+        socket.emit('joinedList');
+        socket.emit('getChannel', channel, (channel : IChannel) => {
           setCurrentChannel(channel)
         });
       });
-      socket.emit('publicList');
     };
 
-    const onSubmit = (channel: Channel) => (e: any) => {
+    const onSubmit = (channel: IChannel) => (e: any) => {
       e.preventDefault();
 
       channel.password = password!.value;
 
-      socket.emit('joinChannel', channel, (channel : Channel) => {
-        // socket.emit('joinedList');
-        socket.emit('getChannel', channel, (channel : Channel) => {
+      socket.emit('joinChannel', channel, (channel : IChannel) => {
+        socket.emit('joinedList');
+        socket.emit('getChannel', channel, (channel : IChannel) => {
           setCurrentChannel(channel)
         });
       });
     }
 
+    if (publicChannels.length === 0)
+      return <></>
+
     return (
-      <ExpansionPanel title="Public conversations list">
+      <ExpansionPanel title="Public conversations list" open={true}>
         {publicChannels.map((channel, index) => {
           return (
           <div key={index}>
@@ -226,15 +328,21 @@ export default function Chat() {
   }
 
   function RenderInvitedConversations() {
-    const onClick = (channel: Channel) => (e: any) => {
-      // setCurrentChannel(channel);
-      // socket.emit('joinChannel', channel, (data : Channel) => {
-      //   setChannels([...channels, data]);
-      // })};
+    const onClick = (channel: IChannel) => (e: any) => {
+      socket.emit('joinChannel', channel, (data: IChannel) => {
+      socket.emit('joinedList');
+      socket.emit('invitedList');
+      socket.emit('getChannel', channel, (channel : IChannel) => {
+        setCurrentChannel(channel)
+      });
+      });
     }
 
+    if (invitedChannels.length === 0)
+      return <></>
+
     return (
-      <ExpansionPanel title="Invited conversations list">
+      <ExpansionPanel title="Invited conversations list" open={true}>
         {invitedChannels.map((channel, index) => {
           return (
             <Conversation
@@ -247,19 +355,69 @@ export default function Chat() {
   }
 
   function RenderChatContainer() {
-    console.count("renderChatContainer")
+    const [state, setState] = useState<string>("");
+
+    let invite: HTMLInputElement | null = null;
 
     const leaveChannel = (e: any) => {
-      console.log("leaving channel", currentChannel.name)
       socket.emit('leaveChannel', currentChannel, (data : any) => {
-        console.log("leave emit", data)
         socket.emit('joinedList');
       })
     }
 
-    const openProfile = (ft_login: string) => (e: any) => {
+    const openProfile = (user: IUser) => (e: any) => {
       e.preventDefault();
-      setProfilSidebar(ft_login);
+      setProfilSidebar(user);
+    }
+
+    const block = (users: IChannelUser[]) => (e: any) => {
+      e.preventDefault();
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
+
+      if (user !== undefined) {
+        blockUser(user.user);
+      } 
+    }
+
+    const unblock = (users: IChannelUser[]) => (e: any) => {
+      e.preventDefault();
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
+
+      if (user !== undefined) {
+        unblockUser(user.user);
+      } 
+    }
+
+    const friend = (users: IChannelUser[]) => (e: any) => {
+      e.preventDefault();
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
+
+      if (user !== undefined) {
+        friendUser(user.user);
+      } 
+    }
+
+    const unfriend = (users: IChannelUser[]) => (e: any) => {
+      e.preventDefault();
+      const user = currentChannel.users.find(element => element.userLogin !== login.value);
+
+      if (user !== undefined) {
+        unfriendUser(user.user);
+      } 
+    }
+
+    const inviteUser = (e: any) => {
+      e.preventDefault();
+
+      const invited_user = {} as IChannelUser;
+
+      invited_user.status = "Invited";
+      invited_user.rights = null;
+      invited_user.channelId = currentChannel.id;
+      // invited_user.user.username = invite!.value;
+      invited_user.userLogin = invite!.value;
+
+      socket.emit('setPermissions', invited_user);
     }
 
     if (currentChannel.id === 0)
@@ -281,24 +439,69 @@ export default function Chat() {
             userName={currentChannel.name}
             info="I'm blue dabudidabuda"/>
           <ConversationHeader.Actions>
-            <AddUserButton
-              style={{fontSize: "1.4em"}}
-              title={currentChannel.status === "Direct" ? "Add as friend" : "Invite a friend"}
-              // if already friend, change button to faUserMinus
-              />
-            {currentChannel.status !== "Direct" ? <></> :
-            <Button
-              style={{fontSize: "1.4em"}}
-              icon={<FontAwesomeIcon icon={faUserSlash}/>}
-              title="Block this person"
-              />}
-            {currentChannel.status === "Direct" ? <></> :
-            <Button
-              style={{fontSize: "1.4em"}}
-              icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}
-              title="Leave this conversation"
-              onClick={leaveChannel}
-              />}
+
+            {currentChannel.status !== "Direct" ?
+              <>
+                {state === "" ?
+                  <AddUserButton
+                    style={{fontSize: "1.4em"}}
+                    title="Invite someone to the conversation"
+                    onClick={() => setState("invite")}
+                    />
+                :
+                  <form onSubmit={inviteUser}>
+                    <input
+                      type="text"
+                      placeholder="Insert login"
+                      ref={node => invite = node}
+                      required
+                    />
+                    <AddUserButton
+                      style={{fontSize: "1.4em"}}
+                      title="Invite !"
+                      />
+                  </form>
+                }
+                <Button
+                  style={{fontSize: "1.4em"}}
+                  icon={<FontAwesomeIcon icon={faArrowRightFromBracket}/>}
+                  title="Leave this conversation"
+                  onClick={leaveChannel}
+                  />
+              </>
+            :
+              <>
+                {!isFriendDirect() ?
+                  <AddUserButton
+                  style={{fontSize: "1.4em"}}
+                  title="Add this person as a friend"
+                  onClick={friend(currentChannel.users)}
+                  />
+              :
+                <Button
+                  style={{fontSize: "1.4em"}}
+                  icon={<FontAwesomeIcon icon={faUserMinus}/>}
+                  title="Unfriend this person"
+                  onClick={unfriend(currentChannel.users)}
+                  />
+                }
+                {!isBlockedDirect() ?
+                  <Button
+                    style={{fontSize: "1.4em"}}
+                    icon={<FontAwesomeIcon icon={faUserSlash}/>}
+                    title="Block this person"
+                    onClick={block(currentChannel.users)}
+                    />
+                :
+                  <Button
+                    style={{fontSize: "1.4em"}}
+                    icon={<FontAwesomeIcon icon={faUser}/>}
+                    title="Unblock this person"
+                    onClick={unblock(currentChannel.users)}
+                    />
+                }
+              </>
+            }
           </ConversationHeader.Actions>
         </ConversationHeader>
 
@@ -308,16 +511,25 @@ export default function Chat() {
               <Message
                 key={index}
                 model={{
-                  message: message.content,
                   sentTime: message.time.toString(),
                   sender: message.sender.username,
-                  direction: "incoming",
-                  position: "single"
+                  direction: login.value === message.sender.ft_login ? "outgoing" : "incoming",
+                  position: "single",
+                  type: "text"
                 }}
                 // avatarPosition="tl"
               >
                 <Message.Header sender={message.sender.username} />
-                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender.ft_login)}/>
+                <Avatar src={message.sender.avatarURL} onClick={openProfile(message.sender)}/>
+                <Message.CustomContent>
+                  <Linkify componentDecorator={(decoratedHref, decoratedText, key) => 
+                    <a target="blank" rel="noopener" href={decoratedHref} key={key}>
+                      {decoratedText}
+                    </a>
+                  }>
+                    {!isBlocked(message.sender.username) ? message.content : "This user is blocked."}
+                  </Linkify>
+                </Message.CustomContent>
               </Message>
             )
           })}
@@ -326,7 +538,8 @@ export default function Chat() {
         <MessageInput
             attachButton={false}
             onSend={sendMessage}
-            placeholder="Type message here ..." />
+            placeholder="Type message here ..."
+            autoFocus />
       </ChatContainer>
     );
   }
@@ -339,10 +552,10 @@ export default function Chat() {
     function onSubmit(e : any) {
       e.preventDefault();
 
-      const new_chan : Channel = {
+      const new_chan : IChannel = {
         status: "Public",
         name: channelName!.value,
-      } as Channel;
+      } as IChannel;
 
       if (check.password === true) {
         new_chan.status = "Protected";
@@ -386,37 +599,50 @@ export default function Chat() {
             onChange={() => {setCheck({password: false, private: !check.private})
           }} />
             Private
-          <Button>Create</Button>
+          <Button>
+            Create
+          </Button>
         </form>
       </ExpansionPanel>
     );
   }
 
   function RenderRightSidebar() {
-
-    function AdminPanel() {
-      return (
-        <>
-          <h1>
-            {currentChannel.name}
-          </h1>
-          <Button icon={<FontAwesomeIcon icon={faPen}/>}>
-            Change Name
-          </Button>
-        </>
-      );
+    function shouldRender() : boolean {
+      if (profilSidebar !== null)
+        return true;
+      if (currentChannel.status === "Direct")
+        return false;
+      if (currentChannel.id === 0)
+        return false;
+      const users : any = currentChannel.users;
+      const user = users.find((element: any) => element.user.ft_login === login.value);
+      if (user.rights === "Owner" || user.rights === "Admin")
+        return true;
+      return false;
     }
 
+    if (!shouldRender())
+      return null;
 
     return (
       <Sidebar position="right">
-        { profilSidebar !== "" ?
+        { profilSidebar !== null ?
           <>
-            <h1>Profil panel : {profilSidebar}</h1>
+            <ArrowButton direction="left" onClick={() => setProfilSidebar(null)}/>
+            {/* <h1>Profil panel : {profilSidebar!.username}</h1> */}
+            <ProfilPanel
+              user={profilSidebar}
+              socket={socket}
+              setCurrent={setCurrentChannel}
+              relations={relations}
+              setRelations={setRelations}
+              />
           </>
           :
           <>
-            <AdminPanel/>
+            <OwnerPanel currentChannel={currentChannel} socket={socket}/>
+            <AdminPanel currentChannel={currentChannel} socket={socket}/>
           </>
         }
       </Sidebar>
@@ -424,15 +650,13 @@ export default function Chat() {
   }
 
   function sendMessage(content : string) {
-    const message : Message = {} as Message;
+    const message : IMessage = {} as IMessage;
 
     message.content = content;
-    console.log(content, currentChannel);
     socket.emit("sendMsg", {
       content: content,
       channelId: currentChannel.id,
-    }, () => { socket.emit("getChannel", currentChannel, (data : Channel) => {
-      console.log("AAAAAA");
+    }, () => { socket.emit("getChannel", currentChannel, (data : IChannel) => {
       setCurrentChannel(data);
     })})
   }
@@ -443,7 +667,11 @@ export default function Chat() {
       position: "relative",
       textAlign: "initial"
     }}>
-      { !socket.connected ? <Navigate to="/login"></Navigate> : <></> }
+      { login.value === "" ? 
+        <Navigate to="/login"></Navigate>
+      :
+        <></>
+      }
       <MainContainer>
         <Sidebar position="left" scrollable={false}>
           <RenderCreateChannel />

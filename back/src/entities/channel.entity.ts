@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not, AfterUpdate} from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
@@ -55,8 +55,16 @@ export class Channel extends BaseEntity {
 
   async emitUpdate() {
     await this.refreshListIfPublic();
+    await this.contentUpdate();
+  }
+
+  async contentUpdate() {
     if (this.id)
-      await SocketGateway.channelEmit(this.id, 'updateChannel', {id: this.id});
+      Channel.contentUpdate(this.id);
+  }
+
+  static async contentUpdate(channelId: number) {
+    await SocketGateway.channelEmit(channelId, 'updateChannel', {id: channelId});
   }
 
   async getNewOwner(): Promise<ChannelUser> {
@@ -169,6 +177,8 @@ export class Channel extends BaseEntity {
       }).save();
       await SocketGateway.userJoinRooms(login1, SocketGateway.channelsToRooms([channel]));
       await SocketGateway.userJoinRooms(login2, SocketGateway.channelsToRooms([channel]));
+      User.listsUpdate(login1);
+      User.listsUpdate(login2);
       channel.emitUpdate();
     }
     return channel.id;
@@ -209,30 +219,44 @@ export class Channel extends BaseEntity {
   }
 
   static async directList(login: string): Promise<Channel[]> {
-    return await Channel.createQueryBuilder("channel")
-      .innerJoin(
-        ChannelUser,
-        "ownChanUser",
-        "ownChanUser.channelId = channel.id AND ownChanUser.userLogin = :user_login",
-        { user_login: login }
-      )
-      .where(
-        "channel.status = :channelStatus",
-        { channelStatus: Channel.Status.DIRECT }
-      )
-      .leftJoinAndMapMany(
-        "users",
-        ChannelUser,
-        "otherChanUser",
-        "otherChanUser.channelId = channel.id AND ownChanUser.userLogin != :user_login",
-        { user_login: login }
-      )
-      .select([
-        "channel.id",
-        "channel.status",
-        "otherChanUser.username"
-        ])
-      .getMany();
+    const list = await Channel.find({
+      select: Channel.defaultFilter,
+      where: {
+        status: Channel.Status.DIRECT,
+        users: {
+          userLogin: login
+        },
+      }
+    });
+    for (let channel of list) {
+      channel.users = [
+        await ChannelUser.findOne({
+          select: {
+            user: User.defaultFilter
+          },
+          relations: {
+            user: true
+          },
+          where: {
+            channelId: channel.id,
+            userLogin: Not(login)
+          }
+        }),
+        await ChannelUser.findOne({
+          select: {
+            user: User.defaultFilter
+          },
+          relations: {
+            user: true
+          },
+          where: {
+            channelId: channel.id,
+            userLogin: login
+          }
+        })
+      ];
+    }
+    return list;
   }
 
 }

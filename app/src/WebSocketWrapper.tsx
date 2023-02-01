@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { io } from 'socket.io-client';
 
-interface WebSocketWrapper {
+interface WebSocketWrapperProps {
   children: React.ReactNode;
 }
 
@@ -12,54 +12,59 @@ const socket = io(backend_url, {
   withCredentials: true});
 
 const defaultLogin = { 
-  set: (arg: boolean) => {},
-  status: false,
+  set: (arg: string) => {},
+  value: "",
 };
 
 export const getLoginContext = React.createContext(defaultLogin);
 export const getSocketContext = React.createContext(socket);
 
-export default function WebSocketWrapper( props : WebSocketWrapper ) {
-  const [login, setLogin] = useState<boolean>(false);
+export default function WebSocketWrapper(props: WebSocketWrapperProps ) {
+  const [login, setLogin] = useState<string>("");
 
   useEffect(() => {
     isLogged();
   }, []);
 
   useEffect(() => {
-    if (login === false) {
-      if (socket.connected)
+    if (login === "") {
+      if (socket.connected) {
         socket.disconnect();
+        // console.log("Websocket disconnected :(");
+    }
       return ;
     }
 
     if (!socket.connected) {
       socket.connect();
-      console.log("Websocket connected :)");
-
+      // console.log("Websocket connected :)");
       socket.on('ping', () => {
         socket.emit('pong');
       })
     }
+
+    return (() => {
+      socket.off('ping');
+    })
   }, [login]);
 
-  function setLogged(arg : boolean) {
+  function setLogged(arg : string) {
     setLogin(arg)
   }
 
   function isLogged() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
       withCredentials: true
-    }).then(() => {
-      setLogin(true);
+    }).then((rec) => {
+      setLogin(rec.data.ft_login);
     }).catch(() => {
-      setLogin(false);
+      setLogin("");
     });
   }
 
   return (
     <getSocketContext.Provider value={socket}>
-      <getLoginContext.Provider value={{set: setLogged, status: login}}>
+      <getLoginContext.Provider value={{set: setLogged, value: login}}>
         { props.children }
       </getLoginContext.Provider>
     </getSocketContext.Provider>
