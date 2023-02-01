@@ -22,11 +22,6 @@ class SessionIOAdapter extends IoAdapter {
     const io: Server = super.createIOServer(port, {cors: corsOptions, ...options});
     io.use((socket, next) => {
       const req = socket.request as Request;
-
-      //  ********** FOR DEVELOPMENT ONLY **********
-      //  Uncomment this to ignore the session cookie and automatically log in the websockets as an existing user.
-      // req.user = 'jraffin'; return next();
-
       let sessionID;
       if (req.headers.cookie) {
         const cookies = cookie.parse(req.headers.cookie);
