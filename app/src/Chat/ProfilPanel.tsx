@@ -26,27 +26,21 @@ export default function ProfilPanel(props: ProfilProps) {
   const navigate = useNavigate();
 
   function getRelations() {
-    axios.get(backend_url_block, {
-      withCredentials: true
-    }).then((rec) => {
-      console.log("blocked users :", rec.data);
-      props.setRelations({
-        ...props.relations,
-        blocked: rec.data,
+    axios.all([
+      axios.get(backend_url_block, {
+        withCredentials: true
+      }),
+      axios.get(backend_url_friend, {
+        withCredentials: true
       })
-    }).catch((rec) => {
-      console.log("error request", rec);
-    })
-
-    axios.get(backend_url_friend, {
-      withCredentials: true
-    }).then((rec) => {
-      console.log("friends :", rec.data);
+    ])
+    .then(axios.spread((rec1, rec2) => {
       props.setRelations({
-        ...props.relations,
-        friends: rec.data,
+        blocked: rec1.data,
+        friends: rec2.data,
       })
-    }).catch((rec) => {
+    }))
+    .catch((rec) => {
       console.log("error request", rec);
     })
   }

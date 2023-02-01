@@ -1,9 +1,6 @@
 import { useContext, useState } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
-import {
-  Avatar,
-  Button,
-} from '@chatscope/chat-ui-kit-react';
+import { Button } from '@chatscope/chat-ui-kit-react';
 import { getLoginContext } from 'WebSocketWrapper';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
@@ -24,7 +21,6 @@ export default function AdminPanel(props: AdminProps) {
     let timestamp: HTMLInputElement | null = null;
 
     function isAdmin(users: IChannelUser[]) : boolean {
-      console.log("isAdmin", users);
       const user = users.find((element: any) => element.user.ft_login === login.value);
 
       if (user === undefined)

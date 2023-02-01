@@ -61,27 +61,6 @@ export default function Chat() {
   const socket = useContext(getSocketContext);
   const login = useContext(getLoginContext);
 
-  function callbackMessage(data: IMessage) {
-    console.log("callbackMessage", data);
-    if (data.channelId === refChannel.current.id) {
-      const messages = [...refChannel.current.messages, data];
-      console.log(messages);
-      setCurrentChannel({...refChannel.current, messages: messages})
-    }
-    socket.emit('directList');
-  }
-
-  function callbackUpdateChannel(data: IChannel) {
-    console.log("callbackUpdateChannel", data);
-    if (data.id === refChannel.current.id) {
-      socket.emit('getChannel', refChannel.current, (data: IChannel) => {
-        setCurrentChannel(data);
-      });
-    }
-    socket.emit('joinedList');
-    socket.emit('directList');
-  }
-
   useEffect(() => {
     refChannel.current = currentChannel;
   })
@@ -90,6 +69,25 @@ export default function Chat() {
     if (!socket.connected) {
         return ;
     }
+
+    function callbackMessage(data: IMessage) {
+      if (data.channelId === refChannel.current.id) {
+        const messages = [...refChannel.current.messages, data];
+        setCurrentChannel({...refChannel.current, messages: messages})
+      }
+      socket.emit('directList');
+    }
+
+    function callbackUpdateChannel(data: IChannel) {
+      if (data.id === refChannel.current.id) {
+        socket.emit('getChannel', refChannel.current, (data: IChannel) => {
+          setCurrentChannel(data);
+        });
+      }
+      socket.emit('joinedList');
+      socket.emit('directList');
+    }
+
     socket.on('error', (data) => { console.log('error', data) });
     socket.on('connect', () => { console.log('connected') });
     socket.on('disconnect', () => { console.log('disconnected') });
@@ -97,14 +95,11 @@ export default function Chat() {
     socket.on('updateChannel', callbackUpdateChannel);
 
     socket.on('hideChannel', (channel : IChannel) => {
-      console.log("HIDE", channel);
-      // console.log()
       if (channel.id === refChannel.current.id)
         setCurrentChannel(empty_chan);
     })
 
     socket.on('joinedList', (data) => {
-      console.log("[WS] joinedList");
       setChannels(data);
       if (data.length !== 0 && refChannel.current.id === 0) {
         socket.emit('getChannel', data[0], (newCurrentChannel : IChannel) => {
@@ -114,12 +109,10 @@ export default function Chat() {
     });
 
     socket.on('directList', (data) => {
-      console.log("[WS] directList", data);
       setDirectChannels(data);
     })
 
     socket.on('invitedList', (data) => {
-      console.log("[WS] invitedList", data);
       setInvitedChannels(data);
     })
 
@@ -127,7 +120,6 @@ export default function Chat() {
     socket.emit('directList');
     socket.emit('invitedList');
 
-    getRelations();
     // This code will run when component unmount
     return () => {
       socket.off('error');
@@ -136,53 +128,42 @@ export default function Chat() {
       socket.off('hideChannel');
       socket.off('updateChannel');
     };
-  }, [login.value, callbackMessage, callbackUpdateChannel, getRelations, socket]);
+  }, [login.value, socket]);
 
   function getRelations() {
-    axios.get(backend_url_block, {
-      withCredentials: true
-    }).then((rec) => {
-      console.log("blocked users :", rec.data);
-      setRelations({
-        ...relations,
-        blocked: rec.data,
+    axios.all([
+      axios.get(backend_url_block, {
+        withCredentials: true
+      }),
+      axios.get(backend_url_friend, {
+        withCredentials: true
       })
-    }).catch((rec) => {
-      console.log("error request", rec);
-    })
-
-    axios.get(backend_url_friend, {
-      withCredentials: true
-    }).then((rec) => {
-      console.log("friends :", rec.data);
+    ])
+    .then(axios.spread((rec1, rec2) => {
       setRelations({
-        ...relations,
-        friends: rec.data,
+        blocked: rec1.data,
+        friends: rec2.data,
       })
-    }).catch((rec) => {
-      console.log("error request", rec);
+    }))
+    .catch((rec) => {
     })
   }
-  
+
   function blockUser(user: IUser) {
-    console.log(backend_url_block + user.username);
     axios.put(backend_url_block + user.username, {}, {
       withCredentials: true
     }).then((rec) => {
       getRelations();
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
   function unblockUser(user: IUser) {
-    console.log(backend_url_block + user.username);
     axios.delete(backend_url_block + user.username, {
       withCredentials: true
     }).then((rec) => {
       getRelations();
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
@@ -198,24 +179,20 @@ export default function Chat() {
   }
 
   function friendUser(user: IUser) {
-    console.log(backend_url_friend + user.username);
     axios.put(backend_url_friend + user.username, {}, {
       withCredentials: true
     }).then((rec) => {
       getRelations()
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
   function unfriendUser(user: IUser) {
-    console.log(backend_url_friend + user.username);
     axios.delete(backend_url_friend + user.username, {
       withCredentials: true
     }).then((rec) => {
       getRelations()
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
@@ -233,7 +210,6 @@ export default function Chat() {
   function RenderConversations() {
     const switchChannel = (channel: IChannel) => (e: any) => {
       socket.emit('getChannel', channel, (data: IChannel) => {
-        console.log("getChannel", data);
         setCurrentChannel(data);
       });
     };
@@ -275,13 +251,14 @@ export default function Chat() {
 
     useEffect(() => {
       socket.on('publicList', (chans : IChannel[]) => {
-        let newPublicList : IChannel[] = [];
-        console.log("[DEBUG]: channels:", channels);
-        chans.filter((x : IChannel) => {
-          if (channels.find(a => a.id === x.id) === undefined)
-            newPublicList = [...newPublicList, x];
-        });
-        console.log("[DEBUG] : publicChannels:", newPublicList);
+
+        const newPublicList = chans.reduce((acc: IChannel[], x: IChannel) => {
+          if (!channels.find(a => a.id === x.id)) {
+            acc.push(x);
+          }
+          return acc;
+        }, []);
+
         setPublicChannels(newPublicList); 
       });
 
@@ -307,7 +284,6 @@ export default function Chat() {
           setCurrentChannel(channel)
         });
       });
-      // socket.emit('joinedList');
     };
 
     const onSubmit = (channel: IChannel) => (e: any) => {
@@ -383,12 +359,8 @@ export default function Chat() {
 
     let invite: HTMLInputElement | null = null;
 
-    console.count("renderChatContainer");
-
     const leaveChannel = (e: any) => {
-      console.log("leaving channel", currentChannel.name)
       socket.emit('leaveChannel', currentChannel, (data : any) => {
-        console.log("leave emit", data)
         socket.emit('joinedList');
       })
     }
@@ -681,12 +653,10 @@ export default function Chat() {
     const message : IMessage = {} as IMessage;
 
     message.content = content;
-    console.log(content, currentChannel);
     socket.emit("sendMsg", {
       content: content,
       channelId: currentChannel.id,
     }, () => { socket.emit("getChannel", currentChannel, (data : IChannel) => {
-      console.log("AAAAAA");
       setCurrentChannel(data);
     })})
   }
