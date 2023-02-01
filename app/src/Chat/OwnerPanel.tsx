@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 import '@chatscope/chat-ui-kit-styles/dist/default/styles.min.css'
 import {
   Button,
@@ -10,6 +10,7 @@ import { faCheck, faKey, faLock, faLockOpen, faPen, faXmark } from '@fortawesome
 
 import { IChannel } from './interface';
 import { Socket } from 'socket.io-client';
+import { parseEvent } from './ChatPage';
 
 interface OwnerProps {
     currentChannel : IChannel;
@@ -18,17 +19,34 @@ interface OwnerProps {
 
 export default function OwnerPanel(props: OwnerProps) {
     const [edit, setEdit] = useState<string>("");
+    const [error, setError] = useState<string>("");
 
     let name: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
     let new_admin: HTMLInputElement | null = null;
 
+    useEffect(() => {
+      setError("");
+      props.socket.on('error', (data) => {
+        const err = parseEvent(data);
+        if (err === null)
+          return ;
+        if (err.type === "updateChannel")
+          setError(err.error);
+        else
+          setError("");
+        console.log(data, "[" + err.type + "]", err.error);
+      });
+
+      return (() => {
+        props.socket.off('error');
+      });
+    }, [props.socket]);
+
     const login = useContext(getLoginContext);
 
     const updateName = (e: any) => {
       e.preventDefault();
-
-      console.log("hiya2");
 
       const updatedChannel = props.currentChannel;
 
@@ -60,10 +78,11 @@ export default function OwnerPanel(props: OwnerProps) {
     const setAdmin = (mode: string) => (e: any) => {
       e.preventDefault();
       
-      const updated_user = props.currentChannel.users.find(element => element.userLogin === new_admin!.value);
+      const updated_user = props.currentChannel.users.find(element => element.user.username === new_admin!.value);
 
       if (updated_user === undefined) {
         new_admin!.value = "";
+        setError("Username doesn't exist.")
         return ;
       }
 
@@ -71,7 +90,7 @@ export default function OwnerPanel(props: OwnerProps) {
         updated_user.rights = "Admin";
       }
       else if (updated_user.rights !== "Admin") {
-          console.error("User is not an admin");
+          // console.error("User is not an admin");
           return ;
       }
       else
@@ -104,7 +123,11 @@ export default function OwnerPanel(props: OwnerProps) {
       <>
         {edit !== "name" ? 
           <>
-            <h1>
+            <h1
+              style={{
+                textAlign: "center"
+              }}
+            >
               {props.currentChannel.name}
             </h1>
             <Button
@@ -190,11 +213,17 @@ export default function OwnerPanel(props: OwnerProps) {
           </>
         }
 
-        <h2>Edit administrators</h2>
+        <h3
+          style={{
+            textAlign: "center"
+          }}
+        >
+          Edit administrators
+        </h3>
         <form onSubmit={(e) => e.preventDefault()}>
               <input
                 type="input"
-                placeholder="Insert login"
+                placeholder="Insert username"
                 ref={node => new_admin = node}
                 required
               />
@@ -212,6 +241,7 @@ export default function OwnerPanel(props: OwnerProps) {
                 Remove
               </Button>
             </form>
+        <p className='error'>{error}</p>
       </>
     );
   }

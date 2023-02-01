@@ -37,6 +37,14 @@ const backend_url = process.env.REACT_APP_BACKEND_URL;
 export const backend_url_block = backend_url + "blockeds/";
 export const backend_url_friend = backend_url + "friends/";
 
+export function parseEvent(event: string) : {type: string, error: string} | null {
+  const match = event.match(/\[Event '(.*)'\] (.*)/);
+  return match === null ? null : {
+    type: `${match[1]}`,
+    error: match[2]
+  };
+}
+
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
   const [channels, setChannels] = useState<IChannel[]>([]);
@@ -85,9 +93,8 @@ export default function Chat() {
       socket.emit('directList');
     }
 
-    socket.on('error', (data) => { console.log('error', data) });
-    socket.on('connect', () => { console.log('connected') });
-    socket.on('disconnect', () => { console.log('disconnected') });
+    // socket.on('connect', () => { console.log('connected') });
+    // socket.on('disconnect', () => { console.log('disconnected') });
     socket.on('message', callbackMessage);
     socket.on('updateChannel', callbackUpdateChannel);
 
@@ -119,9 +126,10 @@ export default function Chat() {
 
     // This code will run when component unmount
     return () => {
-      socket.off('error');
       socket.off('message');
       socket.off('joinedList');
+      socket.off('directList');
+      socket.off('invitedList');
       socket.off('hideChannel');
       socket.off('updateChannel');
     };
@@ -252,6 +260,7 @@ export default function Chat() {
 
   function RenderPublicConversations() {
     const [state, setState] = useState<number>(0);
+    const [error, setError] = useState<string>("");
     let password: HTMLInputElement | null = null;
 
     useEffect(() => {
@@ -267,7 +276,19 @@ export default function Chat() {
         setPublicChannels(newPublicList); 
       });
 
+      socket.on('error', (data) => {
+        const err = parseEvent(data);
+        if (err === null)
+          return ;
+        if (err.type === "joinChannel")
+          setError(err.error);
+        else
+          setError("");
+        console.log(data, "[" + err.type + "]", err.error);
+      });
+
       return (() => {
+        socket.off('error');
         socket.off('publicList'); 
       });
     }, []);
@@ -328,6 +349,7 @@ export default function Chat() {
             }
             </div>
           )})}
+        <p className='error'>{error}</p>
       </ExpansionPanel>
     );
   }
@@ -361,8 +383,25 @@ export default function Chat() {
 
   function RenderChatContainer() {
     const [state, setState] = useState<string>("");
+    const [error, setError] = useState<string>("");
 
     let invite: HTMLInputElement | null = null;
+
+    useEffect(() => {
+      socket.on('error', (data) => {
+        const err = parseEvent(data);
+        if (err === null)
+          return ;
+        if (err.type === "sendMsg")
+          setError(err.error);
+        else
+          setError("");
+      });
+    
+      return (() => {
+        socket.off('error');
+      });
+    }, []);
 
     const leaveChannel = (e: any) => {
       socket.emit('leaveChannel', currentChannel, (data : any) => {
@@ -419,8 +458,8 @@ export default function Chat() {
       invited_user.status = "Invited";
       invited_user.rights = null;
       invited_user.channelId = currentChannel.id;
-      // invited_user.user.username = invite!.value;
-      invited_user.userLogin = invite!.value;
+      invited_user.user.username = invite!.value;
+      // invited_user.userLogin = invite!.value;
 
       socket.emit('setPermissions', invited_user);
     }
@@ -543,6 +582,9 @@ export default function Chat() {
               </Message>
             )
           })}
+          {error === "" ? null :
+            <MessageSeparator className="error">{error}</MessageSeparator>
+          }
         </MessageList>
 
         <MessageInput
@@ -557,8 +599,27 @@ export default function Chat() {
 
   function RenderCreateChannel() {
     const [check, setCheck] = useState({password: false, private: false});
+    const [error, setError] = useState<string>("");
+
     let channelName: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
+
+    useEffect(() => {
+      setError("");
+      socket.on('error', (data) => {
+        const err = parseEvent(data);
+        if (err === null)
+          return ;
+        if (err.type === "createChannel")
+          setError(err.error);
+        else
+          setError("");
+      });
+    
+      return (() => {
+        socket.off('error');
+      });
+    }, []);
 
     function onSubmit(e : any) {
       e.preventDefault();
@@ -614,6 +675,7 @@ export default function Chat() {
             Create
           </Button>
         </form>
+        <p className='error'>{error}</p>
       </ExpansionPanel>
     );
   }
