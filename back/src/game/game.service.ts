@@ -7,6 +7,7 @@ import { FindOptionsWhere } from "typeorm";
 import { clearInterval } from "timers";
 
 export class Game {
+    public isinvit: boolean;
     public match: Match;
     public user1: User;
     public user2: User;
@@ -51,6 +52,12 @@ export class GameService {
         this.s = new Map();
         this.dispoUser = new Set();
         this.invitation = new Set();
+    }
+
+    isinvitroom(num:number): boolean
+    {if(this.s.get(num))
+            return this.s.get(num).isinvit;
+        return false;
     }
 
     async IsInvitation(client:Socket, data:number): Promise<boolean> {
@@ -99,6 +106,7 @@ export class GameService {
         {
             var m = await Match.findOneBy({id: I.match_id});// creer la room
             var room = await this.createRoom(I.user1, I.player1, I.user2, I.player2, m);// creer la room
+            room.isinvit = true;
             this.DeleteInvitation(I.match_id);
             return [I.match_id,true];
         }
@@ -164,6 +172,7 @@ export class GameService {
         {
             clearInterval(room.render);
             clearInterval(room.timer);
+            this.DeleteStream(id);
             var id = room.id;
             this.s.delete(id);
         }
@@ -178,6 +187,7 @@ export class GameService {
                     value.player2 == client)
                 {
                     var clients = [value.player1,value.player2];
+                    console.log("ICI");
                     this.DeleteStream(value.id);
                     clearInterval(value.render);
                     clearInterval(value.timer);
@@ -376,6 +386,7 @@ export class GameService {
     createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game {
         var l = Math.random();
         var room: Game = {
+            isinvit : false,
             match: m,
             user1: user1,
             user2: user2,
@@ -625,8 +636,9 @@ export class GameService {
     }
 
     getStream(data:number): Array<Socket>{
-        if(this.stream)
+        if(this.stream.get(data))
             return this.stream.get(data)[0];
+        return null;
     }
 
     async CreateMatchID(data:number) {

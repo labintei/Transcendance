@@ -11,8 +11,13 @@ export default function PongGame(props: any) {
   const socket = useContext(getSocketContext);
   let {matchid} = useParams();
 
+
   const [Finish, setFinish] = useState(0);
   const [message, setMessage] = useState("Waiting for your opponent...");
+
+  // On va specifier si il s agit d une INVITATION/STREAM/GAME pour le menu de fin
+
+  const [mode, Setmode] = useState("");  
 
   //const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
 
@@ -79,6 +84,18 @@ export default function PongGame(props: any) {
       SetReady(false);
     }
   }, [h1,h2,h3,SetReady,setId, setRole, socket])
+
+  useEffect(() => {
+    socket.on('mode', (data) => {
+      console.log(data);
+      Setmode(data);
+      if(data === 'stream')
+        setMessage("");
+    });
+    return () => {
+      socket.off('mode');
+    }
+  }, [])
 
 
   useEffect(() => {

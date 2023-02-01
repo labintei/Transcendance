@@ -18,15 +18,18 @@ export class GameGateway implements OnGatewayDisconnect {
     this.gameservice.IsinDispoDelete(client);
     this.gameservice.IsInvitDelete(client);
   }
-  
+
   @SubscribeMessage('start_invit_stream')
   async stream_invit(client:Socket, d:number) {
     var data:number = Number(d);
     if(this.gameservice.Isyourgame(client, data))
     {
-      console.log(1);
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', [id_role[0], id_role[1], this.gameservice.getUsernames(id_role[1])]);
+      if(this.gameservice.isinvitroom(id_role[0]) === true)
+        client.emit('mode', 'invitation');
+      else
+        client.emit('mode', 'game');
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
@@ -57,6 +60,7 @@ export class GameGateway implements OnGatewayDisconnect {
       if(this.gameservice.startstream(client, data))
       {
         var render_stream;
+        client.emit('mode','stream');
         render_stream =  setInterval(() => {
           GameGateway.sendtostream(this.gameservice.getStream(data) , this.gameservice.getPos(data));
         }, 50)
@@ -72,9 +76,22 @@ export class GameGateway implements OnGatewayDisconnect {
   async rendergame(data:number) {
     var room = this.gameservice.getClients(data);
     if(room[0])
+    {
       room[0].emit('start', [data, 1, this.gameservice.getUsernames(data)]);
+      if(this.gameservice.isinvitroom(data))
+        room[0].emit('mode','invitation');
+      else
+        room[0].emit('mode', 'game');
+    }
     if(room[1])
-      room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
+    {
+        room[1].emit('start', [data, 2, this.gameservice.getUsernames(data)]);
+        if(this.gameservice.isinvitroom(data))
+          room[1].emit('mode', 'invitation');
+        else
+          room[1].emit('mode', 'game');
+    }
+    
     delay(50);
     var i = setInterval(() => {
       var clients = this.gameservice.getClients(data);
@@ -108,7 +125,6 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('start_game')
   async new_game(client:Socket, data:number){
-    console.log("ICI");
     var l = await this.gameservice.newGame(client);
     this.gameservice.IsInvitDelete(client);// empeche de rentrer dans Invitation
     if(l && (l[0] && l[1] == true))
@@ -144,7 +160,8 @@ export class GameGateway implements OnGatewayDisconnect {
   }
 
   public static async sendtostream(stream: Socket[], data:number[]){
-    stream.map((s) => {s.emit('newpos', data);});
+    if(stream)
+      stream.map((s) => {s.emit('newpos', data);});
 	}
 
   @SubscribeMessage('start_stream')

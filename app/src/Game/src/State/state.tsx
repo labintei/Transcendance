@@ -56,7 +56,8 @@ export const useStore = create((set,get) => ({
   setProfile: (newp:Profile) => set((state:any) => ({
     profile: {username:newp.uname, avatar_location:newp.a_loc, rank:newp.rank, inMatch:newp.inMatch}
   })),
-  
+
+
   Otime: (num:number) => set((state:any)=>({time : num})),
 
   Setcx: (num:number) => set((state:any)=>({cx : num})),
