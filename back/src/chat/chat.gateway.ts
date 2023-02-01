@@ -317,17 +317,17 @@ export class ChatGateway {
       const channel = await Channel.findOneBy({ id: data.channelId });
       if (!channel)
         throw new WsException("Channel was not found.");
-      const user = await User.findOneBy({ ft_login: data.userLogin });
+      const user = await User.findOneBy({ ft_login: (data.userLogin !== undefined ? data.userLogin : data.user.ft_login), username: data.user?.username });
       if (!user)
         throw new WsException("Target User was not found.");
       const ownStatus = await ChannelUser.findOneBy({channelId: channel.id, userLogin: client.data.login});
       if (!ownStatus?.isAdmin())
         throw new WsException("You are not an administrator of this channel.");
       if (user.ft_login === client.data.login)
-        throw new WsException("You cannot change you own permissions.");
+        throw new WsException("You cannot change you own channel permissions.");
       let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
-        userLogin: data.userLogin
+        userLogin: user.ft_login
       });
       if (!chanUser)
         chanUser = ChannelUser.create({
@@ -343,6 +343,8 @@ export class ChatGateway {
         throw new WsException("No changes in user permissions.");
       if (data.status === ChannelUser.Status.INVITED && chanUser?.status)
         throw new WsException("This user is a member or has already been invited.");
+      if (data.status === ChannelUser.Status.JOINED && data.status !== chanUser.status)
+        throw new WsException("You cannot force people to join your channel ;-)");
       if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
         throw new WsException("Invalid user rights.");
       if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
