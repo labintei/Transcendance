@@ -41,31 +41,26 @@ export default function ProfilPanel(props: ProfilProps) {
       })
     }))
     .catch((rec) => {
-      console.log("error request", rec);
     })
   }
 
   const blockUser = (user: IUser) => (e: any) => {
     e.preventDefault();
-    console.log(backend_url_block + user.username);
     axios.put(backend_url_block + user.username, {}, {
       withCredentials: true
     }).then((rec) => {
       getRelations();
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
   const unblockUser = (user: IUser) => (e: any) => {
     e.preventDefault();
-    console.log(backend_url_block + user.username);
     axios.delete(backend_url_block + user.username, {
       withCredentials: true
     }).then((rec) => {
       getRelations();
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
@@ -76,25 +71,21 @@ export default function ProfilPanel(props: ProfilProps) {
 
   const friendUser = (user: IUser) => (e: any) => {
     e.preventDefault();
-    console.log(backend_url_friend + user.username);
     axios.put(backend_url_friend + user.username, {}, {
       withCredentials: true
     }).then((rec) => {
       getRelations()
     }).catch((rec) => {
-      console.log(rec);
     })
   }
 
   const unfriendUser = (user: IUser) => (e: any) => {
     e.preventDefault();
-    console.log(backend_url_friend + user.username);
     axios.delete(backend_url_friend + user.username, {
       withCredentials: true
     }).then((rec) => {
       getRelations()
     }).catch((rec) => {
-      console.log(rec);
     })
   }
   
