@@ -2,7 +2,6 @@ import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import Menu from './Menu/menu';
 import { getSocketContext } from 'WebSocketWrapper';
 import { useParams } from 'react-router-dom';
 
@@ -36,7 +35,6 @@ export default function PongGame(props: any) {
 
   const Setx:any = useStore((s:any) => s.Setx);
   const Setz:any = useStore((s:any) => s.Setz);
-  const Ready:any = useStore((s:any) => s.gameReady);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
   var v:any = useStore((s:any) => s.setbis);
@@ -61,9 +59,9 @@ export default function PongGame(props: any) {
       setRole(data[1]);
       setId(data[0]);
       SetReady(true);
-      console.log(data[1]);
-      console.log(data[1] === 1);
-      console.log(data[1] == 1);
+      // console.log(data[1]);
+      // console.log(data[1] === 1);
+      // console.log(data[1] == 1);
       if(data[1] === 1)
       {
         h1(0);
@@ -83,20 +81,26 @@ export default function PongGame(props: any) {
       socket.emit('endgame');// reteste
       SetReady(false);
     }
+    // eslint-disable-next-line
   }, [h1,h2,h3,SetReady,setId, setRole, socket])
 
   useEffect(() => {
     socket.on('mode', (data) => {
+<<<<<<< HEAD
+      console.log(data[0]);
+      Setmode(data[0]);
+=======
       console.log(data);
       Setmode(data);
+      console.log(mode);
+>>>>>>> e63ea8f4ed266611a86b612a7a18ce5a664ec939
       if(data === 'stream')
-        setMessage("");
+        setMessage(data[1] + " VS " + data[1])
     });
     return () => {
       socket.off('mode');
     }
-  }, [])
-
+  }, [mode, Setmode])
 
   useEffect(() => {
     socket.on('newpos', (data) => {
@@ -124,6 +128,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('Not_Exist')
     }
+    // eslint-disable-next-line
   }, [socket])
 
 
@@ -139,6 +144,7 @@ export default function PongGame(props: any) {
   const restartGame = function(){
     setFinish(0);
     socket.emit('start_game');
+    setMessage("Waiting for your opponent...");
   }
   return (
     <div className="App" tabIndex={0} >
