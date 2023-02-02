@@ -143,6 +143,8 @@ export default function Chat() {
     socket.emit('directList');
     socket.emit('invitedList');
 
+    getRelations();
+
     // This code will run when component unmount
     return () => {
       socket.off('message');
@@ -179,6 +181,7 @@ export default function Chat() {
         blocked: rec1.data,
         friends: rec2.data,
       })
+      console.log(rec1.data, rec2.data);
     }))
     .catch((rec) => {
     })
@@ -280,7 +283,6 @@ export default function Chat() {
 
   function RenderPublicConversations() {
     const [state, setState] = useState<number>(0);
-    const [error, setError] = useState<string>("");
     let password: HTMLInputElement | null = null;
 
     useEffect(() => {
@@ -357,7 +359,6 @@ export default function Chat() {
             }
             </div>
           )})}
-        <p className='error'>{error}</p>
       </ExpansionPanel>
     );
   }
@@ -451,6 +452,8 @@ export default function Chat() {
       invited_user.channelId = currentChannel.id;
       invited_user.user = {} as IUser;
       invited_user.user.username = invite!.value;
+      console.log("blocked", relations.blocked);
+      console.log("isBlocked", isBlocked(invite!.value));
       if (isBlocked(invite!.value)) {
         notificationError("You cannot invite someone you've blocked");
         return ;

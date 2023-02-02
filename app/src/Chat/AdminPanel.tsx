@@ -31,7 +31,7 @@ export default function AdminPanel(props: AdminProps) {
     const setPermissionsUser = (user: IChannelUser, type: string) => (e: any) => {
       e.preventDefault();
 
-      const updated_user = user;
+      const updated_user = JSON.parse(JSON.stringify(user));
       const time = new Date();
 
       if (type === "Kicked")
@@ -91,7 +91,9 @@ export default function AdminPanel(props: AdminProps) {
                 <Button
                   icon={<FontAwesomeIcon icon={faCommentSlash} />}
                   title="Mute user"
-                  onClick={() => invertState(user.ft_login, "mute")}
+                  onClick={() => {
+                    invertState(user.ft_login, "mute")
+                  }}
                   >
                     Mute
                 </Button>
@@ -105,7 +107,9 @@ export default function AdminPanel(props: AdminProps) {
                 <Button
                   icon={<FontAwesomeIcon icon={faBan} />}
                   title="Ban user"
-                  onClick={() => invertState(user.ft_login, "ban")}
+                  onClick={() => {
+                    invertState(user.ft_login, "ban")
+                  }}
                   >
                     Ban
                 </Button>
