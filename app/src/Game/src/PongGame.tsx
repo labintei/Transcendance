@@ -2,17 +2,22 @@ import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import Menu from './Menu/menu';
 import { getSocketContext } from 'WebSocketWrapper';
 import { useParams } from 'react-router-dom';
+import Menu from './Menu/menu';
 
 export default function PongGame(props: any) {
 
   const socket = useContext(getSocketContext);
   let {matchid} = useParams();
 
+
   const [Finish, setFinish] = useState(0);
   const [message, setMessage] = useState("Waiting for your opponent...");
+
+  // On va specifier si il s agit d une INVITATION/STREAM/GAME pour le menu de fin
+
+  const [mode, Setmode] = useState("");  
 
   //const Spectator_mode:boolean = useStore((s:any)=> s.spectator);
 
@@ -31,7 +36,6 @@ export default function PongGame(props: any) {
 
   const Setx:any = useStore((s:any) => s.Setx);
   const Setz:any = useStore((s:any) => s.Setz);
-  const Ready:any = useStore((s:any) => s.gameReady);
   const SetReady:any = useStore((s:any) => s.SetReady);
 
   var v:any = useStore((s:any) => s.setbis);
@@ -56,9 +60,9 @@ export default function PongGame(props: any) {
       setRole(data[1]);
       setId(data[0]);
       SetReady(true);
-      console.log(data[1]);
-      console.log(data[1] === 1);
-      console.log(data[1] == 1);
+      // console.log(data[1]);
+      // console.log(data[1] === 1);
+      // console.log(data[1] == 1);
       if(data[1] === 1)
       {
         h1(0);
@@ -78,8 +82,21 @@ export default function PongGame(props: any) {
       socket.emit('endgame');// reteste
       SetReady(false);
     }
+    // eslint-disable-next-line
   }, [h1,h2,h3,SetReady,setId, setRole, socket])
 
+  useEffect(() => {
+    socket.on('mode', (data) => {
+      console.log(data);
+      Setmode(data);
+      console.log(mode);
+      if(data === 'stream')
+        setMessage(data[1] + " VS " + data[1])
+    });
+    return () => {
+      socket.off('mode');
+    }
+  }, [mode, Setmode])
 
   useEffect(() => {
     socket.on('newpos', (data) => {
@@ -107,6 +124,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('Not_Exist')
     }
+    // eslint-disable-next-line
   }, [socket])
 
 
@@ -122,6 +140,7 @@ export default function PongGame(props: any) {
   const restartGame = function(){
     setFinish(0);
     socket.emit('start_game');
+    setMessage("Waiting for your opponent...");
   }
   return (
     <div className="App" tabIndex={0} >
@@ -135,10 +154,6 @@ export default function PongGame(props: any) {
       <div>{vbis}</div>
       Score: 
       <div>{s} - {sbis}</div>
-      Params:
-      <div>{matchid}</div>
-      Name:
-     
     </div>
     </div>
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
@@ -150,7 +165,7 @@ export default function PongGame(props: any) {
         Rejouer
       </div>
     </div>
-    {/*<Menu/>*/} 
+    <Menu/> 
     </div>
     );
 }

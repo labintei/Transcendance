@@ -15,6 +15,7 @@ import PongGame from './Game/src/PongGame';
 import Chat from './Chat/ChatPage';
 import LoginPage from 'component/LoginPage';
 import WebSocketWrapper from 'WebSocketWrapper';
+import { ToastContainer } from 'react-toastify';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement
@@ -68,6 +69,18 @@ const router = createBrowserRouter([
 root.render(
   // <React.StrictMode>
   <WebSocketWrapper>
+    <ToastContainer
+      position="top-right"
+      autoClose={5000}
+      hideProgressBar={false}
+      newestOnTop={false}
+      closeOnClick
+      rtl={false}
+      pauseOnFocusLoss
+      draggable
+      pauseOnHover
+      theme="light"
+    />
     <RouterProvider router={router} />
   </WebSocketWrapper>
   // </React.StrictMode>

@@ -1,4 +1,4 @@
-import { useRef, useState } from "react"
+import { useRef } from "react"
 import * as THREE from 'three'
 import { useFrame, useLoader, useThree } from '@react-three/fiber'
 import {
@@ -13,8 +13,6 @@ import pv_color from "../Textures/Marble/Marble006_1K_Color.png"
 import pv_dipl from "../Textures/Marble/Marble006_1K_Displacement.png"
 import pv_norm from "../Textures/Marble/Marble006_1K_NormalDX.png"
 import pv_rough from "../Textures/Marble/Marble006_1K_Roughness.png"
-
-
 
 export default function Plane(props: JSX.IntrinsicElements['mesh']) {
 
@@ -31,8 +29,8 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
   // This reference will give us direct access to the THREE.Mesh object
   const ref = useRef<THREE.Mesh>(null!)
   // Hold state for hovered and clicked events
-  const [hovered, hover] = useState(false)
-  const [clicked, click] = useState(false)
+  // const [hovered, hover] = useState(false)
+  // const [clicked, click] = useState(false)
   // Rotate mesh every frame, this is outside of React without overhead
   // useFrame((state, delta) => (ref.current.rotation.x += 0.01))
 
@@ -61,9 +59,10 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
           {...props}
           ref={ref}
           //   scale={clicked ? 1.5 : 1}
-          onClick={(event) => click(!clicked)}
-          onPointerOver={(event) => hover(true)}
-          onPointerOut={(event) => hover(false)}>
+          // onClick={(event) => click(!clicked)}
+          // onPointerOver={(event) => hover(true)}
+          // onPointerOut={(event) => hover(false)}
+          >
           <boxGeometry args={[10, 0.5, 10]} />
           <meshBasicMaterial
             //color={'black'}
