@@ -161,7 +161,7 @@ export class GameService {
     }
 
     isFinish(data:number) {
-        if(this.s.get(data).score1 >= 2 || this.s.get(data).score2 >= 2 || this.s.get(data).time > 300)
+        if(this.s.get(data).score1 >= 7 || this.s.get(data).score2 >= 7 || this.s.get(data).time > 300)
             return true;
         return false;
     }
@@ -672,7 +672,7 @@ export class GameService {
             const m = (await Match.findOne({where: {id:data}, 
                 relations: {
                     user1 : true, user2 : true} }));
-            //m.resolve();
+            m.resolve();
         }
     }
 
