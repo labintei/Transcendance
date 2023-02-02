@@ -181,7 +181,7 @@ export default function Chat() {
         blocked: rec1.data,
         friends: rec2.data,
       })
-      console.log(rec1.data, rec2.data);
+      // console.log(rec1.data, rec2.data);
     }))
     .catch((rec) => {
     })
@@ -452,8 +452,8 @@ export default function Chat() {
       invited_user.channelId = currentChannel.id;
       invited_user.user = {} as IUser;
       invited_user.user.username = invite!.value;
-      console.log("blocked", relations.blocked);
-      console.log("isBlocked", isBlocked(invite!.value));
+      // console.log("blocked", relations.blocked);
+      // console.log("isBlocked", isBlocked(invite!.value));
       if (isBlocked(invite!.value)) {
         notificationError("You cannot invite someone you've blocked");
         return ;
