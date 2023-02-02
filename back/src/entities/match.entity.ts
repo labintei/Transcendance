@@ -91,14 +91,9 @@ export class Match extends BaseEntity {
         (this.user1.xpAmountForNextLevel() * fixedPercentLoss) / 100 +
         (this.user1.xpAmountForNextLevel() * scorePercentLoss) * (score_diff / max_score) / 100
       ));
-    console.log("Resolved : ");
-    console.log(this);
     await this.user1.save();
-    console.log("User1 saved");
     await this.user2.save();
-    console.log("User2 saved");
     await this.save();
-    console.log("Match saved");
     await User.refreshRanks();
   }
 

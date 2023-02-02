@@ -20,7 +20,7 @@ services:
       test:
         [
           "CMD-SHELL",
-          "pg_isready -d $POSTGRES_DB -U $POSTGRES_USER"
+          "pg_isready -d ${POSTGRES_DB:-postgresql_db_name} -U ${POSTGRES_USER:-postgresql_admin_username}"
         ]
       interval: 1s
       start_period: 30s
@@ -29,9 +29,9 @@ services:
     networks:
       - transcendence-network
     environment:
-      - POSTGRES_DB
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
+      - POSTGRES_DB=${POSTGRES_DB:-postgresql_db_name}
+      - POSTGRES_USER=${POSTGRES_USER:-postgresql_admin_username}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgresql_admin_password}
 
   back-dev:
     build:
@@ -47,20 +47,23 @@ services:
     stdin_open: true
     tty: true
     ports:
-      - $BACKEND_PORT:$BACKEND_PORT
+      - ${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}
     networks:
       - transcendence-network
     environment:
-      - PORT=$BACKEND_PORT
+      - PORT=${BACKEND_PORT:-3000}
       - DATABASE_HOST=db
       - DATABASE_PORT=5432
-      - POSTGRES_DB
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - API42_UID
-      - API42_SECRET
-    env_file:
-      - .hostname.env
+      - POSTGRES_DB=${POSTGRES_DB:-postgresql_db_name}
+      - POSTGRES_USER=${POSTGRES_USER:-postgresql_admin_username}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD:-postgresql_admin_password}
+      - API42_UID=${API42_UID:-42API_app_uid...}
+      - API42_SECRET=${API42_SECRET:-42API_app_secret...}
+      - REACT_APP_HOSTNAME=${HOSTNAME:-localhost}
+      - REACT_APP_WEBSITE_PORT=${WEBSITE_PORT:-3080}
+      - REACT_APP_BACKEND_PORT=${BACKEND_PORT:-3000}
+      - REACT_APP_WEBSITE_URL=http://${HOSTNAME:-localhost}:${WEBSITE_PORT:-3080}/
+      - REACT_APP_BACKEND_URL=http://${HOSTNAME:-localhost}:${BACKEND_PORT:-3000}/
 
   front-dev:
     build:
@@ -71,14 +74,16 @@ services:
     volumes:
       - ./app:/app
     ports:
-      - $WEBSITE_PORT:$WEBSITE_PORT
+      - ${WEBSITE_PORT:-3080}:${WEBSITE_PORT:-3080}
     networks:
       - transcendence-network
     environment:
-      - PORT=$WEBSITE_PORT
-      - REACT_APP_API42_UID=$API42_UID
-    env_file:
-      - .hostname.env
+      - PORT=${WEBSITE_PORT:-3080}
+      - REACT_APP_HOSTNAME=${HOSTNAME:-localhost}
+      - REACT_APP_WEBSITE_PORT=${WEBSITE_PORT:-3080}
+      - REACT_APP_BACKEND_PORT=${BACKEND_PORT:-3000}
+      - REACT_APP_WEBSITE_URL=http://${HOSTNAME:-localhost}:${WEBSITE_PORT:-3080}/
+      - REACT_APP_BACKEND_URL=http://${HOSTNAME:-localhost}:${BACKEND_PORT:-3000}/
 
   adminer:
     image: adminer:4.8.1-standalone
@@ -88,7 +93,7 @@ services:
       db:
         condition: service_healthy
     ports:
-      - $ADMINER_PORT:8080
+      - ${ADMINER_PORT:-9000}:8080
     networks:
       - transcendence-network
     environment:

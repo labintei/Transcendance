@@ -104,7 +104,7 @@ export class ChannelUser extends BaseEntity {
         this.rightsTimeoutName(),
         async () => { await this.revokeRights() },
         delay);
-      console.log ("Rights of " + this.userLogin + " on channel " + this.channelId + " will be revoked in " + delay + " ms.");
+      console.log ("Rights of " + this.userLogin + " on channel " + this.channelId + " will be revoked in " + (new Date(delay)).toISOString().slice(14, 19).replace(":", "min ") + "s.");
     }
     else
       await this.revokeRights();
