@@ -3,8 +3,9 @@ import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
 import { getSocketContext } from 'WebSocketWrapper';
-import { useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import Menu from './Menu/menu';
+import axios from 'axios';
 
 export default function PongGame(props: any) {
 
@@ -14,6 +15,7 @@ export default function PongGame(props: any) {
 
   const [Finish, setFinish] = useState(0);
   const [message, setMessage] = useState("Waiting for your opponent...");
+  const [Usernames, setUsernames] = useState(["",""]);
 
   // On va specifier si il s agit d une INVITATION/STREAM/GAME pour le menu de fin
 
@@ -48,6 +50,7 @@ export default function PongGame(props: any) {
 
   useEffect(() => 
   {
+    setFinish(0);
     if(matchid)
       socket.emit('start_invit_stream', matchid);
     else
@@ -60,9 +63,6 @@ export default function PongGame(props: any) {
       setRole(data[1]);
       setId(data[0]);
       SetReady(true);
-      // console.log(data[1]);
-      // console.log(data[1] === 1);
-      // console.log(data[1] == 1);
       if(data[1] === 1)
       {
         h1(0);
@@ -75,6 +75,7 @@ export default function PongGame(props: any) {
         h2(5);
         h3(-9);
       }
+      setUsernames([data[2][0], data[2][1]]);
       setMessage(data[2][0] + " VS " + data[2][1])
     })
     return () => {
@@ -88,10 +89,12 @@ export default function PongGame(props: any) {
   useEffect(() => {
     socket.on('mode', (data) => {
       console.log(data);
-      Setmode(data);
+      Setmode(data[0]);
       console.log(mode);
-      if(data === 'stream')
-        setMessage(data[1] + " VS " + data[1])
+      if(data[0] === 'stream'){
+        setUsernames([data[1][0], data[1][1]]);
+        setMessage(data[1][0] + " VS " + data[1][1]);
+      }
     });
     return () => {
       socket.off('mode');
@@ -130,18 +133,55 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('Ended_game', () => {setMessage("This game is over.")});
-    socket.on('endgame', () => {console.log('END');setFinish(1); setMessage("This game is over.")});
+    socket.on('endgame', () => {setFinish(1); setMessage("This game is over.")});
+    socket.on('endstream', () => {console.log("endstream");setFinish(1); setMessage("This game is over.")});
     return () => {
       socket.off('endgame');
+      socket.off('endstream');
       socket.off('Ended_game');
     }
   },[setFinish,socket])
 
-  const restartGame = function(){
-    setFinish(0);
-    socket.emit('start_game');
-    setMessage("Waiting for your opponent...");
+  function RestartButton(props:{mode:string, username:string}){
+    const navigate = useNavigate();
+    console.log(props.mode);
+    let message:string = "Retour à l'acceuil"
+    if (props.mode === "invitation") {
+      message = "Rejouer";
+    } else if (props.mode === "game"){
+      message = "Rejoindre un nouveau match";
+    }
+    function createMatchAndRedirect() {
+      axios.put(process.env.REACT_APP_BACKEND_URL + "match/" + props.username, {}, {
+        withCredentials:true
+      }).then(res => {
+        if (res.data !== undefined)
+          navigate("../game/" + res.data);
+          window.location.reload();
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          navigate("../login");
+        else
+          window.location.reload();
+      });
+    } 
+    
+    return (
+      <button className='btnRestartGame' onClick={() => {
+        if (props.mode === "game") {
+          navigate("/game");
+          window.location.reload();
+        } else if (props.mode === "invitation") {
+          createMatchAndRedirect();
+        } else {
+          navigate("/matching");
+        }
+      }}>
+        {message}
+      </button>
+    )
   }
+
   return (
     <div className="App" tabIndex={0} >
     <World/>
@@ -159,11 +199,11 @@ export default function PongGame(props: any) {
     <div className={'endGameContainer ' + (Finish ? "showEndGame" : "")}>
       <h2>{s} - {sbis}</h2>
       {
-        s > sbis ? <p>You Won !</p> : <p>You lost...</p>
+        mode === "stream" ?
+          s > sbis ? <p>{Usernames[0]} Won !</p> : <p>{Usernames[1]} Won !</p>
+        : s > sbis ? <p>You Won !</p> : <p>You lost...</p>
       }
-      <div className='btnRestartGame' onClick={restartGame}>
-        Rejouer
-      </div>
+      <RestartButton mode={mode} username={Usernames[role === 1 ? 1:0]}></RestartButton>
     </div>
     <Menu/> 
     </div>
