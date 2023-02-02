@@ -106,7 +106,7 @@ export class User extends BaseEntity {
   //  Virtual computed field for reliable online status.
   isOnline: boolean;
 
-  //  Virtual field to be able to see friends ongoing matches.
+  //  Virtual field to be able to see a user ongoing match Id if there is one (null if there is none).
   ongoingMatchId: Number;
 
   /** MEMBER METHODS */
