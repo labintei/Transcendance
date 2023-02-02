@@ -15,7 +15,7 @@ export class ChatGateway {
   {
     client.emit('error', "[Event '" + event + "'] " + e.message);
     console.error("[Client '" + client.data.login + "'][Event '" + event + "'] " + e.message);
-    console.error(e.stack);
+    // console.error(e.stack);
   }
 
   //  Processes a new message sent by a client (either to a channel or directly to a username)

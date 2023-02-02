@@ -67,11 +67,16 @@ export default function OwnerPanel(props: OwnerProps) {
         return ;
       }
 
+      if (new_admin!.value === "") {
+        notificationError("The input field is empty");
+        return ;
+      }
+
       if (mode === "add") {
         updated_user.rights = "Admin";
       }
       else if (updated_user.rights !== "Admin") {
-        notificationError("You are an administrator");
+        notificationError("The user is not an administrator");
         return ;
       }
       else
@@ -202,26 +207,24 @@ export default function OwnerPanel(props: OwnerProps) {
           Edit administrators
         </h3>
         <form onSubmit={(e) => e.preventDefault()}>
-              <input
-                type="input"
-                placeholder="Insert username"
-                ref={node => new_admin = node}
-                required
-              />
-
-              <Button onClick={setAdmin("add")}
-                icon={<FontAwesomeIcon icon={faCheck}/>}
-              >
-                Add
-              </Button>
-
-              <Button
-                onClick={setAdmin("del")}
-                icon={<FontAwesomeIcon icon={faXmark}/>}
-              >
-                Remove
-              </Button>
-            </form>
+          <input
+            type="input"
+            placeholder="Insert username"
+            ref={node => new_admin = node}
+            required
+          />
+          <Button onClick={setAdmin("add")}
+            icon={<FontAwesomeIcon icon={faCheck}/>}
+          >
+            Add
+          </Button>
+          <Button
+            onClick={setAdmin("del")}
+            icon={<FontAwesomeIcon icon={faXmark}/>}
+          >
+            Remove
+          </Button>
+        </form>
       </>
     );
   }
