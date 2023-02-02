@@ -16,8 +16,11 @@ export class AppService implements OnModuleInit {
     AppService.schedulerRegistry = this.injectedSchedulerRegistry;
 
     //  ********** FOR DEVELOPMENT ONLY **********
-    //  Uncomment the single line below to activate the example generation on application load.
+    //  Uncomment the single line below to activate the example generation
+    //  on application load if there is no users in database.
+
     await AppService.generateExamples();
+    
     //  ******************************************
   
     await User.clearOnlines();
@@ -57,82 +60,31 @@ export class AppService implements OnModuleInit {
       return;
     await User.save([
       {
-        ft_login: 'mromaniu',
-        username: 'aroma',
-        avatarURL: 'https://cdn.intra.42.fr/users/ebe52f582c2977e4de87dd696da8da21/mromaniu.jpg',
-        level:  3,
-        xp: 657
+        ft_login: 'aroma',
+        username: 'Aurore',
+        avatarURL: 'https://cdn.intra.42.fr/users/c56323996c7089134e85ad15844e5d35/aroma.jpg',
       },
       {
-        ft_login: 'lbintein',
-        username: 'labintei',
-        avatarURL: 'https://cdn.intra.42.fr/users/01a2a13f37720f02d9fdde60ff6d0d9d/lbintein.jpg',
-        level:  5,
-        xp: 628
-      },
-      {
-        ft_login: 'omarecha',
-        username: 'bmarecha',
-        avatarURL: 'https://cdn.intra.42.fr/users/9177de66b1fd572c2d94773048123d40/omarecha.jpg',
-        level:  2,
-        xp: 0
-      },
-      {
-        ft_login: 'edjubert',
-        username: 'edjavid',
-        avatarURL: 'https://cdn.intra.42.fr/users/1ec9dc62a31cc116e4175a44e64b95d6/edjubert.jpg',
-        level:  3,
-        xp: 231
-      },
-      {
-        ft_login: 'lraffin',
-        username: 'jraffin',
-        avatarURL: 'https://cdn.intra.42.fr/users/9ee1123451a11ed7bacb8bc7f301189d/lraffin.jpg',
-        level:  1,
-        xp: 630
-      },
-        {
-        ft_login: 'jraffin',
-        username: 'Jonathan',
-        twoFASecret: null, //"EYPCCGBLGN6HYBYMKA7SOYQROZKU4RYQ",
-        avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg',
-        level:  3,
-        xp: 587
+        ft_login: 'labintei',
+        username: 'Lauranne',
+        avatarURL: 'https://cdn.intra.42.fr/users/f1ddd5c9b21c63347225ada6c0c15ea7/labintei.jpg',
       },
       {
         ft_login: 'bmarecha',
-        username: 'bmarechavrai',
+        username: 'Baptiste',
         avatarURL: 'https://cdn.intra.42.fr/users/83281e807a42191e0b0baa08cb21eb8e/bmarecha.jpg',
-        level:  3,
-        xp: 587
+      },
+      {
+        ft_login: 'edjavid',
+        username: 'Eric',
+        avatarURL: 'https://cdn.intra.42.fr/users/5e240384371e3dd4cf5fb10860d0d373/edjavid.jpg',
+      },
+      {
+        ft_login: 'jraffin',
+        username: 'Jonathan',
+        avatarURL: 'https://cdn.intra.42.fr/users/57b6404e1c58329a2ca86db66c132b62/jraffin.jpg',
       }
     ]);
     await User.refreshRanks();
-    await UserRelationship.save([
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "lbintein",
-        status: UserRelationship.Status.FRIEND
-      },
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "omarecha",
-        status: UserRelationship.Status.FRIEND
-      },
-      {
-        ownerLogin: "jraffin",
-        relatedLogin: "mromaniu",
-        status: UserRelationship.Status.BLOCKED
-      }
-    ]);
-    await Match.save([
-      {
-        user1Login: "jraffin",
-        user2Login: "bmarecha",
-        score1: 12,
-        score2: 100,
-        status: Match.Status.ENDED
-      }
-    ]);
   }
 }
