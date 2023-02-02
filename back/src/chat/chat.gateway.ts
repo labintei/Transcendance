@@ -337,12 +337,12 @@ export class ChatGateway {
           channelId: channel.id,
           userLogin: user.ft_login
         });
+      if (data.status === ChannelUser.Status.INVITED && chanUser?.status)
+        throw new WsException("This user is a member or has already been invited.");
       if ((data.rights === undefined || data.rights === chanUser?.rights)
         && (data.status === undefined || data.status === chanUser?.status)
         && (data.rightsEnd === undefined || data.rightsEnd === chanUser?.rightsEnd))
         throw new WsException("No changes in user permissions.");
-      if (data.status === ChannelUser.Status.INVITED && chanUser?.status)
-        throw new WsException("This user is a member or has already been invited.");
       if (data.status === ChannelUser.Status.JOINED && data.status !== chanUser.status)
         throw new WsException("You cannot force people to join your channel ;-)");
       if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))

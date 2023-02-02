@@ -4,7 +4,6 @@ import { authenticator } from 'otplib';
 import { SessionGuard } from './session.guard';
 import { TransGuard } from './trans.guard';
 import { User } from 'src/entities/user.entity';
-import { AuthGuard } from '@nestjs/passport';
 import { FakeGuard } from './fake.guard';
 
 
