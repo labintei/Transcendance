@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+//import { useNavigate } from "react-router-dom";
 import { useStore } from "../State/state";
 import "./menu.css";
 import sky from "../Assets/Sky.png";
@@ -8,7 +8,7 @@ import space from "../Assets/Space.png";
 export default function Menu() {
   const getEscaped: any = useStore((state: any) => state.escaped);
   const setEscape: any = useStore((state: any) => state.setEscape);
-  const navigate = useNavigate();
+  //const navigate = useNavigate();
   const setTheMap: any = useStore((state: any) => state.changeBgd);
 
   const [step, setStep] = useState<number>(0);

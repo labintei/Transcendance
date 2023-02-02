@@ -96,7 +96,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('mode');
     }
-  }, [mode, Setmode])
+  }, [mode, Setmode, socket])
 
   useEffect(() => {
     socket.on('newpos', (data) => {
@@ -117,7 +117,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('newpos');
     }
-  },[B,C,Setx,Setz,score1,score2,vbis,v,socket])
+  },[role, B,C,Setx,Setz,score1,score2,vbis,v,socket])
 
   useEffect(() => {
     socket.on('Not_Exist', () => setMessage("This game does not exist !"));
