@@ -597,8 +597,23 @@ export default function Chat() {
     let channelName: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
 
+    function stripWhitespace(input: string): string | null {
+      const stripped = input.trim();
+      if (!stripped) {
+        return null;
+      }
+      return stripped;
+    }
+
     function onSubmit(e : any) {
       e.preventDefault();
+
+      const chan_name = stripWhitespace(channelName!.value);
+
+      if (!chan_name) {
+        channelName!.value = "";
+        return ;
+      }
 
       const new_chan : IChannel = {
         status: "Public",
