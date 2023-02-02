@@ -49,7 +49,7 @@ export class Channel extends BaseEntity {
 
   @AfterRemove()
   async refreshListIfPublic() {
-    if (this.status === Channel.Status.PUBLIC || Channel.Status.PROTECTED)
+    if (this.status === Channel.Status.PUBLIC || this.status === Channel.Status.PROTECTED)
       SocketGateway.getIO().emit('publicList', await Channel.publicList());
   }
 
