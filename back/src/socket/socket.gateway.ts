@@ -35,10 +35,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
       await user.save();
     }
     console.log('Websocket Client Connected : ' + client.data.login + ' [id:' + client.id + ']');
-    const joinedList = await Channel.joinedList(client.data.login);
-    for (let channel of joinedList)
+    const joinedListWithDirect = await Channel.joinedListWithDirect(client.data.login);
+    for (let channel of joinedListWithDirect)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
-    SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
+    SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedListWithDirect));
     client.data.pingOK = true;
     this.ping(client);
   }
