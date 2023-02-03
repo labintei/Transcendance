@@ -124,6 +124,7 @@ export default function AdminPanel(props: AdminProps) {
                   <input
                     type="number"
                     min="1"
+                    max="35000"
                     placeholder={state.type + " time in minutes"}
                     ref={node => timestamp = node}
                     required
