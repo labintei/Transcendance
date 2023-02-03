@@ -489,8 +489,10 @@ export default function Chat() {
           <Avatar
             src={other_user!.avatarURL}
             name={other_user!.username}
+            onClick={openProfile(other_user!)}
             />
           }
+
           <ConversationHeader.Content
             userName={getName(currentChannel)}
             />
