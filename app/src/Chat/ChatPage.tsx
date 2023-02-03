@@ -316,6 +316,7 @@ export default function Chat() {
 
       socket.emit('joinChannel', channel, (channel : IChannel) => {
         socket.emit('joinedList');
+        socket.emit('invitedList');
         socket.emit('getChannel', channel, (channel : IChannel) => {
           setCurrentChannel(channel)
         });
