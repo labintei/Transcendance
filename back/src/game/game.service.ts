@@ -508,7 +508,7 @@ export class GameService {
         if(contestant == null)
         {
             this.dispoUser.add([user, client]);
-            User.update(user.ft_login, {status: User.Status.MATCHING});
+            //User.update(user.ft_login, {status: User.Status.MATCHING});
             return null;
         }
         else
