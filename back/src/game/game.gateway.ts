@@ -118,6 +118,9 @@ export class GameGateway implements OnGatewayDisconnect {
           clients[0].emit('endgame');
         if(clients[1])
           clients[1].emit('endgame');
+        const stream:Socket[] = this.gameservice.getStream(data);
+        if(stream)
+          stream.map((s) => {s.emit('endstream')});
         this.gameservice.CreateMatchID(data);
         this.gameservice.DisconnectionGameId(data);
       }
@@ -186,6 +189,7 @@ export class GameGateway implements OnGatewayDisconnect {
   @SubscribeMessage('endstream')
   async endstream(client:Socket, data:number){
     this.gameservice.endStream(client, data);
+    client.emit("endstream");
   }
 
 }

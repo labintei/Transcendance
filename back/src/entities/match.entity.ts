@@ -47,7 +47,7 @@ export class Match extends BaseEntity {
 
   async resolve() {
     this.status = Match.Status.ENDED;
-    const max_score = Math.max(this.score1, this.score2);
+    const max_score = Math.max(this.score1, this.score2, 1);
     const score_diff = max_score - Math.min(this.score1, this.score2);
     /*
     ** Fixed or score-based gains or losses of XP for either won/drawed or lost thises.
@@ -72,10 +72,13 @@ export class Match extends BaseEntity {
     }
     // Resolve users XP gains/losses.
     if (this.score1 >= this.score2)
+    {
+      console.log(max_score);
       this.user1.gainXP(Math.floor(
         (this.user2.xpAmountForNextLevel() * fixedPercentGain) / 100 +
         (this.user2.xpAmountForNextLevel() * scorePercentGain) * (score_diff / max_score) / 100
       ));
+    }
     else
       this.user1.gainXP(Math.floor(
         (this.user2.xpAmountForNextLevel() * fixedPercentLoss) / 100 +

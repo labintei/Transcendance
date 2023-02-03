@@ -252,6 +252,13 @@ export default function Chat() {
     return (chanUser!.user.username);
   }
 
+  function getOtherUser(channel: IChannel) : IUser | null {
+    if (channel.status !== "Direct")
+      return null;
+    const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+    return (chanUser!.user);
+  }
+
   function RenderConversations() {
     const switchChannel = (channel: IChannel) => (e: any) => {
       socket.emit('getChannel', channel, (data: IChannel) => {
@@ -316,6 +323,7 @@ export default function Chat() {
 
       socket.emit('joinChannel', channel, (channel : IChannel) => {
         socket.emit('joinedList');
+        socket.emit('invitedList');
         socket.emit('getChannel', channel, (channel : IChannel) => {
           setCurrentChannel(channel)
         });
@@ -472,15 +480,19 @@ export default function Chat() {
       );
     }
 
+    const other_user = getOtherUser(currentChannel);
+
     return (
       <ChatContainer>
         <ConversationHeader>
           {currentChannel.status !== "Direct" ? null :
           <Avatar
-            src={currentChannel.users[1].user.avatarURL}
-            name={currentChannel.users[1].user.username}
+            src={other_user!.avatarURL}
+            name={other_user!.username}
+            onClick={openProfile(other_user!)}
             />
           }
+
           <ConversationHeader.Content
             userName={getName(currentChannel)}
             />
@@ -597,8 +609,23 @@ export default function Chat() {
     let channelName: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
 
+    function stripWhitespace(input: string): string | null {
+      const stripped = input.trim();
+      if (!stripped) {
+        return null;
+      }
+      return stripped;
+    }
+
     function onSubmit(e : any) {
       e.preventDefault();
+
+      const chan_name = stripWhitespace(channelName!.value);
+
+      if (!chan_name) {
+        channelName!.value = "";
+        return ;
+      }
 
       const new_chan : IChannel = {
         status: "Public",

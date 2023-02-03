@@ -110,18 +110,21 @@ export default class PersonList extends React.Component {
         let listftmp: Array<Person> = [];
         let id = 0;
         for (var person of friends) {
-            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1,
+            let one: Person = {id: id, name: '', status: "Offline", avatar_location:defaultavatar, rank:1,
               friend:false, blocked:false, matchid:null};
             if (person.level !== undefined && person.username !== undefined) {
                 one.rank = person.level;
                 one.name = person.username;
                 one.friend = true;
-                if (person.status !== undefined)
-                  one.status = person.status;
+                if (person.isOnline)
+                  one.status = "Online";
                 if (person.avatarURL && person.avatarURL !== '')
                       one.avatar_location = person.avatarURL;
-                if (person.ongoingMatchId !== undefined)
+                if (person.ongoingMatchId !== undefined) {
                   one.matchid = person.ongoingMatchId;
+                  if (one.matchid !== null)
+                    one.status = "Playing";
+                }
                 listftmp.push(one);
             }
             id++;
@@ -145,14 +148,19 @@ export default class PersonList extends React.Component {
         let listtmp: Array<Person> = [];
         let id = 0;
         for (var person of others) {
-            let one: Person = {id: id, name: '', status: "", avatar_location:defaultavatar, rank:1,
+            let one: Person = {id: id, name: '', status: "Offline", avatar_location:defaultavatar, rank:1,
               friend:false, blocked:false, matchid:null};
             if (person.level !== undefined && person.username !== undefined) {
                 console.log(person);
                 one.rank = person.level;
                 one.name = person.username;
-                if (person.status !== undefined)
-                  one.status = person.status;
+                if (person.isOnline)
+                  one.status = "Online";
+                if (person.ongoingMatchId !== undefined){
+                  one.matchid = person.ongoingMatchId;
+                  if (one.matchid !== null)
+                    one.status = "Playing";
+                }
                 if (person.relatedships !== undefined && person.relatedships[0] !== undefined)
                 {
                   let ships:Array<{status:string}> = person.relatedships;
@@ -210,6 +218,7 @@ export default class PersonList extends React.Component {
                 <ChallengeButton username={person.name}></ChallengeButton>
                 <button onClick={() => this.friendManage(person.id, flist)} id="add-f-button" title="add friend"></button>
                 <button onClick={() => this.blockManage(person.id, flist)} id="block-button" title="block"></button>
+                {person.matchid !== null ? <GetLive matchid={person.matchid}></GetLive> : <></>}
                 </>
               }
             </li>
