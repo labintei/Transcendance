@@ -406,9 +406,7 @@ export class GameService {
             ready: false,
             timer : null,
             render : null,
-        }
-        User.update(room.user1.ft_login, {status:User.Status.PLAYING});
-        User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
+        } 
         Match.update(m.id, {status: Match.Status.ONGOING});
         if (l < 0.5)
           room.zdir = -0.05;
@@ -508,7 +506,6 @@ export class GameService {
         if(contestant == null)
         {
             this.dispoUser.add([user, client]);
-            User.update(user.ft_login, {status: User.Status.MATCHING});
             return null;
         }
         else
@@ -662,8 +659,6 @@ export class GameService {
         var room = this.s.get(data);
         if(room)
         {   
-            User.update(room.user1.ft_login, {status:User.Status.ONLINE});
-            User.update(room.user2.ft_login, {status:User.Status.ONLINE});  
             const u1 = await User.findOneBy({ft_login: room.player1.data.login});
             const u2 = await User.findOneBy({ft_login: room.player2.data.login});
             if(u1 == null || u2 == null)
