@@ -252,6 +252,13 @@ export default function Chat() {
     return (chanUser!.user.username);
   }
 
+  function getOtherUser(channel: IChannel) : IUser | null {
+    if (channel.status !== "Direct")
+      return null;
+    const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+    return (chanUser!.user);
+  }
+
   function RenderConversations() {
     const switchChannel = (channel: IChannel) => (e: any) => {
       socket.emit('getChannel', channel, (data: IChannel) => {
@@ -473,13 +480,15 @@ export default function Chat() {
       );
     }
 
+    const other_user = getOtherUser(currentChannel);
+
     return (
       <ChatContainer>
         <ConversationHeader>
           {currentChannel.status !== "Direct" ? null :
           <Avatar
-            src={currentChannel.users[1].user.avatarURL}
-            name={currentChannel.users[1].user.username}
+            src={other_user!.avatarURL}
+            name={other_user!.username}
             />
           }
           <ConversationHeader.Content
