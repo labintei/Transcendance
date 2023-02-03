@@ -49,7 +49,7 @@ export default class PersonList extends React.Component {
   }
 
   challengeClicked(id:number) {
-    console.log(id);
+    // console.log(id);
   }
 
   blockManage(id: number, friendlist: boolean): void {
@@ -61,7 +61,7 @@ export default class PersonList extends React.Component {
         this.doSearch();
       }).catch(error => {
         console.log(error);
-        console.log(this.state);
+        // console.log(this.state);
       });
     } else {
       axios.put(process.env.REACT_APP_BACKEND_URL + "blockeds/" + person.name, {}, {
@@ -86,7 +86,7 @@ export default class PersonList extends React.Component {
         this.doSearch();
       }).catch(error => {
         console.log(error);
-        console.log(this.state);
+        // console.log(this.state);
       });
     } else {
       axios.put(process.env.REACT_APP_BACKEND_URL + "friends/" + person.name, {}, {
@@ -151,7 +151,7 @@ export default class PersonList extends React.Component {
             let one: Person = {id: id, name: '', status: "Offline", avatar_location:defaultavatar, rank:1,
               friend:false, blocked:false, matchid:null};
             if (person.level !== undefined && person.username !== undefined) {
-                console.log(person);
+                // console.log(person);
                 one.rank = person.level;
                 one.name = person.username;
                 if (person.isOnline)
@@ -178,7 +178,7 @@ export default class PersonList extends React.Component {
             id++;
         }
         this.setState({listp: listtmp, logged:true});
-        console.log(this.state);
+        // console.log(this.state);
       }).catch(error => {
         console.log(error);
         if (error.response.status === 401 || error.response.status === 403)
@@ -247,7 +247,7 @@ export default class PersonList extends React.Component {
   }
 
   render() {
-    console.log(this.state);
+    // console.log(this.state);
     return (
         <>
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}

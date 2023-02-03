@@ -46,7 +46,7 @@ export default class LevelList extends React.Component {
       params: {count:10}
     }).then(async res => {
         const pranks = res.data;
-        console.log(res);
+        // console.log(res);
         let listtmp: Array<PRank> = [];
         let i = 1;
         for (var prank of pranks) {
@@ -62,7 +62,7 @@ export default class LevelList extends React.Component {
                 listtmp.push(one);
             }
         }
-        console.log(listtmp);
+        // console.log(listtmp);
         this.setState({listl: listtmp});
       }).catch(error => {
         console.log(error);
@@ -70,7 +70,7 @@ export default class LevelList extends React.Component {
   }
 
   challengeClicked(id:number) {
-    console.log(id);
+    // console.log(id);
   }
 
   render_score(score:number) {
