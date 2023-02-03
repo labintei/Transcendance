@@ -48,13 +48,12 @@ export class Channel extends BaseEntity {
   messages: Message[];
 
   @AfterRemove()
-  async refreshListIfPublic() {
-    if (this.status === Channel.Status.PUBLIC || this.status === Channel.Status.PROTECTED)
-      SocketGateway.getIO().emit('publicList', await Channel.publicList());
+  async refreshPublicLists() {
+    SocketGateway.getIO().emit('publicList', await Channel.publicList());
   }
 
   async emitUpdate() {
-    await this.refreshListIfPublic();
+    await this.refreshPublicLists();
     await this.contentUpdate();
   }
 
