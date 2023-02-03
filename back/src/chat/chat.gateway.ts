@@ -14,7 +14,7 @@ export class ChatGateway {
   private err(client: Socket, event: string, e: Error)
   {
     client.emit('error', "[Event '" + event + "'] " + e.message);
-    console.error("[Client " + client.data.login + " [id:" + client.id + "] " + e.message);
+    console.error("[debug] error sent to client " + client.data.login + " [id:" + client.id + "] " + e.message);
   }
 
   //  Processes a new message sent by a client (either to a channel or directly to a username)
@@ -36,7 +36,14 @@ export class ChatGateway {
         if (!channel)
           throw new WsException("Channel id (" + data.id + ") was not found.");
         const chanUser = await ChannelUser.findOneBy({channelId: data.channelId, userLogin: client.data.login});
-        if (!chanUser || !chanUser.canSpeak())
+        if (chanUser.rights === ChannelUser.Rights.MUTED) {
+          const interval = new Date(chanUser.rightsEnd.getTime() - Date.now());
+          const intervalString = (interval.getUTCHours() ? interval.getUTCHours().toString() + "hrs " : "")
+            + (interval.getUTCHours() || interval.getUTCMinutes() ? interval.getUTCMinutes().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "min " : "")
+            + interval.getUTCSeconds().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "sec";
+          throw new WsException("Sorry, you have been muted here (" + intervalString + " remaining)" );
+        }
+        if (!chanUser?.canSpeak())
           throw new WsException("You cannot speak in this channel.");
       }
       else
@@ -324,6 +331,19 @@ export class ChatGateway {
         throw new WsException("You are not an administrator of this channel.");
       if (user.ft_login === client.data.login)
         throw new WsException("You cannot change you own channel permissions.");
+      if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
+        throw new WsException("Invalid user rights.");
+      if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
+        throw new WsException("Invalid user status.");
+      if (data.rightsEnd) {
+        const endDate = new Date(data.rightsEnd);
+        if (isNaN(endDate.getTime()))
+          throw new WsException("Invalid end date.");
+        if ((endDate.getTime() - Date.now()) > 2147483647)
+          throw new WsException("Sadly, you cannot set user rights for much more than 20hrs 30min.");
+        data.rightsEnd = endDate;
+        console.log(endDate.toISOString())
+      }
       let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,
         userLogin: user.ft_login
@@ -344,17 +364,7 @@ export class ChatGateway {
         throw new WsException("No changes in user permissions.");
       if (data.status === ChannelUser.Status.JOINED && data.status !== chanUser.status)
         throw new WsException("You cannot force people to join your channel ;-)");
-      if (data.rights !== null && !Object.values(ChannelUser.Rights).includes(data.rights))
-        throw new WsException("Invalid user rights.");
-      if (data.status !== null && !Object.values(ChannelUser.Status).includes(data.status))
-        throw new WsException("Invalid user status.");
-      if (data.rightsEnd) {
-        const endDate = new Date(data.rightsEnd);
-        if (isNaN(endDate.getTime()))
-          throw new WsException("Invalid end date.");
-        data.rightsEnd = endDate;
-      }
-      if (!chanUser.isOwner())
+      if (chanUser.isOwner())
         throw new WsException("Nobody can change the owner permissions.");
       if (!ownStatus.isOwner()
         && (chanUser.isAdmin()

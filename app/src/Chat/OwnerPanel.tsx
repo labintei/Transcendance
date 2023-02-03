@@ -10,7 +10,7 @@ import { faCheck, faKey, faLock, faLockOpen, faPen, faXmark } from '@fortawesome
 
 import { IChannel } from './interface';
 import { Socket } from 'socket.io-client';
-import { notificationError } from './ChatPage';
+import { notificationError, toastThis } from './ChatPage';
 
 interface OwnerProps {
     currentChannel : IChannel;
@@ -63,7 +63,7 @@ export default function OwnerPanel(props: OwnerProps) {
 
       if (updated_user === undefined) {
         new_admin!.value = "";
-        notificationError("This username doesn't exist");
+        notificationError("This user is not in this channel");
         return ;
       }
 
@@ -84,6 +84,10 @@ export default function OwnerPanel(props: OwnerProps) {
 
       props.socket.emit('setPermissions', updated_user, () => {
         new_admin!.value = "";
+        if (mode === "add")
+          toastThis("User successfully promoted to administrator");
+        else if (mode === "del")
+          toastThis("User successfully demoted to normal user");
       });
     }
 
