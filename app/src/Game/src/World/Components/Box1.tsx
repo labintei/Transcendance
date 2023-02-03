@@ -18,7 +18,7 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
   useFrame(() => {
 
-    box.current.position.x = g / 10;
+    box.current.position.x = g;
 })
 
   const { scale } = useSpring({

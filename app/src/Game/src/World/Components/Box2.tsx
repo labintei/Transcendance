@@ -22,7 +22,7 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
 
   // va l envoyer en double pas bon bail
   useFrame(() => {
-    box.current.position.x = data / 10;
+    box.current.position.x = data;
   })
 
   const { scale } = useSpring({

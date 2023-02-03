@@ -66,11 +66,14 @@ export default function PongGame(props: any) {
       if(data[1] === 1)
       {
         h1(0);
-        h2(3);
-        h3(7);
+        h2(5);
+        h3(9);
       }
       else
       {
+        /*h1(0);
+        h2(5);
+        h3(-9);*/
         h1(0);
         h2(5);
         h3(-9);
@@ -106,6 +109,7 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('newpos', (data) => {
+      console.log("POS DES BOX" + data[2] + data[3])
       if(vbis !== data[4])
         v(data[4]);
       Setx(data[0]);

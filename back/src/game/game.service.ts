@@ -5,6 +5,7 @@ import { Match } from 'src/entities/match.entity';
 import { User } from 'src/entities/user.entity';
 import { FindOptionsWhere } from "typeorm";
 import { clearInterval } from "timers";
+import { compareSync } from "bcrypt";
 
 export class Game {
     public isinvit: boolean;
@@ -269,8 +270,8 @@ export class GameService {
 
     sphere(room:Game): number[] {
         var sz = Math.floor(room.sz);
-        var b2x = Math.round(room.Box2x * 10) / 100;
-        var b1x = Math.round(room.Box1x * 10) / 100;
+        var b2x:number = room.Box2x ;
+        var b1x:number = room.Box1x;
 
         room.sx += room.xangle;
         room.sz += room.zdir;
@@ -280,17 +281,72 @@ export class GameService {
         if(room.zdir < (-0.1))
           room.zdir += 0.005;
         let newVal = Math.round(room.sz * 10) / 10
-        if (
+        /*if (
             newVal === 3.9 &&
             room.sx >= b1x - 1 &&
             room.sx <= b1x + 1
         ) {
         room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
         room.zdir = -0.3;
+        }*/
+        if (sz === 4 && room.sx >= b1x -1 && room.sx <= b1x + 1)
+        {
+            console.log("HEAR2");
+            const v = (room.xangle / room.zdir) + 
+            (Math.PI / 4) * (room.sx - b1x) * 2 * 2;
+            //room.zdir *= -1;
+            room.zdir = Math.abs(room.zdir) * -1.3;
+            //room.zdir = -0.3;
+            room.xangle = room.zdir  * Math.cos(v);
+
+/*
+            console.log("HEAR1");
+            room.zdir = Math.abs(room.zdir) * -1.1;
+            console.log("ECART RAQUETTE " + Number((room.sx - b1x).toFixed(1)));// JE PEUT CALCULER UN ECART RAQUETTE
+            console.log("XANGLE " + (room.xangle).toFixed(2)+ " ZANGLE " + (room.zdir).toFixed(2));
+            if(((room.sx - b1x) / 5) > (1 / 5))
+                room.xangle += 1 / 5;
+            else if(((room.sz - b1x)/5) < (-(1 / 5)))
+                room.xangle -= 1 / 5;
+            else
+            room.xangle += ((room.sx - b1x) / 5);
+            if(Math.abs(room.xangle) > 0.5 && room.xangle > 0)
+                room.xangle = 0.5;
+            else if(Math.abs(room.xangle) > 0.5)
+                room.xangle = -0.5;
+        */
         }
-        if (sz === -5 && room.sx >= b2x - 1.8 && room.sx <= b2x + 0.8) {
-            room.zdir = 0.3;
-            room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+        if (sz === -5 && room.sx >= b2x - 1 && room.sx <= b2x + 1) {
+            console.log("HEAR1");
+            //room.zdir = Math.abs(room.zdir) * 1.1;
+            const v = (room.xangle / room.zdir) + 
+            (Math.PI / 4) * (room.sx - b2x) * 2 * 2;
+            //room.zdir *= -1;
+            room.zdir = Math.abs(room.zdir) * 1.3;
+            //room.zdir = 0.3;
+            room.xangle = room.zdir  * Math.cos(v);
+        
+            //room.zdir = 0.3;
+        /*
+            console.log("HEAR");
+            room.zdir = Math.abs(room.zdir) * 1.1;
+            // xangle
+            // zdir
+            console.log("ECART RAQUETTE " + Number((room.sx - b2x).toFixed(1)));// JE PEUT CALCULER UN ECART RAQUETTE
+            console.log("XANGLE " + (room.xangle).toFixed(2)+ " ZANGLE " + (room.zdir).toFixed(2));
+            //room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
+        
+            if(((room.sx - b2x) / 5) > (1 / 5))
+                room.xangle += 1 / 5;
+            else if(((room.sz - b2x)/5) < (-(1 / 5)))
+                room.xangle -= 1 / 5;
+            else
+            room.xangle += ((room.sx - b2x) / 5);
+            if(Math.abs(room.xangle) > 0.5 && room.xangle > 0)
+                room.xangle = 0.5;
+            else if(Math.abs(room.xangle) > 0.5)
+                room.xangle = -0.5;
+            //room.xangle *= -1*/
         }
         if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
             room.xangle *= -1;
@@ -307,8 +363,8 @@ export class GameService {
             return [
             0,
             0,
-            Number(room.Box1x.toFixed(1)),
-            Number(room.Box2x.toFixed(1)),
+            Number(room.Box1x.toFixed(2)),
+            Number(room.Box2x.toFixed(2)),
             room.time,
             room.score1,
             room.score2,
@@ -317,8 +373,8 @@ export class GameService {
   return [
     Number(room.sx.toFixed(3)),
     Number(room.sz.toFixed(3)),
-    Number(room.Box1x.toFixed(1)),
-    Number(room.Box2x.toFixed(1)),
+    Number(room.Box1x.toFixed(2)),
+    Number(room.Box2x.toFixed(2)),
     room.time,
     room.score1,
     room.score2,
@@ -531,22 +587,22 @@ export class GameService {
 
     player2x_right(id:number, client:Socket) {
         if(this.s.get(id) && this.s.get(id).player2 == client)
-            this.s.get(id).Box2x += 2;
+            this.s.get(id).Box2x = this.s.get(id).Box2x + 0.2;
     }
 
     player2x_left(id:number, client:Socket) {
         if(this.s.get(id) && this.s.get(id).player2 == client)
-            this.s.get(id).Box2x -= 2;
+            this.s.get(id).Box2x = this.s.get(id).Box2x - 0.2;
     }
 
     player1x_right(id:number, client:Socket) {
         if(this.s.get(id) && this.s.get(id).player1 == client)
-            this.s.get(id).Box1x += 2;
+            this.s.get(id).Box1x = this.s.get(id).Box1x + 0.2;
     }
 
     player1x_left(id:number, client:Socket) {
         if(this.s.get(id) && this.s.get(id).player1 == client)
-            this.s.get(id).Box1x -= 2;
+            this.s.get(id).Box1x = this.s.get(id).Box1x - 0.2;
     }
 
     getRender(id:number):any {
@@ -569,18 +625,6 @@ export class GameService {
     SetTimer(id:number, timer:any) {
         if(this.s.get(id))
             return this.s.get(id).timer = timer;
-    }
-
-    getBox1(id:number): number {
-        if(this.s.get(id))
-            return (Number(this.s.get(id).Box1x.toFixed(1)));
-        return 0;
-    }
-
-    getBox2(id:number): number {
-        if(this.s.get(id))
-            return (Number(this.s.get(id).Box2x.toFixed(1)));
-        return 0;
     }
 
     endStream(client:Socket, id:number) {
