@@ -354,7 +354,7 @@ export class ChatGateway {
           throw new WsException("Invalid end date.");
         data.rightsEnd = endDate;
       }
-      if (!chanUser.isOwner())
+      if (chanUser.isOwner())
         throw new WsException("Nobody can change the owner permissions.");
       if (!ownStatus.isOwner()
         && (chanUser.isAdmin()
