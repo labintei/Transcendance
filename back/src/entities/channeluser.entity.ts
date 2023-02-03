@@ -103,7 +103,11 @@ export class ChannelUser extends BaseEntity {
         this.rightsTimeoutName(),
         async () => { await this.revokeRights() },
         delay);
-      console.log ("Rights of " + this.userLogin + " on channel " + this.channelId + " will be revoked in " + (new Date(delay)).toISOString().slice(14, 19).replace(":", "min ") + "s.");
+      const interval = new Date(delay);
+      const intervalString = (interval.getUTCHours() ? interval.getUTCHours().toString() + "hrs " : "")
+        + (interval.getUTCHours() || interval.getUTCMinutes() ? interval.getUTCMinutes().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "min " : "")
+        + interval.getUTCSeconds().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "sec";
+      console.log ("Rights of " + this.userLogin + " on channel " + this.channelId + " will be revoked in " + intervalString + ".");
     }
     else
       await this.revokeRights();
