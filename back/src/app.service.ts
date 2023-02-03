@@ -1,7 +1,6 @@
 import { Injectable, OnModuleInit } from '@nestjs/common';
 import { User } from './entities/user.entity';
 import { Match } from './entities/match.entity';
-import { UserRelationship } from './entities/userrelationship.entity';
 import { SchedulerRegistry } from '@nestjs/schedule';
 import { ChannelUser } from './entities/channeluser.entity';
 

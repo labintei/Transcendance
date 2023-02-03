@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect, AfterLoad, VirtualColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect, AfterLoad } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
 import { UserSocket } from './usersocket.entity';

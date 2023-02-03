@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not, AfterUpdate} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not} from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';
@@ -198,18 +198,6 @@ export class Channel extends BaseEntity {
       select: Channel.defaultFilter,
       where: {
         status: Not(Channel.Status.DIRECT),
-        users: {
-          userLogin: login,
-          status: ChannelUser.Status.JOINED
-        }
-      }
-    });
-  }
-
-  static async joinedListWithDirect(login: string): Promise<Channel[]> {
-    return Channel.find({
-      select: Channel.defaultFilter,
-      where: {
         users: {
           userLogin: login,
           status: ChannelUser.Status.JOINED

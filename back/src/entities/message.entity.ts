@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, Index, FindOptionsSelect } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, Index } from 'typeorm';
 import { Channel } from './channel.entity';
 import { User } from './user.entity';
 
