@@ -354,13 +354,15 @@ export class ChatGateway {
           throw new WsException("Invalid end date.");
         data.rightsEnd = endDate;
       }
+      if (!chanUser.isOwner())
+        throw new WsException("Nobody can change the owner permissions.");
       if (!ownStatus.isOwner()
         && (chanUser.isAdmin()
           || data.rights == ChannelUser.Rights.ADMIN
           || data.rights == ChannelUser.Rights.OWNER))
-        throw new WsException("You must be the owner to set an administrator permission.");
+        throw new WsException("You must be the owner to set an administrator permissions.");
       if (!ownStatus.isAdmin())
-        throw new WsException("You must be an administrator to set a user permission.");
+        throw new WsException("You must be an administrator to set a user permissions.");
       if (data.rights !== undefined && data.rights !== chanUser.rights) {
         chanUser.rights = data.rights;
         if (chanUser.rights === ChannelUser.Rights.BANNED && chanUser.status)
