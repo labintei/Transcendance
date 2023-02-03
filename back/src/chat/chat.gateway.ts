@@ -14,7 +14,7 @@ export class ChatGateway {
   private err(client: Socket, event: string, e: Error)
   {
     client.emit('error', "[Event '" + event + "'] " + e.message);
-    console.error("[Client " + client.data.login + " [id:" + client.id + "] " + e.message);
+    console.error("[debug] error sent to client " + client.data.login + " [id:" + client.id + "] " + e.message);
   }
 
   //  Processes a new message sent by a client (either to a channel or directly to a username)
@@ -36,7 +36,15 @@ export class ChatGateway {
         if (!channel)
           throw new WsException("Channel id (" + data.id + ") was not found.");
         const chanUser = await ChannelUser.findOneBy({channelId: data.channelId, userLogin: client.data.login});
-        if (!chanUser || !chanUser.canSpeak())
+        if (chanUser.rights === ChannelUser.Rights.MUTED) {
+          const interval = new Date(chanUser.rightsEnd.getTime() - Date.now());
+          throw new WsException("Sorry, you have been muted here ("
+          + (interval.getUTCHours() ? interval.getUTCHours().toString() + "hrs " : "")
+          + (interval.getUTCMinutes() ? interval.getUTCMinutes().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "min " : "")
+          + (interval.getUTCSeconds() ? interval.getUTCSeconds().toLocaleString('fr-FR', {minimumIntegerDigits: 2, useGrouping:false}) + "sec " : "")
+          + "remaining)" );
+        }
+        if (!chanUser?.canSpeak())
           throw new WsException("You cannot speak in this channel.");
       }
       else
