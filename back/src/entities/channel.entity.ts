@@ -206,6 +206,18 @@ export class Channel extends BaseEntity {
     });
   }
 
+  static async joinedListWithDirect(login: string): Promise<Channel[]> {
+    return Channel.find({
+      select: Channel.defaultFilter,
+      where: {
+        users: {
+          userLogin: login,
+          status: ChannelUser.Status.JOINED
+        }
+      }
+    });
+  }
+
   static async invitedList(login: string): Promise<Channel[]> {
     return Channel.find({
       select: Channel.defaultFilter,
