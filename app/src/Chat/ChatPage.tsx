@@ -258,6 +258,11 @@ export default function Chat() {
     return (chanUser === undefined ? false : isFriend(chanUser.user.username))
   }
 
+  function isInvited(channel: IChannel) : boolean {
+    const user = invitedChannels.find(invitedChannel => channel.id === invitedChannel.id);
+    return (user !== undefined)
+  }
+
   function getName(channel: IChannel) : string {
     if (channel.status !== "Direct")
       return (channel.name);
@@ -325,7 +330,7 @@ export default function Chat() {
 
     const onClick = (channel: IChannel) => (e: any) => {
       e.preventDefault();
-      if (channel.status === "Protected")
+      if (channel.status === "Protected" && !isInvited(channel))
       {
         if (state === channel.id)
           setState(0);
