@@ -53,7 +53,7 @@ export default class MatchList extends React.Component {
       withCredentials: true
     }).then(async res => {
         const matchs = res.data;
-        console.log(matchs);
+        // console.log(matchs);
         let listtmp: Array<Match> = [];
         for (var match of matchs) {
             let one: Match = {
@@ -79,16 +79,16 @@ export default class MatchList extends React.Component {
             }
         }
         this.setState({listp: listtmp});
-        console.log(this.state);
+        // console.log(this.state);
       })
   }
 
   challengeClicked(name:string) {
-    console.log(name);
+    // console.log(name);
   }
 
   friendManage(id:number) {
-    console.log(id);
+    // console.log(id);
   }
 
   render_status(score1:number, score2:number) {

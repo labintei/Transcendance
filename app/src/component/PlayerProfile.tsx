@@ -40,7 +40,7 @@ export default class PlayerProfile extends React.Component {
       withCredentials: true
     }).then(async res => {
       const data = res.data;
-      console.log(res);
+      // console.log(res);
       if (data.username !== undefined && data.level !== undefined) {
         player.name = data.username;
         player.rank = data.level;
@@ -116,7 +116,7 @@ export default class PlayerProfile extends React.Component {
     let temp:Person = this.state.player;
     if (this.state.query2 === null)
     {
-      console.log(temp.avatar_location);
+      // console.log(temp.avatar_location);
       this.setState({player:temp, avatarEdit:false});
       return ;
     }

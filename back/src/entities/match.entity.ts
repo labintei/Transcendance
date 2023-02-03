@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, FindOptionsSelect, Not, FindOptionsWhere, Index } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, CreateDateColumn, Column, ManyToOne, JoinColumn, BaseEntity, Index } from 'typeorm';
 import { User } from './user.entity';
 
 enum MatchStatus {
@@ -72,13 +72,10 @@ export class Match extends BaseEntity {
     }
     // Resolve users XP gains/losses.
     if (this.score1 >= this.score2)
-    {
-      console.log(max_score);
       this.user1.gainXP(Math.floor(
         (this.user2.xpAmountForNextLevel() * fixedPercentGain) / 100 +
         (this.user2.xpAmountForNextLevel() * scorePercentGain) * (score_diff / max_score) / 100
       ));
-    }
     else
       this.user1.gainXP(Math.floor(
         (this.user2.xpAmountForNextLevel() * fixedPercentLoss) / 100 +

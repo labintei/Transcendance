@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not, AfterUpdate} from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, OneToMany, BaseEntity, FindOptionsWhere, FindOptionsSelect, Any, IsNull, Index, AfterRemove, Not} from 'typeorm';
 import { User } from './user.entity';
 import { ChannelUser } from './channeluser.entity';
 import { Message } from './message.entity';

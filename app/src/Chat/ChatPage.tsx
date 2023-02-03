@@ -62,6 +62,19 @@ export function notificationError(msg: string) {
     });
 }
 
+export function toastThis(msg: string) {
+  toast(msg, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    });
+}
+
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
   const [channels, setChannels] = useState<IChannel[]>([]);
@@ -245,11 +258,23 @@ export default function Chat() {
     return (chanUser === undefined ? false : isFriend(chanUser.user.username))
   }
 
+  function isInvited(channel: IChannel) : boolean {
+    const user = invitedChannels.find(invitedChannel => channel.id === invitedChannel.id);
+    return (user !== undefined)
+  }
+
   function getName(channel: IChannel) : string {
     if (channel.status !== "Direct")
       return (channel.name);
     const chanUser = channel.users.find((user) => login.value !== user.userLogin);
     return (chanUser!.user.username);
+  }
+
+  function getOtherUser(channel: IChannel) : IUser | null {
+    if (channel.status !== "Direct")
+      return null;
+    const chanUser = channel.users.find((user) => login.value !== user.userLogin);
+    return (chanUser!.user);
   }
 
   function RenderConversations() {
@@ -305,7 +330,7 @@ export default function Chat() {
 
     const onClick = (channel: IChannel) => (e: any) => {
       e.preventDefault();
-      if (channel.status === "Protected")
+      if (channel.status === "Protected" && !isInvited(channel))
       {
         if (state === channel.id)
           setState(0);
@@ -316,6 +341,7 @@ export default function Chat() {
 
       socket.emit('joinChannel', channel, (channel : IChannel) => {
         socket.emit('joinedList');
+        socket.emit('invitedList');
         socket.emit('getChannel', channel, (channel : IChannel) => {
           setCurrentChannel(channel)
         });
@@ -458,7 +484,9 @@ export default function Chat() {
         notificationError("You cannot invite someone you've blocked");
         return ;
       }
-      socket.emit('setPermissions', invited_user);
+      socket.emit('setPermissions', invited_user, () => {
+        toastThis('You successfully invited ' + invited_user.user.username);
+      });
     }
 
     if (currentChannel.id === 0)
@@ -472,15 +500,19 @@ export default function Chat() {
       );
     }
 
+    const other_user = getOtherUser(currentChannel);
+
     return (
       <ChatContainer>
         <ConversationHeader>
           {currentChannel.status !== "Direct" ? null :
           <Avatar
-            src={currentChannel.users[1].user.avatarURL}
-            name={currentChannel.users[1].user.username}
+            src={other_user!.avatarURL}
+            name={other_user!.username}
+            onClick={openProfile(other_user!)}
             />
           }
+
           <ConversationHeader.Content
             userName={getName(currentChannel)}
             />
@@ -597,8 +629,23 @@ export default function Chat() {
     let channelName: HTMLInputElement | null = null;
     let password: HTMLInputElement | null = null;
 
+    function stripWhitespace(input: string): string | null {
+      const stripped = input.trim();
+      if (!stripped) {
+        return null;
+      }
+      return stripped;
+    }
+
     function onSubmit(e : any) {
       e.preventDefault();
+
+      const chan_name = stripWhitespace(channelName!.value);
+
+      if (!chan_name) {
+        channelName!.value = "";
+        return ;
+      }
 
       const new_chan : IChannel = {
         status: "Public",

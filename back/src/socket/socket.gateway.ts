@@ -1,10 +1,10 @@
-import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, WebSocketServer, SubscribeMessage, WsException } from '@nestjs/websockets';
+import { WebSocketGateway, OnGatewayInit, OnGatewayConnection, OnGatewayDisconnect, SubscribeMessage, WsException } from '@nestjs/websockets';
 import { Server, Socket } from 'socket.io';
+import { AppService } from 'src/app.service';
 import { Channel } from 'src/entities/channel.entity';
 import { UserSocket } from 'src/entities/usersocket.entity';
 import { User } from 'src/entities/user.entity';
-import { SchedulerRegistry } from '@nestjs/schedule';
-import { AppService } from 'src/app.service';
+import { ChannelUser } from 'src/entities/channeluser.entity';
 
 const chanRoomPrefix = "channel_";
 const pingTimeout = 5000;
@@ -30,15 +30,11 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ft_login: client.data.login
       }
     });
-    if (user.status === User.Status.OFFLINE) {
-      user.status = User.Status.ONLINE;
-      await user.save();
-    }
     console.log('Websocket Client Connected : ' + client.data.login + ' [id:' + client.id + ']');
-    const joinedList = await Channel.joinedList(client.data.login);
-    for (let channel of joinedList)
+    const allJoined = await Channel.findBy({users: { userLogin: client.data.login, status: ChannelUser.Status.JOINED} });
+    for (let channel of allJoined)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
-    SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(joinedList));
+    SocketGateway.getIO().in(client.id).socketsJoin(SocketGateway.channelsToRooms(allJoined));
     client.data.pingOK = true;
     this.ping(client);
   }
@@ -54,14 +50,10 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ft_login: client.data.login
       }
     });
-    if (!user.sockets.length) {
-      user.status = User.Status.OFFLINE;
-      await user.save();
-    }
     console.log('Websocket Client Disconnected : ' + client.data.login + ' [id:' + client.id + ']');
-    const joinedList = await Channel.joinedList(client.data.login);
-    SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(joinedList));
-    for (let channel of joinedList)
+    const allJoined = await Channel.findBy({users: { userLogin: client.data.login, status: ChannelUser.Status.JOINED} });
+    SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(allJoined));
+    for (let channel of allJoined)
       SocketGateway.channelEmit(channel.id, 'updateUser', user);
   }
 

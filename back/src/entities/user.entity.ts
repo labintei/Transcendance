@@ -1,4 +1,4 @@
-import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect, AfterLoad, VirtualColumn } from 'typeorm';
+import { Entity, PrimaryColumn, Index, Column, OneToMany, BaseEntity, FindOptionsSelect, AfterLoad } from 'typeorm';
 import { Channel } from './channel.entity';
 import { ChannelUser } from './channeluser.entity';
 import { UserSocket } from './usersocket.entity';
@@ -32,10 +32,7 @@ const userDefaultFilter: FindOptionsSelect<User> = {
 };
 
 enum UserStatus {
-  ONLINE = "Online",
-  OFFLINE = "Offline",
   MATCHING = "Matching",
-  PLAYING = "Playing",
   BANNED = "Banned"
 }
 
@@ -53,7 +50,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'enum',
     enum:  UserStatus,
-    default: UserStatus.OFFLINE
+    default: null
   })
   status: UserStatus;
 
@@ -106,7 +103,7 @@ export class User extends BaseEntity {
   //  Virtual computed field for reliable online status.
   isOnline: boolean;
 
-  //  Virtual field to be able to see friends ongoing matches.
+  //  Virtual field to be able to see a user ongoing match Id if there is one (null if there is none).
   ongoingMatchId: Number;
 
   /** MEMBER METHODS */
@@ -205,7 +202,6 @@ export class User extends BaseEntity {
   }
 
   static async clearOnlines() {
-    User.update({}, { status: User.Status.OFFLINE });
     UserSocket.delete({});
   }
 

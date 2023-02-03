@@ -74,6 +74,8 @@ export default function AdminPanel(props: AdminProps) {
         </h1>
         {props.currentChannel.users.map((data, index) => {
           const user : IUser = data.user;
+          if (data.rights === "Owner")
+            return null;
           return (
             <div key={index}>
                 <p style={{
@@ -94,6 +96,7 @@ export default function AdminPanel(props: AdminProps) {
                   onClick={() => {
                     invertState(user.ft_login, "mute")
                   }}
+                  disabled={user.ft_login === login.value}
                   >
                     Mute
                 </Button>
@@ -101,6 +104,7 @@ export default function AdminPanel(props: AdminProps) {
                   icon={<FontAwesomeIcon icon={faUserSlash} />}
                   title="Kick user"
                   onClick={setPermissionsUser(data, "Kicked")}
+                  disabled={user.ft_login === login.value}
                   >
                     Kick
                 </Button>
@@ -110,6 +114,7 @@ export default function AdminPanel(props: AdminProps) {
                   onClick={() => {
                     invertState(user.ft_login, "ban")
                   }}
+                  disabled={user.ft_login === login.value}
                   >
                     Ban
                 </Button>

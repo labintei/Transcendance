@@ -661,9 +661,7 @@ export class GameService {
     async CreateMatchID(data:number) {
         var room = this.s.get(data);
         if(room)
-        {   
-            User.update(room.user1.ft_login, {status:User.Status.ONLINE});
-            User.update(room.user2.ft_login, {status:User.Status.ONLINE});  
+        {    
             const u1 = await User.findOneBy({ft_login: room.player1.data.login});
             const u2 = await User.findOneBy({ft_login: room.player2.data.login});
             if(u1 == null || u2 == null)

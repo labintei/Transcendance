@@ -1,4 +1,3 @@
-import { SchedulerRegistry } from "@nestjs/schedule";
 import { AppService } from "src/app.service";
 import { BaseEntity, Column, Entity, Index, JoinColumn, ManyToOne, PrimaryColumn, UpdateDateColumn } from "typeorm";
 import { Channel } from "./channel.entity";
