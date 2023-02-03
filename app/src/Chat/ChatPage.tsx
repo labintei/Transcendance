@@ -62,6 +62,19 @@ export function notificationError(msg: string) {
     });
 }
 
+export function toastThis(msg: string) {
+  toast(msg, {
+    position: "top-right",
+    autoClose: 5000,
+    hideProgressBar: false,
+    closeOnClick: true,
+    pauseOnHover: true,
+    draggable: true,
+    progress: undefined,
+    theme: "light",
+    });
+}
+
 export default function Chat() {
   const [currentChannel, setCurrentChannel] = useState<IChannel>(empty_chan);
   const [channels, setChannels] = useState<IChannel[]>([]);
@@ -466,7 +479,9 @@ export default function Chat() {
         notificationError("You cannot invite someone you've blocked");
         return ;
       }
-      socket.emit('setPermissions', invited_user);
+      socket.emit('setPermissions', invited_user, () => {
+        toastThis('You successfully invited ' + invited_user.user.username);
+      });
     }
 
     if (currentChannel.id === 0)
