@@ -32,6 +32,7 @@ const userDefaultFilter: FindOptionsSelect<User> = {
 };
 
 enum UserStatus {
+  MATCHING = "Matching",
   BANNED = "Banned"
 }
 
