@@ -30,10 +30,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ft_login: client.data.login
       }
     });
-    if (user.status === User.Status.OFFLINE) {
-      user.status = User.Status.ONLINE;
-      await user.save();
-    }
     console.log('Websocket Client Connected : ' + client.data.login + ' [id:' + client.id + ']');
     const allJoined = await Channel.findBy({users: { userLogin: client.data.login, status: ChannelUser.Status.JOINED} });
     for (let channel of allJoined)
@@ -54,10 +50,6 @@ export class SocketGateway implements OnGatewayInit, OnGatewayConnection, OnGate
         ft_login: client.data.login
       }
     });
-    if (!user.sockets.length) {
-      user.status = User.Status.OFFLINE;
-      await user.save();
-    }
     console.log('Websocket Client Disconnected : ' + client.data.login + ' [id:' + client.id + ']');
     const allJoined = await Channel.findBy({users: { userLogin: client.data.login, status: ChannelUser.Status.JOINED} });
     SocketGateway.getIO().in(client.id).socketsLeave(SocketGateway.channelsToRooms(allJoined));

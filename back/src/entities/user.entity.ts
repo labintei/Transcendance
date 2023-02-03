@@ -32,10 +32,6 @@ const userDefaultFilter: FindOptionsSelect<User> = {
 };
 
 enum UserStatus {
-  ONLINE = "Online",
-  OFFLINE = "Offline",
-  MATCHING = "Matching",
-  PLAYING = "Playing",
   BANNED = "Banned"
 }
 
@@ -53,7 +49,7 @@ export class User extends BaseEntity {
   @Column({
     type: 'enum',
     enum:  UserStatus,
-    default: UserStatus.OFFLINE
+    default: null
   })
   status: UserStatus;
 
