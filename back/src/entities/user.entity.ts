@@ -201,7 +201,6 @@ export class User extends BaseEntity {
   }
 
   static async clearOnlines() {
-    User.update({}, { status: User.Status.OFFLINE });
     UserSocket.delete({});
   }
 
