@@ -75,12 +75,16 @@ export default function PongGame(props: any) {
         h2(5);
         h3(-9);
       }
-      setUsernames([data[2][0], data[2][1]]);
-      setMessage(data[2][0] + " VS " + data[2][1])
+      if(data[2])
+      {
+        setUsernames([data[2][0], data[2][1]]);
+        setMessage(data[2][0] + " VS " + data[2][1])
+      }
     })
     return () => {
       socket.off('start');
       socket.emit('endgame');// reteste
+      ResetState();
       SetReady(false);
     }
     // eslint-disable-next-line
@@ -88,13 +92,12 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('mode', (data) => {
-      console.log(data);
+      console.log(data[0]);
       Setmode(data[0]);
       console.log(mode);
-      if(data[0] === 'stream'){
-        setUsernames([data[1][0], data[1][1]]);
-        setMessage(data[1][0] + " VS " + data[1][1]);
-      }
+      setUsernames([data[1][0], data[1][1]]);
+      setMessage(data[1][0] + " VS " + data[1][1]);
+
     });
     return () => {
       socket.off('mode');
@@ -142,27 +145,43 @@ export default function PongGame(props: any) {
     }
   },[setFinish,socket])
 
+  /*
+  function ResetState(){
+
+  }*/
+
+  function ResetState(){
+    SetReady(false);
+    setUsernames([""]);
+    setMessage("Waiting for your opponent...");
+    score1(0);score2(0);
+    v(0);
+  }
+
+
   function RestartButton(props:{mode:string, username:string}){
     const navigate = useNavigate();
-    console.log(props.mode);
     let message:string = "Retour à l'acceuil"
     if (props.mode === "invitation") {
-      message = "Rejouer";
-    } else if (props.mode === "game"){
-      message = "Rejoindre un nouveau match";
-    }
+      message = "Rejouer";}
+    else if (props.mode === "game"){
+      message = "Rejoindre un nouveau match";}
+    
+
     function createMatchAndRedirect() {
       axios.put(process.env.REACT_APP_BACKEND_URL + "match/" + props.username, {}, {
         withCredentials:true
       }).then(res => {
         if (res.data !== undefined)
           navigate("../game/" + res.data);
-          window.location.reload();
+          ResetState();
+          //window.location.reload();
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           navigate("../login");
         else
-          window.location.reload();
+          ResetState();
+        //window.location.reload();
       });
     } 
     
@@ -173,7 +192,7 @@ export default function PongGame(props: any) {
           window.location.reload();
         } else if (props.mode === "invitation") {
           createMatchAndRedirect();
-        } else {
+        } else if (props.mode === "stream") {
           navigate("/matching");
         }
       }}>

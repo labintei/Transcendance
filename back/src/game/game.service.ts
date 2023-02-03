@@ -407,8 +407,8 @@ export class GameService {
             timer : null,
             render : null,
         }
-        User.update(room.user1.ft_login, {status:User.Status.PLAYING});
-        User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
+        //User.update(room.user1.ft_login, {status:User.Status.PLAYING});
+        //User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
         Match.update(m.id, {status: Match.Status.ONGOING});
         if (l < 0.5)
           room.zdir = -0.05;
