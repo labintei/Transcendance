@@ -14,8 +14,7 @@ export class ChatGateway {
   private err(client: Socket, event: string, e: Error)
   {
     client.emit('error', "[Event '" + event + "'] " + e.message);
-    console.error("[Client '" + client.data.login + "'][Event '" + event + "'] " + e.message);
-    // console.error(e.stack);
+    console.error("[Client " + client.data.login + " [id:" + client.id + "] " + e.message);
   }
 
   //  Processes a new message sent by a client (either to a channel or directly to a username)
@@ -172,7 +171,7 @@ export class ChatGateway {
         throw new WsException("You are banned from this channel.");
       if (channel.status === Channel.Status.PRIVATE && chanUser?.status !== ChannelUser.Status.INVITED)
         throw new WsException("You must be invited to join a private channel");
-      if (channel.status === Channel.Status.PROTECTED) {
+      if (channel.status === Channel.Status.PROTECTED && chanUser?.status !== ChannelUser.Status.INVITED) {
         if (!data.password)
           throw new WsException("Protected Channel, password is required.");
         if (!(await Channel.comparePassword(data.password, channel.password)))
@@ -370,10 +369,7 @@ export class ChatGateway {
       }
       if (data.rightsEnd !== undefined && data.rightsEnd !== chanUser.rightsEnd)
         chanUser.rightsEnd = data.rightsEnd;
-      let invitedUpdate = false;
       if (data.status !== undefined && data.status !== chanUser.status) {
-        if (chanUser.status === ChannelUser.Status.INVITED || data.status === ChannelUser.Status.INVITED)
-          invitedUpdate = true;
         chanUser.status = data.status;
         if (data.status === null)
           await SocketGateway.userEmit(chanUser.userLogin, 'hideChannel', {id: chanUser.channelId});
