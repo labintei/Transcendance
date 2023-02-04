@@ -463,8 +463,8 @@ export class GameService {
             timer : null,
             render : null,
         }
-        //User.update(room.user1.ft_login, {status:User.Status.PLAYING});
-        //User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
+        User.update(room.user1.ft_login , {ongoingMatchId : m.id});
+        User.update(room.user2.ft_login , {ongoingMatchId : m.id});   
         Match.update(m.id, {status: Match.Status.ONGOING});
         if (l < 0.5)
           room.zdir = -0.05;
@@ -586,22 +586,22 @@ export class GameService {
     }
 
     player2x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x + 0.2) < 5))
             this.s.get(id).Box2x = this.s.get(id).Box2x + 0.2;
     }
 
     player2x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x - 0.2) > -5))
             this.s.get(id).Box2x = this.s.get(id).Box2x - 0.2;
     }
 
     player1x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x + 0.2) < 5))
             this.s.get(id).Box1x = this.s.get(id).Box1x + 0.2;
     }
 
     player1x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x - 0.2) > -5))
             this.s.get(id).Box1x = this.s.get(id).Box1x - 0.2;
     }
 
@@ -710,6 +710,8 @@ export class GameService {
             const u2 = await User.findOneBy({ft_login: room.player2.data.login});
             if(u1 == null || u2 == null)
                 return;
+            await User.update(room.user1.ft_login , {ongoingMatchId : 0});
+            await User.update(room.user2.ft_login , {ongoingMatchId : 0});
             await Match.update(data, {score1: room.score1, score2: room.score2, status: Match.Status.ENDED});
             const m = (await Match.findOne({where: {id:data}, 
                 relations: {
