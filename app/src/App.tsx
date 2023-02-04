@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
 
@@ -10,6 +10,21 @@ function App () {
     console.log(location.pathname);
     root = true;
   }
+
+  useEffect(()=>{
+  var canvas:any = document.getElementsByTagName('canvas');
+  if (canvas[0])
+  {
+    console.log(canvas[0])
+    // canvas[0].removeEventListener("webglcontextlost", null, false);
+    canvas[0].addEventListener("webglcontextlost", function(event:any) {
+      event.preventDefault();
+      event.stopPropagation()
+      console.log(event)
+      console.log("target that the context is lost")
+    }, false);
+  }
+  }, [location.pathname])
 
   return (
     <div className="App">

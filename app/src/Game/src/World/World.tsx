@@ -1,8 +1,8 @@
 /* eslint-disable */
-import { ArrayCamera, CubeTextureLoader } from "three";
+import { CubeTextureLoader } from "three";
 import * as THREE from 'three'
 import * as React from 'react'
-import { useRef, useState , useContext} from 'react'
+import { useRef, useState} from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
 import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
@@ -22,8 +22,6 @@ import { Sky } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 import axios from "axios";
-import { getSocketContext } from 'WebSocketWrapper';
-import { setInterval } from "timers/promises";
 
 const loader = new CubeTextureLoader();
 // The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
@@ -35,8 +33,6 @@ const texture = loader.load([
   i5,
   i6,
 ]);
-
-//import Timer from '../time'
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -128,35 +124,9 @@ function SkyBox() {
 
 export default function World(props: any) {
 
-
-
-
-
-  //const socket = useContext(getSocketContext);
-  
-  //const [cam, setCam] = useState([0,0,0]);
-  
-  let role = useStore((s:any) => s.role);
-
-/*
-  if (role === 1)
-  {
-   camposx = 0
-   camposy = 3
-   camposz = 7
-  }
-  if (role === 2)
-  {
-   camposx = 0
-   camposy = 5
-   camposz = -9
-  }*/
-
   const [userData, setUserData] = useState<any>(null)
 
-
   const map = useStore((s: any) => s.bgdChoice)
-
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
   const changeBoard:any = useStore((s:any) => s.changeBoardColor);
@@ -183,6 +153,7 @@ export default function World(props: any) {
   let iii = window.setInterval(function(){
     ooo = Math.random();
   },1000)
+
   return (  
     <Canvas>
     <CameraControls />
