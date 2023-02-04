@@ -4,11 +4,11 @@ import World from './World/World';
 import {useStore} from './State/state';
 import { getSocketContext } from 'WebSocketWrapper';
 import { useNavigate, useParams } from 'react-router-dom';
-import Menu from './Menu/menu';
 import axios from 'axios';
 
 export default function PongGame(props: any) {
 
+  const navigate = useNavigate();
   const socket = useContext(getSocketContext);
   let {matchid} = useParams();
 
@@ -17,7 +17,7 @@ export default function PongGame(props: any) {
   const [message, setMessage] = useState("Waiting for your opponent...");
   const [Usernames, setUsernames] = useState(["",""]);
 
-  // On va specifier si il s agit d une INVITATION/STREAM/GAME pour le menu de fin
+  // On va specifier si il s agit d une INVITMenuATION/STREAM/GAME pour le menu de fin
 
   const [mode, Setmode] = useState("");  
 
@@ -25,6 +25,7 @@ export default function PongGame(props: any) {
 
   var B:any = useStore((s:any)=> s.Player1);
   var C:any = useStore((s:any)=> s.Player2);
+  const logged = useStore((s:any)=> s.logged);
   
   const role = useStore((s:any)=> s.role);
 
@@ -47,6 +48,11 @@ export default function PongGame(props: any) {
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
 
+  useEffect(() =>{
+    console.log(logged)
+    if (!logged)
+      navigate("/login")
+  }, [logged])
 
   useEffect(() => 
   {
@@ -109,7 +115,7 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('newpos', (data) => {
-      console.log("POS DES BOX" + data[2] + data[3])
+      // console.log("POS DES BOX" + data[2] + data[3])
       if(vbis !== data[4])
         v(data[4]);
       Setx(data[0]);
@@ -164,7 +170,6 @@ export default function PongGame(props: any) {
 
 
   function RestartButton(props:{mode:string, username:string}){
-    const navigate = useNavigate();
     let message:string = "Retour à l'acceuil"
     if (props.mode === "invitation") {
       message = "Rejouer";}
@@ -205,6 +210,7 @@ export default function PongGame(props: any) {
     )
   }
 
+
   return (
     <div className="App" tabIndex={0} >
     <World/>
@@ -228,7 +234,6 @@ export default function PongGame(props: any) {
       }
       <RestartButton mode={mode} username={Usernames[role === 1 ? 1:0]}></RestartButton>
     </div>
-    <Menu/> 
     </div>
     );
 }

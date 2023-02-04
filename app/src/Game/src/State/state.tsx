@@ -10,6 +10,8 @@ type Profile = {
 
 export const useStore = create((set,get) => ({
 
+  logged: false,
+
   map: "space",
   gameReady:false,
   votes: 0,
@@ -103,5 +105,6 @@ export const useStore = create((set,get) => ({
   setEscape: () => set((state:any) => ({ escaped: !state.escaped})),
   setMap: (name:any) => set((state:any) => ({map: name})),
   setEscaped: () => set((state:any) => ({ escaped: true})),
+  setLogged: (log: boolean) => set((state:any) => ({ logged: log})),
  }
 ));

@@ -13,7 +13,6 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 
   const myMesh = React.useRef() as RefObject<any>;
 
-
   const g = useStore((state:any) => state.p1x);
 
   useFrame(() => {
@@ -22,7 +21,7 @@ export default function Box1(props: JSX.IntrinsicElements['mesh'] | any) {
 })
 
   const { scale } = useSpring({
-    scale: active ? 1.2 : 1,
+    scale: active ? 1 : 1,
     config: config.wobbly
   });
 

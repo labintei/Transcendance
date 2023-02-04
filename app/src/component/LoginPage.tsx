@@ -3,6 +3,7 @@ import axios from 'axios';
 import './LoginPage.css';
 import { getLoginContext } from 'WebSocketWrapper';
 import qrcode from 'qrcode';
+import { useStore } from 'Game/src/State/state';
 
 enum LogStatus {
   NotLogged,
@@ -22,6 +23,7 @@ export default function LoginPage() {
   const [usingotp, setUsing] = useState(false);
   const [openWindow, setOpenWindow] = useState(false);
   const login = useContext(getLoginContext);
+  const setLog = useStore((state:any) => state.setLogged);
 
   useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
@@ -31,6 +33,7 @@ export default function LoginPage() {
       if (res.data.ft_login !== undefined)
         setUsername(res.data.ft_login);
       setLogged(LogStatus.Logged);
+      setLog(true)
       login.set(res.data.ft_login);
     }).catch(error => {
       console.log(error);
@@ -48,6 +51,7 @@ export default function LoginPage() {
       withCredentials: true
     }).then(() => {
       setLogged(LogStatus.NotLogged);
+      setLog(false)
       login.set("");
     }).catch(error => {
       setLogged(LogStatus.NotLogged);
