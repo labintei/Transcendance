@@ -155,7 +155,7 @@ export default function World(props: any) {
   const [userData, setUserData] = useState<any>(null)
 
 
-  var t = useStore((s:any) => s.time);
+  const map = useStore((s: any) => s.bgdChoice)
 
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
@@ -175,7 +175,7 @@ export default function World(props: any) {
     .catch(error => {
       console.log(error)
     });
-  }, []);
+  }, [map]);
   let ooo = 0;
   let iii = window.setInterval(function(){
     ooo = Math.random();
@@ -190,7 +190,6 @@ export default function World(props: any) {
     <pointLight position={[-10, -10, -10]} />
     <Box1 position={[0, 0, 5]} />
     <Sphere />
-
     {userData && userData?.bgdChoice === 0 && 
     <SkyBox /> 
     }

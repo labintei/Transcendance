@@ -26,7 +26,7 @@ export default function Box2(props: JSX.IntrinsicElements['mesh'] | any) {
   })
 
   const { scale } = useSpring({
-    scale: active ? 1.2 : 1,
+    scale: active ? 1 : 1,
     config: config.wobbly
   });
 
