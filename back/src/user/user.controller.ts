@@ -33,7 +33,8 @@ export class UserController
       twoFASecret: req.body.twoFASecret,
       bgdChoice: req.body.bgdChoice,
       padColor: req.body.padColor,
-      ballColor: req.body.ballColor
+      ballColor: req.body.ballColor,
+      boardColor: req.body.boardColor
     };
     if (toUpdate.username)
     {

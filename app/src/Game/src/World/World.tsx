@@ -159,6 +159,7 @@ export default function World(props: any) {
 
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
+  const changeBoard:any = useStore((s:any) => s.changeBoardColor);
 
   React.useEffect(() => {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
@@ -170,6 +171,8 @@ export default function World(props: any) {
         changePad(data.padColor);
       if (data.ballColor !== undefined)
         changeBall(data.ballColor);
+      if (data.boardColor !== undefined)
+        changeBoard(data.boardColor);
       console.log(data)
     })
     .catch(error => {
