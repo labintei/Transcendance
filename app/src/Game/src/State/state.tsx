@@ -54,6 +54,7 @@ export const useStore = create((set,get) => ({
   bgdChoice: 0,
   padColor: "#ffffff",
   ballColor: "#ffffff",
+  boardColor: "#370649",
   box1: createRef(),
   box2: createRef(),
   setProfile: (newp:Profile) => set((state:any) => ({
@@ -91,6 +92,7 @@ export const useStore = create((set,get) => ({
   changeBgd: (num:number) => set((state:any)=>({bgdChoice:num})),
   changePadColor: (col:string) => set((state:any)=>({padColor:col})),
   changeBallColor: (col:string) => set((state:any)=>({ballColor:col})),
+  changeBoardColor: (col:string) => set((state:any)=>({boardColor:col})),
   addVotes: () => set((state:any) => ({ votes: state.votes + 1 })),
   addPoint1: () => set((state:any) => ({ score: [state.score[0] + 1, state.score[1]]})),
   addPoint2: () => set((state:any) => ({ score: [state.score[0], state.score[1] + 1]})),

@@ -55,8 +55,10 @@ export default class LevelList extends React.Component {
                 one.id = i;
                 one.name = prank.username;
                 one.rank = i++;
-                if (prank.status !== undefined)
-                  one.status = prank.status;
+                if (prank.isOnline)
+                  one.status = "Online";
+                if (prank.ongoingMatchId)
+                  one.status = "Playing";
                 if (prank.avatarURL !== undefined && prank.avatarURL !== null && '' !== prank.avatarURL)
                   one.avatar_location = prank.avatarURL;
                 listtmp.push(one);

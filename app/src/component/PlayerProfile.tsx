@@ -26,6 +26,7 @@ type State = {
   bgd:number
   padc:string
   ballc:string
+  boardc:string
 }
 
 export default class PlayerProfile extends React.Component {
@@ -52,8 +53,8 @@ export default class PlayerProfile extends React.Component {
         if (data.avatarURL && data.avatarURL !== '')
             player.avatar_location = data.avatarURL;
         if (player !== this.state.player) {
-          if (data.padColor !== undefined && data.ballColor !== undefined && data.bgdChoice !== undefined)
-            this.setState({player:player, bgd:data.bgdChoice, padc:data.padColor, ballc:data.ballColor})
+          if (data.padColor !== undefined && data.ballColor !== undefined && data.boardColor !== undefined && data.bgdChoice !== undefined)
+            this.setState({player:player, bgd:data.bgdChoice, padc:data.padColor, ballc:data.ballColor, boardc:data.boardColor})
           else
             this.setState({player:player});
         }
@@ -67,7 +68,7 @@ export default class PlayerProfile extends React.Component {
     super(props);
     this.state = {
       player:dflt, nameEdit:false, avatarEdit:false,
-      query:'', query2:null, avatar:null, logged:true, errormsg:null, bgd:0, padc:"000000", ballc:""
+      query:'', query2:null, avatar:null, logged:true, errormsg:null, bgd:0, padc:"", ballc:"", boardc:""
     };
     this.requestUser();
   }
@@ -168,6 +169,17 @@ export default class PlayerProfile extends React.Component {
     return (divStyle)
   }
 
+  setBoardC(value: string) {
+    if (value !== this.state.boardc)
+      axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {boardColor:value}, {withCredentials:true}).then(() => {
+        this.setState({boardc:value});
+      }).catch(error => {
+        if (error.response.status === 401 || error.response.status === 403)
+          this.setState({logged:false});
+        console.log(error)
+      })
+  }
+
   setBallC(value: string) {
     if (value !== this.state.ballc)
       axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {ballColor:value}, {withCredentials:true}).then(() => {
@@ -213,7 +225,7 @@ export default class PlayerProfile extends React.Component {
         <div className='place_avatar'>
           {this.avatarFormat(this.state.avatarEdit)}
         </div>
-        <h3>Rank {this.state.player.rank}</h3>
+        <h3>Level {this.state.player.rank}</h3>
         <ul id="stats-list">
             <li>
                 <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" title='Total matches' />
@@ -248,6 +260,11 @@ export default class PlayerProfile extends React.Component {
           onChange={event => {this.setBallC(event.target.value)}
         }></input>
         <label htmlFor="ball">Ball</label>
+        <label htmlFor="pad">Paddle</label>
+        <input type="color" value={this.state.boardc} id="board" className="colorPick"
+          onChange={event => {this.setBoardC(event.target.value)}
+        }></input>
+        <label htmlFor="board">Board</label>
         </>
     )
   }

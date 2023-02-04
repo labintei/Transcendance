@@ -16,7 +16,8 @@ import pv_rough from "../Textures/Marble/Marble006_1K_Roughness.png"
 
 export default function Plane(props: JSX.IntrinsicElements['mesh']) {
 
-  const map = useStore((s: any) => s.bgdChoice)
+  const map = useStore((s: any) => s.bgdChoice);
+  const boardColor:any = useStore((state:any) => state.boardColor);
 
   const [colorMap, normalMap, roughnessMap] =
     useLoader(TextureLoader, [
@@ -48,7 +49,6 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
   cubeCamera.position.set(0, 100, 0);
   scene.add(cubeCamera);
 
-  const color_choose = new THREE.Color('rgb(55,6,73)');
   // Update the cubeCamera with current renderer and scene.
   useFrame(() => cubeCamera.update(gl, scene));
   return (
@@ -66,7 +66,7 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
           <boxGeometry args={[10, 0.5, 10]} />
           <meshBasicMaterial
             //color={'black'}
-            color= {color_choose}
+            color= {boardColor}
             attach="material"
             // mirror effect
             //envMap={cubeCamera.renderTarget.texture}
