@@ -2,7 +2,7 @@ import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import { getSocketContext } from 'WebSocketWrapper';
+import { getLoginContext, getSocketContext } from 'WebSocketWrapper';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -25,7 +25,6 @@ export default function PongGame(props: any) {
 
   var B:any = useStore((s:any)=> s.Player1);
   var C:any = useStore((s:any)=> s.Player2);
-  const logged = useStore((s:any)=> s.logged);
   
   const role = useStore((s:any)=> s.role);
 
@@ -47,12 +46,12 @@ export default function PongGame(props: any) {
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
+  const login = useContext(getLoginContext);
 
   useEffect(() =>{
-    console.log(logged)
-    if (!logged)
+    if (login.value === "")
       navigate("/login")
-  }, [logged])
+  }, [login])
 
   useEffect(() => 
   {
