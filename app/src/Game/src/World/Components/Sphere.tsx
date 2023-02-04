@@ -18,7 +18,7 @@ export default function Sphere() {
   return (
     <mesh visible position={[0, 0, 0]} rotation={[0, 0, 0]} castShadow
     ref={ref}>
-      <sphereGeometry attach="geometry" args={[0.5, 24, 24]} />
+      <sphereGeometry attach="geometry" args={[0.25, 24, 24]} />
       <meshBasicMaterial
         attach="material"
         color={ballcolor}
