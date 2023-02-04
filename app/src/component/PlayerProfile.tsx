@@ -213,7 +213,7 @@ export default class PlayerProfile extends React.Component {
         <div className='place_avatar'>
           {this.avatarFormat(this.state.avatarEdit)}
         </div>
-        <h3>Rank {this.state.player.rank}</h3>
+        <h3>Level {this.state.player.rank}</h3>
         <ul id="stats-list">
             <li>
                 <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" title='Total matches' />

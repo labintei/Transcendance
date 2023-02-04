@@ -66,7 +66,10 @@ export default class MatchList extends React.Component {
                   if (match.user1.username !== this.state.username)
                     isOne = false;
                   one.name = (isOne ? match.user2.username : match.user1.username);
-                  one.statusopp = (isOne ? match.user2.status : match.user1.status)
+                  if ((isOne ? match.user2.isOnline : match.user1.isOnline))
+                    one.statusopp = "Online";
+                  if ((isOne ? match.user2.ongoingMatchId : match.user1.ongoingMatchId))
+                    one.statusopp = "Playing";
                 }
                 one.score1 = (isOne ? match.score1 : match.score2);
                 one.score2 = (isOne ? match.score2 : match.score1);
