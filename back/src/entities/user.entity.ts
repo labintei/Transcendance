@@ -144,6 +144,7 @@ export class User extends BaseEntity {
       amount -= rest;
     }
     this.xp += amount;
+    console.log ("[XP] User " + this.username + "(" + this.ft_login + ") gains " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel() + " for next lvl).");
   }
 
   public looseXP(amount: number) {
@@ -152,7 +153,8 @@ export class User extends BaseEntity {
       this.xp -= amount;
     else
       this.xp = 0;
-  }
+      console.log ("[XP] User " + this.username + "(" + this.ft_login + ") looses " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel() + " for next lvl).");
+    }
 
   /** STATIC METHODS */
 
