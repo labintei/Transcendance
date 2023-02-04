@@ -82,6 +82,19 @@ h1 {
   height: 96px;
   position: relative;
 }
+
+.total_xp {
+  margin-left: auto;
+  margin-right: auto;
+  background-color: rgb(180, 199, 141);
+  height: 20px;
+  width: 30%;
+}
+
+.current_xp {
+  height: 100%;
+  background-color: #04AA6D;
+}
 .place_avatar > img {
   top:0;
   left:0;
@@ -135,6 +148,7 @@ label {
 
 .colorPick {
   margin: 5px 5px;
+  margin-left: 15px;
   height: 32px;
   width: 64px;
 }

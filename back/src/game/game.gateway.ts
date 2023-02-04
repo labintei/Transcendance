@@ -15,6 +15,7 @@ export class GameGateway implements OnGatewayDisconnect {
   constructor(@Inject(GameService) private gameservice: GameService) {}
 
   async handleDisconnect(client:Socket) {
+    this.gameservice.deleteClientStream(client);
     this.gameservice.IsinDispoDelete(client);
     this.gameservice.IsInvitDelete(client);
   }
@@ -62,6 +63,7 @@ export class GameGateway implements OnGatewayDisconnect {
         client.emit("Blocked");
         return ;
       }
+      client.emit('start_stream', data);// va renvoyer l id du stream
       client.emit('mode',['stream', this.gameservice.getUsernames(data)]);
       if(this.gameservice.startstream(client, data))
       {
@@ -75,6 +77,7 @@ export class GameGateway implements OnGatewayDisconnect {
 }
   @SubscribeMessage('endgame')
   out_page(client:Socket) {
+    this.gameservice.deleteClientStream(client);
     this.gameservice.IsInvitDelete(client);
     this.gameservice.IsinDispoDelete(client);
   }
