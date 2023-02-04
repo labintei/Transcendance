@@ -463,9 +463,10 @@ export class GameService {
             timer : null,
             render : null,
         }
-        //User.update(room.user1.ft_login, {status:User.Status.PLAYING});
-        //User.update(room.user2.ft_login, {status:User.Status.PLAYING});     
+        //ongoingMatchId: Number;
         Match.update(m.id, {status: Match.Status.ONGOING});
+        //room.user1.ongoingMatchId = m.id;
+        //room.user2.ongoingMatchId = m.id;   
         if (l < 0.5)
           room.zdir = -0.05;
         room.xangle = l * 0.5;
@@ -586,22 +587,22 @@ export class GameService {
     }
 
     player2x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x + 0.2) < 5))
             this.s.get(id).Box2x = this.s.get(id).Box2x + 0.2;
     }
 
     player2x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client)
+        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x - 0.2) > -5))
             this.s.get(id).Box2x = this.s.get(id).Box2x - 0.2;
     }
 
     player1x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x + 0.2) < 5))
             this.s.get(id).Box1x = this.s.get(id).Box1x + 0.2;
     }
 
     player1x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client)
+        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x - 0.2) > -5))
             this.s.get(id).Box1x = this.s.get(id).Box1x - 0.2;
     }
 
@@ -625,6 +626,26 @@ export class GameService {
     SetTimer(id:number, timer:any) {
         if(this.s.get(id))
             return this.s.get(id).timer = timer;
+    }
+
+
+    deleteClientStream(client:Socket)
+    {
+        console.log("CENSE EFFACER LE CLIENT");
+        for(var [key, value] of this.stream.entries())
+        {
+            if(value && value[0])
+            {
+                var found = value[0].find(x => x === client);
+                if(found != null)
+                {
+                    console.log("EFFACEMENT");
+                    const i = value[0].indexOf(client, 0);
+                    if(i > -1)
+                        value[0].splice(i,1);
+                }
+            }
+        }
     }
 
     endStream(client:Socket, id:number) {
@@ -710,6 +731,8 @@ export class GameService {
             const u2 = await User.findOneBy({ft_login: room.player2.data.login});
             if(u1 == null || u2 == null)
                 return;
+            //room.user1.ongoingMatchId = 0;
+            //room.user2.ongoingMatchId = 0; 
             await Match.update(data, {score1: room.score1, score2: room.score2, status: Match.Status.ENDED});
             const m = (await Match.findOne({where: {id:data}, 
                 relations: {
