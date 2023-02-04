@@ -107,7 +107,10 @@ export class User extends BaseEntity {
   isOnline: boolean;
 
   //  Virtual field to be able to see a user ongoing match Id if there is one (null if there is none).
-  ongoingMatchId: Number;
+  ongoingMatchId: number;
+
+  //  Virtual field to be able to see a user ongoing match Id if there is one (null if there is none).
+  xpAmountForNextLevel: number;
 
   /** MEMBER METHODS */
 
@@ -127,24 +130,26 @@ export class User extends BaseEntity {
     });
     this.ongoingMatchId = ongoingMatch ? ongoingMatch.id : null;
     this.isOnline = ((await UserSocket.countBy({userLogin: this.ft_login})) > 0);
+    this.computeXpAmountForNextLevel();
   }
 
-  public xpAmountForNextLevel(): number {
+  public computeXpAmountForNextLevel() {
     const x = 0.03;
     const y = 1.5;
-    return Math.floor((this.level / x) ^ y);
+    this.xpAmountForNextLevel = Math.floor((this.level / x) ^ y);
   }
 
   public gainXP(amount: number) {
     amount = Math.floor(amount);
-    const rest = this.xpAmountForNextLevel() - this.xp;
+    const rest = this.xpAmountForNextLevel - this.xp;
     if (rest <= amount) {
       ++this.level;
       this.xp = 0;
       amount -= rest;
+      this.computeXpAmountForNextLevel();
     }
     this.xp += amount;
-    console.log ("[XP] User " + this.username + "(" + this.ft_login + ") gains " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel() + " for next lvl).");
+    console.log ("[XP] User " + this.username + "(" + this.ft_login + ") gains " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel + " for next lvl).");
   }
 
   public looseXP(amount: number) {
@@ -153,7 +158,7 @@ export class User extends BaseEntity {
       this.xp -= amount;
     else
       this.xp = 0;
-      console.log ("[XP] User " + this.username + "(" + this.ft_login + ") looses " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel() + " for next lvl).");
+      console.log ("[XP] User " + this.username + "(" + this.ft_login + ") looses " + amount + "xp (" + this.xp + "/" + this.xpAmountForNextLevel + " for next lvl).");
     }
 
   /** STATIC METHODS */
