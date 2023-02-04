@@ -47,12 +47,12 @@ export default function PongGame(props: any) {
   const h1:any = useStore((s:any) => s.Setcx);
   const h2:any = useStore((s:any) => s.Setcy);
   const h3:any = useStore((s:any) => s.Setcz);
-
+/*
   useEffect(() =>{
     console.log(logged)
     if (!logged)
       navigate("/login")
-  }, [logged])
+  }, [logged])*/
 
   useEffect(() => 
   {
@@ -183,14 +183,12 @@ export default function PongGame(props: any) {
       }).then(res => {
         if (res.data !== undefined)
           navigate("../game/" + res.data);
-          ResetState();
           window.location.reload();
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           navigate("../login");
         else
-          ResetState();
-        window.location.reload();
+          window.location.reload();
       });
     } 
     
