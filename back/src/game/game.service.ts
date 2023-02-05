@@ -19,6 +19,7 @@ const xedge = (boardWidth / 2) - sphereRadius;
 const yedge = (boardHeith / 2) - hitboxHeight;
 const ylimit = (boardHeith / 2) + lostBallLimit;
 const ballSpeed = 0.3;
+const maxGameTime = 180;
 
 class Point {
     x:number;
@@ -199,7 +200,7 @@ export class GameService implements OnModuleInit {
     }
 
     isFinish(data:number) {
-        if(this.s.get(data).score1 >= 7 || this.s.get(data).score2 >= 7 || this.s.get(data).time > 300)
+        if(this.s.get(data).score1 >= 7 || this.s.get(data).score2 >= 7 || this.s.get(data).time >= maxGameTime)
             return true;
         return false;
     }
