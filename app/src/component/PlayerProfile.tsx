@@ -3,7 +3,6 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import { defaultavatar } from "./const";
 import { Navigate } from 'react-router-dom';
-import { runInThisContext } from 'vm';
 
 type Person = {
     name: string;

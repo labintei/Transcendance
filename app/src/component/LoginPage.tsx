@@ -3,7 +3,6 @@ import axios from 'axios';
 import './LoginPage.css';
 import { getLoginContext } from 'WebSocketWrapper';
 import qrcode from 'qrcode';
-import { useStore } from 'Game/src/State/state';
 
 enum LogStatus {
   NotLogged,
