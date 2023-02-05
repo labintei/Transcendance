@@ -2,7 +2,7 @@ import { Controller, Delete, ConflictException, Get, NotFoundException, Param, P
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { ILike, UpdateResult } from 'typeorm';
+import { DeepPartial, ILike } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
@@ -27,7 +27,7 @@ export class UserController
   }
 
   @Patch()
-  async updateMe(@Request() req): Promise<UpdateResult> {
+  async updateMe(@Request() req): Promise<User> {
     const toUpdate = {
       username: req.body.username,
       twoFASecret: req.body.twoFASecret,
@@ -46,7 +46,9 @@ export class UserController
       if (exists && exists.ft_login !== req.user)
         throw new ConflictException("This Username is already taken.")
     }
-    return User.update(req.user, toUpdate);
+    let user = await User.findOneBy({ft_login: req.user});
+    user = User.merge(user, toUpdate as DeepPartial<User>);
+    return user.save();
   }
 
   @Get(':username')
