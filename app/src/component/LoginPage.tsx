@@ -35,7 +35,6 @@ export default function LoginPage() {
     }).catch(error => {
       // console.log(error);
       login.set("");
-      // console.log(error.response.status);
       if (error.response.status === 401)
         setLogged(LogStatus.NotLogged);
       if (error.response.status === 403)
