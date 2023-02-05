@@ -22,6 +22,9 @@ import { Sky } from "@react-three/drei";
 import { Water } from "three/examples/jsm/objects/Water.js";
 import waterimg from "./Textures/waternormals.png"
 import axios from "axios";
+import { useLocation, useNavigate } from "react-router-dom";
+import "./World.css"
+import PongGame from "../PongGame";
 
 const loader = new CubeTextureLoader();
 // The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
@@ -154,9 +157,21 @@ export default function World(props: any) {
     ooo = Math.random();
   },1000)
 
+
+  const navigate = useNavigate();
+  const location = useLocation();
+  console.log(location.pathname)
+  
+
+  // if (location.pathname === "/game")
+
   return (  
-    <Canvas>
-    <CameraControls />
+
+      <div className={location.pathname === "/game" ? "canvOk" : "canv"}>
+      <Canvas>
+{location.pathname === "/game" && (
+  <>
+       <CameraControls />
     <KeyboardControls />
     <ambientLight intensity={0.5} />
     <directionalLight position={[0, 0, 5]} color="red" />
@@ -184,8 +199,11 @@ export default function World(props: any) {
     </>
     }
     <Box2 position={[0, 0, -5]} />
-    <Plane position={[0, -0.5, 0]} />
-  </Canvas>
+    <Plane position={[0, -0.5, 0]} /> 
+  </>
+)}
+</Canvas>
+      </div>
 
   )
 

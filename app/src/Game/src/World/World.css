@@ -1,0 +1,11 @@
+
+.canv {
+    width: 0;
+    height: 0;
+}
+
+.cavOk {
+    width: 100vw;
+    height: 100vh;
+    position: absolute !important;
+}

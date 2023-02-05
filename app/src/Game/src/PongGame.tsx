@@ -229,7 +229,6 @@ export default function PongGame(props: any) {
 
   return (
     <div className="App" tabIndex={0} >
-    <World/>
     <div className='title'>
      {message}
     </div>

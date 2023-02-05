@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
+import World from 'Game/src/World/World';
 
 function App () {
   const navigate = useNavigate();
@@ -11,24 +12,8 @@ function App () {
     root = true;
   }
 
-  useEffect(()=>{
-  var canvas:any = document.getElementsByTagName('canvas');
-  if (canvas[0])
-  {
-    console.log(canvas[0])
-    // canvas[0].removeEventListener("webglcontextlost", null, false);
-    canvas[0].addEventListener("webglcontextlost", function(event:any) {
-      event.preventDefault();
-      event.stopPropagation()
-      console.log(event)
-      console.log("target that the context is lost")
-    }, false);
-  }
-  }, [location.pathname])
-
   return (
-    <div className="App">
-    
+    <div className="App">   
       {(root ? <Navigate to="matching"></Navigate> : <></>)}
    <menu>
         <li><button onClick={() => {navigate("matching")}}>Matching</button></li>
@@ -41,6 +26,7 @@ function App () {
       </menu>
       <div className="content">
         <Outlet />
+        <World/>
       </div>
     </div>
   );
