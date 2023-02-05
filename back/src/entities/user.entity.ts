@@ -82,10 +82,10 @@ export class User extends BaseEntity {
   @Column({ type: 'int', default: 0 })
   bgdChoice: number;
 
-  @Column({ type: 'varchar', length: 7, default: "#FFFFFF" })
+  @Column({ type: 'varchar', length: 7, default: "#ffffff" })
   padColor: string;
 
-  @Column({ type: 'varchar', length: 7, default: "#FFFFFF" })
+  @Column({ type: 'varchar', length: 7, default: "#ffffff" })
   ballColor: string;
 
   @Column({ type: 'varchar', length: 7, default: "#370649" })

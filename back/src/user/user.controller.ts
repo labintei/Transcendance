@@ -2,7 +2,7 @@ import { Controller, Delete, ConflictException, Get, NotFoundException, Param, P
 import { TransGuard } from 'src/auth/trans.guard';
 import { User } from 'src/entities/user.entity';
 import { UserRelationship } from 'src/entities/userrelationship.entity';
-import { DeepPartial, ILike } from 'typeorm';
+import { DeepPartial, ILike, UpdateResult } from 'typeorm';
 
 @Controller('user')
 @UseGuards(TransGuard)
@@ -36,19 +36,25 @@ export class UserController
       ballColor: req.body.ballColor,
       boardColor: req.body.boardColor
     };
-    if (toUpdate.username)
+    if (toUpdate.username !== undefined)
     {
+      if (/\s/.test(toUpdate.username))
+        throw new PreconditionFailedException("A username cannot contain whitespaces.");
       if (toUpdate.username.length < 3)
-        throw new PreconditionFailedException("Username too short (must have at least 3 characters).")
+        throw new PreconditionFailedException("Username too short (must have at least 3 characters).");
       if (toUpdate.username.length > 24)
-        throw new PreconditionFailedException("Username too long (must have at most 24 characters).")
-      const exists = await User.findOneBy({username: ILike(toUpdate.username.replace(/([%_])/g, "\\$1"))});
-      if (exists && exists.ft_login !== req.user)
-        throw new ConflictException("This Username is already taken.")
+        throw new PreconditionFailedException("Username too long (must have at most 24 characters).");
+      let updated: UpdateResult;
+      try {
+        await User.update(req.user, { username: toUpdate.username });
+      }
+      catch (e) {
+        throw new ConflictException("Username " + toUpdate.username + " is already taken.");
+      }
     }
-    let user = await User.findOneBy({ft_login: req.user});
-    user = User.merge(user, toUpdate as DeepPartial<User>);
-    return user.save();
+    delete toUpdate.username;
+    const user = await User.findOneBy({ ft_login: req.user });
+    return User.merge(user, toUpdate as DeepPartial<User>).save();
   }
 
   @Get(':username')
