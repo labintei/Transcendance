@@ -38,8 +38,10 @@ export class UserController
     };
     if (toUpdate.username)
     {
+      if (toUpdate.username.length < 3)
+        throw new PreconditionFailedException("Username too short (must have at least 3 characters).")
       if (toUpdate.username.length > 24)
-        throw new PreconditionFailedException("Username too long.")
+        throw new PreconditionFailedException("Username too long (must have at most 24 characters).")
       const exists = await User.findOneBy({username: ILike(toUpdate.username.replace(/([%_])/g, "\\$1"))});
       if (exists && exists.ft_login !== req.user)
         throw new ConflictException("This Username is already taken.")
