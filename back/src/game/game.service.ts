@@ -5,7 +5,30 @@ import { Match } from 'src/entities/match.entity';
 import { User } from 'src/entities/user.entity';
 import { FindOptionsWhere } from "typeorm";
 import { clearInterval } from "timers";
-import { compareSync } from "bcrypt";
+
+const boxWidth = 2;
+const boxHeight = 1;
+const sphereRadius = 0.5;
+const boardWidth = 10;
+const boardHeith = 10;
+const lostBallLimit = 1;
+const maxBounceAngle = 75;
+const hitboxWith = (boxWidth / 2) + sphereRadius;
+const hitboxHeight = (boxHeight / 2) + sphereRadius;
+const xedge = (boardWidth / 2) - sphereRadius;
+const yedge = (boardHeith / 2) - hitboxHeight;
+const ylimit = (boardHeith / 2) + lostBallLimit;
+const ballSpeed = 0.15;
+
+class Point {
+    x:number;
+    y:number;
+}
+
+class Vector {
+    dx: number;
+    dy: number;
+}
 
 export class Game {
     public isinvit: boolean;
@@ -18,12 +41,12 @@ export class Game {
     public score2: number;
     public player1: Socket;
     public player2: Socket;
-    public Box1x: number;
-    public Box2x: number;
-    public sx: number;
-    public sz: number;
-    public zdir: number;
-    public xangle: number;
+    public service: boolean
+    public box1_x: number;
+    public box2_x: number;
+    public spos: Point;
+    public sdir: Vector;
+    public sidebumped: boolean;
     public time: number;
     public ready: boolean;
     public timer: any;
@@ -264,122 +287,85 @@ export class GameService {
     getPos(data:number): number[] {
         var room = this.s.get(data);
         if(room)
-            return [Number(room.sx.toFixed(3)) , Number(room.sz.toFixed(3)), Number(room.Box1x.toFixed(1)) , Number(room.Box2x.toFixed(1)), room.time, room.score1, room.score2];
+            return [Number(room.spos.x.toFixed(3)) , Number(room.spos.y.toFixed(3)), Number(room.box1_x.toFixed(1)) , Number(room.box2_x.toFixed(1)), room.time, room.score1, room.score2];
         return ([0,0,0,0,0,0,0])
     }
 
     sphere(room:Game): number[] {
-        var sz = Math.floor(room.sz);
-        var b2x:number = room.Box2x ;
-        var b1x:number = room.Box1x;
+        let newx = room.spos.x + (room.sdir.dx * ballSpeed);
+        let newy = room.spos.y + (room.sdir.dy * ballSpeed);
 
-        room.sx += room.xangle;
-        room.sz += room.zdir;
-
-        if(room.zdir > 0.1)
-         room.zdir -= 0.005;
-        if(room.zdir < (-0.1))
-          room.zdir += 0.005;
-        let newVal = Math.round(room.sz * 10) / 10
-        /*if (
-            newVal === 3.9 &&
-            room.sx >= b1x - 1 &&
-            room.sx <= b1x + 1
-        ) {
-        room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
-        room.zdir = -0.3;
-        }*/
-        if (sz === 4 && room.sx >= b1x -1 && room.sx <= b1x + 1)
-        {
-            console.log("HEAR2");
-            const v = (room.xangle / room.zdir) + 
-            (Math.PI / 4) * (room.sx - b1x) * 2 * 2;
-            //room.zdir *= -1;
-            room.zdir = Math.abs(room.zdir) * -1.3;
-            //room.zdir = -0.3;
-            room.xangle = room.zdir  * Math.cos(v);
-
-/*
-            console.log("HEAR1");
-            room.zdir = Math.abs(room.zdir) * -1.1;
-            console.log("ECART RAQUETTE " + Number((room.sx - b1x).toFixed(1)));// JE PEUT CALCULER UN ECART RAQUETTE
-            console.log("XANGLE " + (room.xangle).toFixed(2)+ " ZANGLE " + (room.zdir).toFixed(2));
-            if(((room.sx - b1x) / 5) > (1 / 5))
-                room.xangle += 1 / 5;
-            else if(((room.sz - b1x)/5) < (-(1 / 5)))
-                room.xangle -= 1 / 5;
-            else
-            room.xangle += ((room.sx - b1x) / 5);
-            if(Math.abs(room.xangle) > 0.5 && room.xangle > 0)
-                room.xangle = 0.5;
-            else if(Math.abs(room.xangle) > 0.5)
-                room.xangle = -0.5;
-        */
-        }
-        if (sz === -5 && room.sx >= b2x - 1 && room.sx <= b2x + 1) {
-            console.log("HEAR1");
-            //room.zdir = Math.abs(room.zdir) * 1.1;
-            const v = (room.xangle / room.zdir) + 
-            (Math.PI / 4) * (room.sx - b2x) * 2 * 2;
-            //room.zdir *= -1;
-            room.zdir = Math.abs(room.zdir) * 1.3;
-            //room.zdir = 0.3;
-            room.xangle = room.zdir  * Math.cos(v);
-        
-            //room.zdir = 0.3;
-        /*
-            console.log("HEAR");
-            room.zdir = Math.abs(room.zdir) * 1.1;
-            // xangle
-            // zdir
-            console.log("ECART RAQUETTE " + Number((room.sx - b2x).toFixed(1)));// JE PEUT CALCULER UN ECART RAQUETTE
-            console.log("XANGLE " + (room.xangle).toFixed(2)+ " ZANGLE " + (room.zdir).toFixed(2));
-            //room.xangle += Math.random() * (0.3 - (-0.3)) + (-0.3);
-        
-            if(((room.sx - b2x) / 5) > (1 / 5))
-                room.xangle += 1 / 5;
-            else if(((room.sz - b2x)/5) < (-(1 / 5)))
-                room.xangle -= 1 / 5;
-            else
-            room.xangle += ((room.sx - b2x) / 5);
-            if(Math.abs(room.xangle) > 0.5 && room.xangle > 0)
-                room.xangle = 0.5;
-            else if(Math.abs(room.xangle) > 0.5)
-                room.xangle = -0.5;
-            //room.xangle *= -1*/
-        }
-        if (Math.round(room.sx) === -5 || Math.round(room.sx) === 5)
-            room.xangle *= -1;
-        if (sz > 7 || sz < -7) {
-            if (sz > 7) room.score2++;
-            if (sz < -7) room.score1++;
-            room.sx = 0;
-            room.sz = 0;
-            var l = Math.random();
-            var side = Math.random();
-            if (l < 0.5) room.zdir = -0.05;
-            room.xangle = l * 0.1;
-            if (side < 0.5) room.xangle *= -1;
+        //  if lost ball
+        if (Math.abs(newy) >= ylimit) {
+            if (newy > 0) {
+                ++room.score2;
+            }
+            else {
+                ++room.score1;
+            }
+            room.service = !room.service;
+            room.spos = {x:0, y:0};
+            room.sdir = {dx:0, dy:(room.service ? 1 : -1)};
+            room.sidebumped = false;
             return [
-            0,
-            0,
-            Number(room.Box1x.toFixed(2)),
-            Number(room.Box2x.toFixed(2)),
+                room.spos.x,
+                room.spos.y,
+                Number(room.box1_x.toFixed(2)),
+                Number(room.box2_x.toFixed(2)),
+                room.time,
+                room.score1,
+                room.score2,
+            ];
+        }
+
+        // if ball hits edge
+        if (Math.abs(newx) >= xedge) {
+            const dxSign = room.sdir.dx >= 0 ? 1 : -1;
+            room.sdir.dx = -room.sdir.dx;
+            newx -= dxSign * (Math.abs(newx) - xedge) * 2;
+        }
+
+        // if ball potentially hit box
+        if (!room.sidebumped && Math.abs(newy) >= yedge) {
+            const box_x = newy > 0?room.box1_x:room.box2_x;
+            const xDistToMiddle = Math.abs(newx - box_x);
+            const yDistToMiddle = Math.abs((boardHeith / 2) - Math.abs(newy));
+            if (xDistToMiddle < hitboxWith && yDistToMiddle < hitboxHeight) {  // if ball actually hits a box
+                if ((yDistToMiddle / hitboxHeight) > (xDistToMiddle / hitboxWith)) {    //  If it hits the box by the top
+                    const ySign = newy >= 0 ? 1 : -1;
+                    const impactY = yedge * ySign;
+                    const travelRatio = (impactY - room.spos.y) / room.sdir.dy;
+                    const impactX = room.spos.x + (travelRatio * room.sdir.dx);
+                    const maxAngleRad = maxBounceAngle * Math.PI / 180;
+                    const newangle = ((impactX - box_x) / hitboxWith) * maxAngleRad;
+                    room.sdir.dx = Math.sin(newangle);
+                    room.sdir.dy = Math.cos(newangle) * (-ySign);
+                    newx = impactX + ((1 - travelRatio) * room.sdir.dx * ballSpeed);
+                    newy = impactY + ((1 - travelRatio) * room.sdir.dy * ballSpeed);
+                }
+                else {
+                    const side = (newx < box_x) ? -1 : 1;
+                    const boxedge = box_x + (side * hitboxWith);
+                    const dxSign = room.sdir.dx >= 0 ? 1 : -1;
+                    if (dxSign != side) {
+                        room.sdir.dx = -room.sdir.dx;
+                        newx -= dxSign * Math.abs(boxedge - newx) * 2;
+                    }
+                }
+            }
+        }
+
+        room.spos = { x: newx, y: newy };
+        return [
+            room.spos.x,
+            room.spos.y,
+            Number(room.box1_x.toFixed(2)),
+            Number(room.box2_x.toFixed(2)),
             room.time,
             room.score1,
             room.score2,
-            ];
-        }
-  return [
-    Number(room.sx.toFixed(3)),
-    Number(room.sz.toFixed(3)),
-    Number(room.Box1x.toFixed(2)),
-    Number(room.Box2x.toFixed(2)),
-    room.time,
-    room.score1,
-    room.score2,
-  ];
-}
+        ];
+    }
 
     async NotonlyBlock(user:User): Promise<[User,Socket]> {
         const iteratordispo = this.dispoUser.entries();
@@ -440,7 +426,7 @@ export class GameService {
     }
 
     createRoom(user1:User, player1:Socket, user2:User, player2:Socket, m:Match): Game {
-        var l = Math.random();
+        var startside = Math.round(Math.random());
         var room: Game = {
             isinvit : false,
             match: m,
@@ -452,12 +438,12 @@ export class GameService {
             score2: 0,
             player1: player1,
             player2: player2,
-            Box1x:0,
-            Box2x:0,     
-            sx: 0,
-            sz: 0,
-            zdir: 0.05,
-            xangle: 0,
+            service: startside ? true : false,
+            box1_x:0,
+            box2_x:0,     
+            spos: {x:0, y:0},
+            sdir: {dx:0, dy:(startside ? 1 : -1 )},
+            sidebumped: false,
             time : 0,
             ready: false,
             timer : null,
@@ -467,9 +453,9 @@ export class GameService {
         Match.update(m.id, {status: Match.Status.ONGOING});
         //room.user1.ongoingMatchId = m.id;
         //room.user2.ongoingMatchId = m.id;   
-        if (l < 0.5)
-          room.zdir = -0.05;
-        room.xangle = l * 0.5;
+        // if (l < 0.5)
+        //   room.zdir = -0.05;
+        // room.xangle = l * 0.5;
         room.id = m.id;
         this.s.set(room.id , room);
         return room;
@@ -587,23 +573,50 @@ export class GameService {
     }
 
     player2x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x + 0.2) < 5))
-            this.s.get(id).Box2x = this.s.get(id).Box2x + 0.2;
+        const room = this.s.get(id);
+        if(room && room.player2 == client && ((room.box2_x + 0.2) < 5)) {
+            if (Math.abs(room.spos.x - (room.box2_x + 0.2)) < hitboxWith && Math.abs(room.spos.y + 5) < hitboxHeight) {
+                room.sidebumped = true;
+                if (room.sdir.dx < 0)
+                    room.sdir.dx = -room.sdir.dx;
+            }
+            room.box2_x = room.box2_x + 0.2;
+        }
     }
 
     player2x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player2 == client && ((this.s.get(id).Box2x - 0.2) > -5))
-            this.s.get(id).Box2x = this.s.get(id).Box2x - 0.2;
+        const room = this.s.get(id);
+        if(room && room.player2 == client && ((room.box2_x - 0.2) > -5)) {
+            if (Math.abs(room.spos.x - (room.box2_x - 0.2)) < hitboxWith && Math.abs(room.spos.y + 5) < hitboxHeight) {
+                room.sidebumped = true;
+                if (room.sdir.dx > 0)
+                    room.sdir.dx = -room.sdir.dx;
+            }
+            room.box2_x = room.box2_x - 0.2;
+        }
     }
 
     player1x_right(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x + 0.2) < 5))
-            this.s.get(id).Box1x = this.s.get(id).Box1x + 0.2;
+        const room = this.s.get(id);
+        if(room && room.player1 == client && ((room.box1_x + 0.2) < 5)) {
+            if (Math.abs(room.spos.x - (room.box1_x + 0.2)) < hitboxWith && Math.abs(room.spos.y - 5) < hitboxHeight) {
+                room.sidebumped = true;
+                if (room.sdir.dx < 0)
+                    room.sdir.dx = -room.sdir.dx;
+            }
+            room.box1_x = room.box1_x + 0.2;
+        }
     }
 
     player1x_left(id:number, client:Socket) {
-        if(this.s.get(id) && this.s.get(id).player1 == client && ((this.s.get(id).Box1x - 0.2) > -5))
-            this.s.get(id).Box1x = this.s.get(id).Box1x - 0.2;
+        const room = this.s.get(id);
+        if(room && room.player1 == client && ((room.box1_x - 0.2) > -5)) {
+            if (Math.abs(room.spos.x - (room.box1_x - 0.2)) < hitboxWith && Math.abs(room.spos.y - 5) < hitboxHeight) {
+                room.sidebumped = true;
+                if (room.sdir.dx > 0)
+                    room.sdir.dx = -room.sdir.dx;
+            }room.box1_x = room.box1_x - 0.2;
+        }
     }
 
     getRender(id:number):any {

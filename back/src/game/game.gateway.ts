@@ -5,10 +5,7 @@ import { Inject } from '@nestjs/common';
 import { Match } from 'src/entities/match.entity';
 import { delay } from 'rxjs';
 
-@WebSocketGateway({
-  origin: 'http://' + process.env.REACT_APP_HOSTNAME.toLowerCase() + (process.env.REACT_APP_WEBSITE_PORT=='80'?'':':' + process.env.REACT_APP_WEBSITE_PORT),
-  credentials: true,
-})
+@WebSocketGateway({})
 
 export class GameGateway implements OnGatewayDisconnect {
 
@@ -143,6 +140,10 @@ export class GameGateway implements OnGatewayDisconnect {
     {
       var id_role = await this.gameservice.Idrole(client);
       client.emit('start', [id_role[0], id_role[1], this.gameservice.getUsernames(id_role[0])]);
+      if(this.gameservice.isinvitroom(id_role[0]) === true)
+        client.emit('mode', ['invitation', this.gameservice.getUsernames(data)]);
+      else
+        client.emit('mode', ['game' , this.gameservice.getUsernames(data)]);
       this.gameservice.ClientChange(id_role, client);
       return ;
     }
