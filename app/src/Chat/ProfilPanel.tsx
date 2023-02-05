@@ -11,7 +11,7 @@ import { faGamepad, faUser, faUserMinus, faUserSlash } from '@fortawesome/free-s
 import { IUser, IChannel } from './interface';
 import { Socket } from 'socket.io-client';
 import axios from 'axios';
-import { backend_url_block, backend_url_friend } from './ChatPage';
+import { backend_url_block, backend_url_friend, notificationError } from './ChatPage';
 import { useNavigate } from 'react-router-dom';
 import { getLoginContext } from 'WebSocketWrapper';
 import { useContext } from 'react';
@@ -117,6 +117,8 @@ export default function ProfilPanel(props: ProfilProps) {
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403)
         navigate("../login");
+      if (error.response.status === 409)
+        notificationError("You are blocked by this person");
     });
   }
 
