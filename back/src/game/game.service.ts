@@ -18,6 +18,7 @@ const hitboxHeight = (boxHeight / 2) + sphereRadius;
 const xedge = (boardWidth / 2) - sphereRadius;
 const yedge = (boardHeith / 2) - hitboxHeight;
 const ylimit = (boardHeith / 2) + lostBallLimit;
+const ballSpeed = 0.15;
 
 class Point {
     x:number;
@@ -45,7 +46,6 @@ export class Game {
     public box2_x: number;
     public spos: Point;
     public sdir: Vector;
-    public speed: number;
     public sidebumped: boolean;
     public time: number;
     public ready: boolean;
@@ -292,8 +292,8 @@ export class GameService {
     }
 
     sphere(room:Game): number[] {
-        let newx = room.spos.x + (room.sdir.dx * room.speed);
-        let newy = room.spos.y + (room.sdir.dy * room.speed);
+        let newx = room.spos.x + (room.sdir.dx * ballSpeed);
+        let newy = room.spos.y + (room.sdir.dy * ballSpeed);
 
         //  if lost ball
         if (Math.abs(newy) >= ylimit) {
@@ -340,8 +340,8 @@ export class GameService {
                     const newangle = ((impactX - box_x) / hitboxWith) * maxAngleRad;
                     room.sdir.dx = Math.sin(newangle);
                     room.sdir.dy = Math.cos(newangle) * (-ySign);
-                    newx = impactX + ((1 - travelRatio) * room.sdir.dx * room.speed);
-                    newy = impactY + ((1 - travelRatio) * room.sdir.dy * room.speed);
+                    newx = impactX + ((1 - travelRatio) * room.sdir.dx * ballSpeed);
+                    newy = impactY + ((1 - travelRatio) * room.sdir.dy * ballSpeed);
                 }
                 else {
                     const side = (newx < box_x) ? -1 : 1;
@@ -443,7 +443,6 @@ export class GameService {
             box2_x:0,     
             spos: {x:0, y:0},
             sdir: {dx:0, dy:(startside ? 1 : -1 )},
-            speed: 0.1,
             sidebumped: false,
             time : 0,
             ready: false,
