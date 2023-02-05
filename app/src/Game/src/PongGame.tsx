@@ -118,13 +118,14 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('mode', (data) => {
-      // console.log(data[0]);
-      Setmode(data[0]);
-      // console.log(mode);
-      setUsernames([data[1][0], data[1][1]]);
-      setMessage(data[1][0] + " VS " + data[1][1]);
-
-    });
+      if (data) {
+        Setmode(data[0]);
+        if (data[1] && data[1][0] && data[1][1]){
+          setUsernames([data[1][0], data[1][1]]);
+          setMessage(data[1][0] + " VS " + data[1][1]);
+        }
+      }
+    })
     return () => {
       socket.off('mode');
     }
