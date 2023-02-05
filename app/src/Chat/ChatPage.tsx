@@ -649,7 +649,7 @@ export default function Chat() {
 
       const new_chan : IChannel = {
         status: "Public",
-        name: channelName!.value,
+        name: chan_name,
       } as IChannel;
 
       if (check.password === true) {

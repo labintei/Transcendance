@@ -3,6 +3,7 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import { defaultavatar } from "./const";
 import { Navigate } from 'react-router-dom';
+import { runInThisContext } from 'vm';
 
 type Person = {
     name: string;
@@ -11,8 +12,14 @@ type Person = {
     victories: number;
     defeats:number;
     draws:number;
+    xp:number;
+    totalxp:number;
 }
-const dflt:Person = {name: 'default', victories: 0, defeats: 0, avatar_location:defaultavatar, rank:1, draws:0};
+const dflt:Person = {
+  name: 'default', victories: 0, defeats: 0, avatar_location: defaultavatar, rank: 1, draws: 0,
+  xp: 0,
+  totalxp: 0
+};
 
 type State = {
   player:Person
@@ -49,6 +56,10 @@ export default class PlayerProfile extends React.Component {
           player.defeats = data.defeats;
           player.victories = data.victories;
           player.draws = data.draws;
+          if (data.xp !== undefined && data.xpAmountForNextLevel !== undefined) {
+            player.xp = data.xp;
+            player.totalxp = data.xpAmountForNextLevel;
+          } 
         }
         if (data.avatarURL && data.avatarURL !== '')
             player.avatar_location = data.avatarURL;
@@ -214,7 +225,14 @@ export default class PlayerProfile extends React.Component {
   }
 
   render() {
-
+    const noxp:boolean = (this.state.player.xp > this.state.player.totalxp || this.state.player.totalxp === 0);
+    let current_xp_style:any;
+    if (noxp)
+      current_xp_style = {width: "0%"}
+    else
+      current_xp_style = {
+        width: (100 * this.state.player.xp / this.state.player.totalxp) + "%"
+      }
     return (
         <>
         {this.state.logged ? <></> : <Navigate to="/login"></Navigate>}
@@ -226,6 +244,12 @@ export default class PlayerProfile extends React.Component {
           {this.avatarFormat(this.state.avatarEdit)}
         </div>
         <h3>Level {this.state.player.rank}</h3>
+        {noxp ?  <></> :
+        <div className='total_xp'>
+          <div className='current_xp' style={current_xp_style}></div>
+          {this.state.player.xp} / {this.state.player.totalxp} xp
+        </div>
+        }
         <ul id="stats-list">
             <li>
                 <img className="image" src="https://cdn2.iconfinder.com/data/icons/chess-58/412/Sword-512.png" alt="Total matches" title='Total matches' />
@@ -260,7 +284,6 @@ export default class PlayerProfile extends React.Component {
           onChange={event => {this.setBallC(event.target.value)}
         }></input>
         <label htmlFor="ball">Ball</label>
-        <label htmlFor="pad">Paddle</label>
         <input type="color" value={this.state.boardc} id="board" className="colorPick"
           onChange={event => {this.setBoardC(event.target.value)}
         }></input>
