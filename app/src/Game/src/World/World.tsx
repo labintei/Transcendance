@@ -146,10 +146,10 @@ export default function World(props: any) {
         changeBall(data.ballColor);
       if (data.boardColor !== undefined)
         changeBoard(data.boardColor);
-      console.log(data)
+      // console.log(data)
     })
     .catch(error => {
-      console.log(error)
+      // console.log(error)
     });
   }, [map]);
   let ooo = 0;

@@ -33,7 +33,6 @@ export class GameGateway implements OnGatewayDisconnect {
     }
     if(await this.gameservice.IsInvitation(client, data))
     {
-      console.log(2);
       this.gameservice.IsinDispoDelete(client);// enleve de la liste des dispo
       this.gameservice.IsInvitDelete(client);// Se deconnecte des autres invitations
       if(this.gameservice.IsInside(client))
@@ -151,7 +150,6 @@ export class GameGateway implements OnGatewayDisconnect {
       return ;
     if(l && (l[0] && l[1] == false))// GAME
     {
-      console.log('RENDER NUMBER ' + l[0]);
       this.rendergame(l[0]);
     }
   }
@@ -179,7 +177,6 @@ export class GameGateway implements OnGatewayDisconnect {
 
   @SubscribeMessage('start_stream')
   async startstream(client:Socket, data:number){
-    console.log('StartStream');
     if(this.gameservice.startstream(client, data))// fct qui verifie si le stream n existe pas
     {
       var render_stream;

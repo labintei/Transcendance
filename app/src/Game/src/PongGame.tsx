@@ -118,9 +118,9 @@ export default function PongGame(props: any) {
 
   useEffect(() => {
     socket.on('mode', (data) => {
-      console.log(data[0]);
+      // console.log(data[0]);
       Setmode(data[0]);
-      console.log(mode);
+      // console.log(mode);
       setUsernames([data[1][0], data[1][1]]);
       setMessage(data[1][0] + " VS " + data[1][1]);
 
@@ -128,7 +128,7 @@ export default function PongGame(props: any) {
     return () => {
       socket.off('mode');
     }
-  }, [mode, Setmode, socket])
+  }, [mode, Setmode, setUsernames, setMessage, socket])
 
   useEffect(() => {
     socket.on('newpos', (data) => {
@@ -164,7 +164,7 @@ export default function PongGame(props: any) {
   useEffect(() => {
     socket.on('Ended_game', () => {setMessage("This game is over.")});
     socket.on('endgame', () => {setFinish(1); setMessage("This game is over.")});
-    socket.on('endstream', () => {console.log("endstream");setFinish(1); setMessage("This game is over.")});
+    socket.on('endstream', () => {setFinish(1); setMessage("This game is over.")});
     return () => {
       socket.off('endgame');
       socket.off('endstream');

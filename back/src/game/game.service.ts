@@ -18,7 +18,7 @@ const hitboxHeight = (boxHeight / 2) + sphereRadius;
 const xedge = (boardWidth / 2) - sphereRadius;
 const yedge = (boardHeith / 2) - hitboxHeight;
 const ylimit = (boardHeith / 2) + lostBallLimit;
-const ballSpeed = 0.15;
+const ballSpeed = 0.3;
 
 class Point {
     x:number;
@@ -211,7 +211,6 @@ export class GameService {
                     value.player2 == client)
                 {
                     var clients = [value.player1,value.player2];
-                    console.log("ICI");
                     this.DeleteStream(value.id);
                     clearInterval(value.render);
                     clearInterval(value.timer);
@@ -644,7 +643,6 @@ export class GameService {
 
     deleteClientStream(client:Socket)
     {
-        console.log("CENSE EFFACER LE CLIENT");
         for(var [key, value] of this.stream.entries())
         {
             if(value && value[0])
@@ -652,7 +650,6 @@ export class GameService {
                 var found = value[0].find(x => x === client);
                 if(found != null)
                 {
-                    console.log("EFFACEMENT");
                     const i = value[0].indexOf(client, 0);
                     if(i > -1)
                         value[0].splice(i,1);

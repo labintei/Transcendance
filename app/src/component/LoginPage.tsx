@@ -33,9 +33,8 @@ export default function LoginPage() {
       setLogged(LogStatus.Logged);
       login.set(res.data.ft_login);
     }).catch(error => {
-      console.log(error);
+      // console.log(error);
       login.set("");
-      console.log(error.response.status);
       if (error.response.status === 401)
         setLogged(LogStatus.NotLogged);
       if (error.response.status === 403)
@@ -52,7 +51,7 @@ export default function LoginPage() {
     }).catch(error => {
       setLogged(LogStatus.NotLogged);
       login.set("");
-      console.log(error);
+      // console.log(error);
     });
   }
 
@@ -66,7 +65,7 @@ export default function LoginPage() {
         setLogged(LogStatus.NotLogged);
         login.set("");
       }
-      console.log(error);
+      // console.log(error);
     });
   }
 
@@ -85,14 +84,14 @@ export default function LoginPage() {
           setLogged(LogStatus.NotLogged);
           login.set("");
         }
-        console.log(error);
+        // console.log(error);
       });
     }).catch(error => {
       if (error.response.status === 401 || error.response.status === 403) {
         setLogged(LogStatus.NotLogged);
         login.set("");
       }
-      console.log(error);
+      // console.log(error);
     });
   }
 
@@ -109,7 +108,7 @@ export default function LoginPage() {
         setLogged(LogStatus.NotLogged);
         login.set("");
       }
-      console.log(error);
+      // console.log(error);
     });
   }
 
@@ -135,7 +134,7 @@ export default function LoginPage() {
         setLogged(LogStatus.NotLogged);
         login.set("");
       }
-      console.log(error);
+      // console.log(error);
     });
   }
 
