@@ -152,6 +152,10 @@ export default function World(props: any) {
       //console.log(error)
     });
   }, [map]);
+  let ooo = 0;
+  let iii = window.setInterval(function(){
+    ooo = Math.random();
+  },1000)
 
   const navigate = useNavigate();
   const location = useLocation();
