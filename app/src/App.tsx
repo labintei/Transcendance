@@ -1,19 +1,18 @@
 import React from 'react';
 import './App.css';
 import { Outlet, useNavigate, useLocation, Navigate } from "react-router-dom";
+import World from 'Game/src/World/World';
 
 function App () {
   const navigate = useNavigate();
   const location = useLocation();
   let root = false;
   if (location.pathname === "/") {
-    // console.log(location.pathname);
     root = true;
   }
 
   return (
-    <div className="App">
-    
+    <div className="App">   
       {(root ? <Navigate to="matching"></Navigate> : <></>)}
    <menu>
         <li><button onClick={() => {navigate("matching")}}>Matching</button></li>
@@ -25,6 +24,7 @@ function App () {
         <li><button onClick={() => {navigate("chat")}}>chat</button></li>
       </menu>
       <div className="content">
+        <World/>
         <Outlet />
       </div>
     </div>
