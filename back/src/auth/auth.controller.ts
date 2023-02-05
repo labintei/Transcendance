@@ -47,17 +47,17 @@ export class AuthController
 
   //  ********** FOR DEVELOPMENT ONLY **********
   //  Uncomment the endpoint below to be able to login as any registered user.
-  @Get('fake')
-  @UseGuards(FakeGuard)
-  async loginHack(@Request() req)
-  {
-    return "logged in as " + req.user;
-  }
-  @Get('fake/:login')
-  async loginHackRedir(@Request() req, @Param('login') login, @Response() res)
-  {
-    return res.redirect(process.env.REACT_APP_BACKEND_URL + 'auth/fake?login='+encodeURI(login));
-  }  
+  // @Get('fake')
+  // @UseGuards(FakeGuard)
+  // async loginHack(@Request() req)
+  // {
+  //   return "logged in as " + req.user;
+  // }
+  // @Get('fake/:login')
+  // async loginHackRedir(@Request() req, @Param('login') login, @Response() res)
+  // {
+  //   return res.redirect(process.env.REACT_APP_BACKEND_URL + 'auth/fake?login='+encodeURI(login));
+  // }  
   //  ******************************************
 
 

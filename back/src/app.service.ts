@@ -18,7 +18,7 @@ export class AppService implements OnModuleInit {
     //  Uncomment the single line below to activate the example generation
     //  on application load if there is no users in database.
 
-    await AppService.generateExamples();
+    //await AppService.generateExamples();
     
     //  ******************************************
   

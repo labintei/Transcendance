@@ -149,19 +149,12 @@ export default function World(props: any) {
       // console.log(data)
     })
     .catch(error => {
-      // console.log(error)
+      //console.log(error)
     });
   }, [map]);
-  let ooo = 0;
-  let iii = window.setInterval(function(){
-    ooo = Math.random();
-  },1000)
-
 
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(location)
-  
 
   return (  
 
