@@ -7,7 +7,7 @@ function App () {
   const location = useLocation();
   let root = false;
   if (location.pathname === "/") {
-    console.log(location.pathname);
+    // console.log(location.pathname);
     root = true;
   }
 

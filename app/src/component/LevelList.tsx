@@ -67,7 +67,7 @@ export default class LevelList extends React.Component {
         // console.log(listtmp);
         this.setState({listl: listtmp});
       }).catch(error => {
-        console.log(error);
+        // console.log(error);
       })
   }
 
