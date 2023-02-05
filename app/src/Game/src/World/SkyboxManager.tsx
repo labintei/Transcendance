@@ -10,6 +10,7 @@ import i5 from "../World/Components/Skybox/corona_rt.png"
 import i6 from "../World/Components/Skybox/corona_lf.png"
 import * as THREE from 'three'
 import waterimg from "./Textures/waternormals.png"
+
 import { Sky } from "@react-three/drei";
 
 export default function SkyboxManager(props:any)
@@ -68,6 +69,7 @@ function Ocean() {
       // @ts-ignore
       format: gl.encoding
     }),
+// eslint-disable-next-line
     [waterNormals]
   )
   useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
