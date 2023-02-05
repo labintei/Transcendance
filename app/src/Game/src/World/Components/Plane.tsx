@@ -1,31 +1,31 @@
 import { useRef } from "react"
 import * as THREE from 'three'
-import { useFrame, useLoader, useThree } from '@react-three/fiber'
+import { useFrame, useThree } from '@react-three/fiber'
 import {
   CubeCamera,
   WebGLCubeRenderTarget,
   RGBAFormat,
   LinearMipmapLinearFilter,
-  TextureLoader,
+  // TextureLoader,
 } from "three";
 import { useStore } from "../../State/state";
-import pv_color from "../Textures/Marble/Marble006_1K_Color.png"
-import pv_dipl from "../Textures/Marble/Marble006_1K_Displacement.png"
-import pv_norm from "../Textures/Marble/Marble006_1K_NormalDX.png"
-import pv_rough from "../Textures/Marble/Marble006_1K_Roughness.png"
+// import pv_color from "../Textures/Marble/Marble006_1K_Color.png"
+// import pv_dipl from "../Textures/Marble/Marble006_1K_Displacement.png"
+// import pv_norm from "../Textures/Marble/Marble006_1K_NormalDX.png"
+// import pv_rough from "../Textures/Marble/Marble006_1K_Roughness.png"
 
 export default function Plane(props: JSX.IntrinsicElements['mesh']) {
 
   const map = useStore((s: any) => s.bgdChoice);
   const boardColor:any = useStore((state:any) => state.boardColor);
 
-  const [colorMap, normalMap, roughnessMap] =
-    useLoader(TextureLoader, [
-      pv_color,
-      pv_dipl,
-      pv_norm,
-      pv_rough,
-    ])
+  // const [colorMap, normalMap, roughnessMap] =
+  //   useLoader(TextureLoader, [
+  //     pv_color,
+  //     pv_dipl,
+  //     pv_norm,
+  //     pv_rough,
+  //   ])
 
   // This reference will give us direct access to the THREE.Mesh object
   const ref = useRef<THREE.Mesh>(null!)
@@ -78,12 +78,18 @@ export default function Plane(props: JSX.IntrinsicElements['mesh']) {
           {...props}
         >
           <boxGeometry args={[10, 0.5, 10]} />
-          <meshStandardMaterial
-            map={colorMap}
-            // displacementScale={0.2}
-            // displacementMap={displacementMap}
-            normalMap={normalMap}
-            roughnessMap={roughnessMap}
+          <meshBasicMaterial
+            //color={'black'}
+            color= {boardColor}
+            attach="material"
+            // mirror effect
+            //envMap={cubeCamera.renderTarget.texture}
+          // <meshStandardMaterial
+          //   map={colorMap}
+          // displacementScale={0.2}
+          // displacementMap={displacementMap}
+          //   normalMap={normalMap}
+          //   roughnessMap={roughnessMap}
           />
         </mesh>
       }
