@@ -3,7 +3,6 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import { defaultavatar } from "./const";
 import { Navigate } from 'react-router-dom';
-import { runInThisContext } from 'vm';
 
 type Person = {
     name: string;
@@ -140,14 +139,14 @@ export default class PlayerProfile extends React.Component {
     }).then(() => {
       window.location.reload();
     }).catch(error => {
-      if (error.response === undefined)
-        console.log(error);
-      else if (error.response.status === 401 || error.response.status === 403)
+      // if (error.response === undefined)
+      //   console.log(error);
+      if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
       else if (error.response.status === 413)
         this.setState({errormsg:"File Too Big"});
-      else
-        console.log(error);
+      // else
+      //   console.log(error);
     });
   }
 
@@ -187,7 +186,7 @@ export default class PlayerProfile extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       })
   }
 
@@ -198,7 +197,7 @@ export default class PlayerProfile extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       })
   }
 
@@ -209,7 +208,7 @@ export default class PlayerProfile extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       })
   }
 
@@ -220,7 +219,7 @@ export default class PlayerProfile extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       })
   }
 

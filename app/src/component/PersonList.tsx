@@ -60,7 +60,7 @@ export default class PersonList extends React.Component {
       }).then(() => {
         this.doSearch();
       }).catch(error => {
-        console.log(error);
+        // console.log(error);
         // console.log(this.state);
       });
     } else {
@@ -71,7 +71,7 @@ export default class PersonList extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       });
     }
   }
@@ -85,7 +85,7 @@ export default class PersonList extends React.Component {
         this.friendsUpdate();
         this.doSearch();
       }).catch(error => {
-        console.log(error);
+        // console.log(error);
         // console.log(this.state);
       });
     } else {
@@ -97,7 +97,7 @@ export default class PersonList extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       });
     }
   }
@@ -133,7 +133,7 @@ export default class PersonList extends React.Component {
       }).catch(error => {
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
-        console.log(error)
+        // console.log(error)
       });
   }
 
@@ -180,7 +180,7 @@ export default class PersonList extends React.Component {
         this.setState({listp: listtmp, logged:true});
         // console.log(this.state);
       }).catch(error => {
-        console.log(error);
+        // console.log(error);
         if (error.response.status === 401 || error.response.status === 403)
           this.setState({logged:false});
       });
