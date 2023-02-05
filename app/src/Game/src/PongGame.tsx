@@ -2,7 +2,7 @@ import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
 import World from './World/World';
 import {useStore} from './State/state';
-import { getLoginContext, getSocketContext } from 'WebSocketWrapper';
+import { getSocketContext } from 'WebSocketWrapper';
 import { useNavigate, useParams } from 'react-router-dom';
 import axios from 'axios';
 
@@ -16,6 +16,8 @@ export default function PongGame(props: any) {
   const [Finish, setFinish] = useState(0);
   const [message, setMessage] = useState("Waiting for your opponent...");
   const [Usernames, setUsernames] = useState(["",""]);
+
+  const [logged, setLogged] = useState<string>("Loading");
 
   // On va specifier si il s agit d une INVITMenuATION/STREAM/GAME pour le menu de fin
 
@@ -52,15 +54,33 @@ export default function PongGame(props: any) {
       navigate("/login")
   }, [logged])*/
 
-  useEffect(() => 
-  {
+  function isLogged() {
+    axios.get(process.env.REACT_APP_BACKEND_URL + "user", {
+      withCredentials: true
+    }).then((rec) => {
+      setLogged("Logged");
+    }).catch(() => {
+      navigate("/login");
+    });
+  }
+
+  useEffect(() => {
+    if (logged !== "Logged") {
+      if (socket.connected)
+        setLogged("Logged");
+      else
+        isLogged();
+      return ;
+    }
+
     setFinish(0);
     if(matchid)
       socket.emit('start_invit_stream', matchid);
     else
       socket.emit('start_game');   
     return() => {}
-  },[matchid, socket])
+    // eslint-disable-next-line
+  },[matchid, socket, logged])
 
   useEffect(() => {
     socket.on('start', (data) => {
