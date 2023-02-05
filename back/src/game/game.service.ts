@@ -1,4 +1,4 @@
-import { ConflictException, Injectable  } from "@nestjs/common";
+import { ConflictException, Injectable, OnModuleInit  } from "@nestjs/common";
 import { Socket} from "socket.io";
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
@@ -64,7 +64,7 @@ export class Invitation {
 }
 
 @Injectable()
-export class GameService {
+export class GameService implements OnModuleInit {
 
     public stream: Map<number, [Array<Socket>, any]>;
     public s: Map<number, Game>;
@@ -76,6 +76,20 @@ export class GameService {
         this.s = new Map();
         this.dispoUser = new Set();
         this.invitation = new Set();
+    }
+
+    async onModuleInit() {
+        const newMatches = await Match.find({
+            relations: {
+                user1: true,
+                user2: true
+            },
+            where: {
+                status: Match.Status.NEW
+            }
+        });
+        for (let match of newMatches)
+            this.CreateInvitation(match.user1, match.user2, match.id);
     }
 
     isinvitroom(num:number): boolean
