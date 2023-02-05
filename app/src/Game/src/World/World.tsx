@@ -1,6 +1,5 @@
 /* eslint-disable */
 import { CubeTextureLoader } from "three";
-import * as THREE from 'three'
 import * as React from 'react'
 import { useRef, useState} from 'react'
 import { Canvas, useFrame, extend, useThree, useLoader, } from '@react-three/fiber'
@@ -8,12 +7,7 @@ import Plane from './Components/Plane'
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
 import { ReactThreeFiber } from '@react-three/fiber'
 import Sphere from './Components/Sphere'
-import i1 from "../World/Components/Skybox/corona_ft.png"
-import i2 from "../World/Components/Skybox/corona_bk.png"
-import i3 from "../World/Components/Skybox/corona_up.png"
-import i4 from "../World/Components/Skybox/corona_dn.png"
-import i5 from "../World/Components/Skybox/corona_rt.png"
-import i6 from "../World/Components/Skybox/corona_lf.png"
+
 import KeyboardControls from "../Keyboard/KeyboardControl"
 import { useStore } from "../State/state";
 import Box1 from "./Components/Box1";
@@ -25,17 +19,8 @@ import axios from "axios";
 import { useLocation, useNavigate } from "react-router-dom";
 import "./World.css"
 import PongGame from "../PongGame";
+import SkyboxManager from "./SkyboxManager";
 
-const loader = new CubeTextureLoader();
-// The CubeTextureLoader load method takes an array of urls representing all 6 sides of the cube.
-const texture = loader.load([
-  i1,
-  i2,
-  i3,
-  i4,
-  i5,
-  i6,
-]);
 
 // Extend will make OrbitControls available as a JSX element called orbitControls for us to use.
 extend({ OrbitControls });
@@ -47,32 +32,6 @@ declare global {
       orbitControls: ReactThreeFiber.Object3DNode<OrbitControls, typeof OrbitControls>
     }
   }
-}
-
-function Ocean() {
-  const ref: any = useRef()
-  const gl = useThree((state) => state.gl)
-  const waterNormals = useLoader(THREE.TextureLoader, waterimg)
-  waterNormals.wrapS = waterNormals.wrapT = THREE.RepeatWrapping
-  const geom = React.useMemo(() => new THREE.PlaneGeometry(10000, 10000), [])
-  const config = React.useMemo(
-    () => ({
-      textureWidth: 512,
-      textureHeight: 512,
-      waterNormals,
-      sunDirection: new THREE.Vector3(),
-      sunColor: 0xffffff,
-      waterColor: 0x001e0f,
-      distortionScale: 3.7,
-      fog: false,
-      // @ts-ignore
-      format: gl.encoding
-    }),
-    [waterNormals]
-  )
-  useFrame((state, delta) => (ref.current.material.uniforms.time.value += delta))
-  // @ts-ignore
-  return <water ref={ref} args={[geom, config]} rotation-x={-Math.PI / 2} position={[0, -5, 0]} />
 }
 
 // TODO: lock zoom and unzoom
@@ -116,14 +75,6 @@ const CameraControls = () => {
     enableDamping={true}
   />;
 };
-
-// https://codeworkshop.dev/blog/2020-06-14-creating-a-skybox-with-reflections-in-react-three-fiber
-function SkyBox() {
-  const { scene } = useThree();
-  // Set the scene background property to the resulting texture.
-  scene.background = texture;
-  return null;
-}
 
 export default function World(props: any) {
 
@@ -174,25 +125,7 @@ export default function World(props: any) {
     <pointLight position={[-10, -10, -10]} />
     <Box1 position={[0, 0, 5]} />
     <Sphere />
-    {userData && userData?.bgdChoice === 0 && 
-    <SkyBox /> 
-    }
-    {userData && userData?.bgdChoice === 1 &&
-    <>
-    <Ocean />
-     <Sky
-      sunPosition={[0, 1, 8]}
-      inclination={10}
-      azimuth={125}
-      rayleigh={60}
-      turbidity={100}
-      mieCoefficient={0.1}
-      mieDirectionalG={0.8}
-      distance={3000}
-      {...props}
-    />
-    </>
-    }
+    <SkyboxManager props={props}/>
     <Box2 position={[0, 0, -5]} />
     <Plane position={[0, -0.5, 0]} /> 
   </>

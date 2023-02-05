@@ -42,12 +42,10 @@ function UpdateChoice(props:{
   ballc:string,
   boardc:string}) {
 
-  const map:any = useStore((s: any) => s.changeBgd);
   const changePad:any = useStore((s:any) => s.changePadColor);
   const changeBall:any = useStore((s:any) => s.changeBallColor);
   const changeBoard:any = useStore((s:any) => s.changeBoardColor);
 
-  map(props.bgd);
   changeBall(props.ballc);
   changeBoard(props.boardc);
   changePad(props.padc);
