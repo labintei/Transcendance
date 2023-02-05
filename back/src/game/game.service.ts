@@ -18,7 +18,7 @@ const hitboxHeight = (boxHeight / 2) + sphereRadius;
 const xedge = (boardWidth / 2) - sphereRadius;
 const yedge = (boardHeith / 2) - hitboxHeight;
 const ylimit = (boardHeith / 2) + lostBallLimit;
-const ballSpeed = 0.2;
+const ballSpeed = 0.3;
 
 class Point {
     x:number;
