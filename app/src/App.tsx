@@ -8,7 +8,6 @@ function App () {
   const location = useLocation();
   let root = false;
   if (location.pathname === "/") {
-    console.log(location.pathname);
     root = true;
   }
 
@@ -25,8 +24,8 @@ function App () {
         <li><button onClick={() => {navigate("chat")}}>chat</button></li>
       </menu>
       <div className="content">
-        <Outlet />
         <World/>
+        <Outlet />
       </div>
     </div>
   );

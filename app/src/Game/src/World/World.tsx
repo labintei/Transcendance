@@ -160,16 +160,14 @@ export default function World(props: any) {
 
   const navigate = useNavigate();
   const location = useLocation();
-  console.log(location.pathname)
+  console.log(location)
   
-
-  // if (location.pathname === "/game")
 
   return (  
 
-      <div className={location.pathname === "/game" ? "canvOk" : "canv"}>
+      <div className={location.pathname.slice(0,5) === "/game" ? "canvOk" : "canv"}>
       <Canvas>
-{location.pathname === "/game" && (
+{location.pathname.slice(0,5) === "/game" && (
   <>
        <CameraControls />
     <KeyboardControls />

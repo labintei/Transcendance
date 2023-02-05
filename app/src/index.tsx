@@ -16,7 +16,6 @@ import Chat from './Chat/ChatPage';
 import LoginPage from 'component/LoginPage';
 import WebSocketWrapper from 'WebSocketWrapper';
 import { ToastContainer } from 'react-toastify';
-import { Canvas } from '@react-three/fiber';
 
 const root = ReactDOM.createRoot(
   document.getElementById('root') as HTMLElement

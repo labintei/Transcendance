@@ -1,6 +1,5 @@
 import { useEffect, useState , useContext} from 'react';
 import './PongGame.css';
-import World from './World/World';
 import {useStore} from './State/state';
 import { getSocketContext } from 'WebSocketWrapper';
 import { useNavigate, useParams } from 'react-router-dom';
