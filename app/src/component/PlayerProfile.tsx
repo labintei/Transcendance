@@ -135,7 +135,7 @@ export default class PlayerProfile extends React.Component {
       if (error.response.status === 409){
         this.setState({errormsg:this.state.query + " is already taken."})
       } else if (error.response.status === 412) {
-        this.setState({errormsg:error.response.message});
+        this.setState({errormsg:error.response.data.message});
       } else if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
       //console.log(error)

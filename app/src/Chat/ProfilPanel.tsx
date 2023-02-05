@@ -118,7 +118,7 @@ export default function ProfilPanel(props: ProfilProps) {
       if (error.response.status === 401 || error.response.status === 403)
         navigate("../login");
       if (error.response.status === 409)
-        notificationError(error.response.message);
+        notificationError(error.response.data.message);
     });
   }
 
