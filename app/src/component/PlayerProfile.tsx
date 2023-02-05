@@ -127,7 +127,7 @@ export default class PlayerProfile extends React.Component {
   }
 
   changeName() {
-    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:encodeURIComponent(this.state.query)}, {withCredentials:true}).then(() => {
+    axios.patch(process.env.REACT_APP_BACKEND_URL + "user", {username:this.state.query}, {withCredentials:true}).then(() => {
       let temp:Person = this.state.player;
       temp.name = this.state.query;
       this.setState({player:temp, nameEdit:false, errormsg:null});
