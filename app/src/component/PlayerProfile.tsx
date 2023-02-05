@@ -105,18 +105,22 @@ export default class PlayerProfile extends React.Component {
   nameFormat(editing:boolean, name:string) {
     if (editing)
       return (
-        <><input type="text"
+        <form onSubmit={(e) => {e.preventDefault(); this.changeName()}}
+        >
+        <input type="text"
           placeholder={name}
-          minLength={2}
+          minLength={3}
           maxLength={24}
+          required
           onChange={event => {this.setState({query: event.target.value})}}
-          onKeyDown={event => {
-                    if (event.key === 'Enter') {
-                      this.changeName()
-                    }
-                  }}>
+          // onKeyDown={event => {
+                    // if (event.key === 'Enter') {
+                      // this.changeName()
+                    // }
+                  // }}
+          >
         </input>
-        </>
+        </form>
       )
     else
         return (
