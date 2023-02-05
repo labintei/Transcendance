@@ -22,8 +22,6 @@ export class GameController {
     if (!user2)
       throw new HttpException("Invited user invalid", HttpStatus.BAD_REQUEST);
     var c = await this.gameService.CreateInvit(user1, user2); // normalement fonctionne
-    if (!c || c === null || c < 0)
-      throw new ConflictException("Someone blocked the other.");
     var urlredir: string = process.env.REACT_APP_WEBSITE_URL + 'game/' + c;
     const channelId = await Channel.getDirectChannelId(user1.ft_login, user2.ft_login);
     const message = await Message.create({

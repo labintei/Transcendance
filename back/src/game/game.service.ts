@@ -1,4 +1,4 @@
-import { Injectable  } from "@nestjs/common";
+import { ConflictException, Injectable  } from "@nestjs/common";
 import { Socket} from "socket.io";
 import { UserRelationship } from 'src/entities/userrelationship.entity';
 import { Match } from 'src/entities/match.entity';
@@ -169,7 +169,7 @@ export class GameService {
         if(await this.NotBlock(user1.ft_login, user2.ft_login)) // deux user non block
         {
             if(this.InsideGame(user1))// Si tu es deja en train de jouer fini d abord ta game
-                return -1;
+                throw new ConflictException("You are already in a game.");
             for(var [key,value] of this.invitation.entries())// verifie pour ne pas regenerer des invitations 
             {
                 if(value)
@@ -181,7 +181,7 @@ export class GameService {
             this.CreateInvitation(user1,user2, m.id);
             return m.id;
         } else
-            return -1;
+            throw new ConflictException("Someone blocked the other.");
     }
 
     isFinish(data:number) {
