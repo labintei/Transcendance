@@ -40,6 +40,8 @@ services:
     depends_on:
       db:
         condition: service_healthy
+    volumes:
+      - avatar_imgs:/app/img
     ports:
       - ${BACKEND_PORT:-3000}:${BACKEND_PORT:-3000}
     networks:
@@ -94,3 +96,4 @@ networks:
 
 volumes:
   db_data:
+  avatar_imgs:
