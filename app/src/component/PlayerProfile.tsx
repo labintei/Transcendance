@@ -140,7 +140,7 @@ export default class PlayerProfile extends React.Component {
         this.setState({errormsg:"Name is too long (24 characters max)."});
       } else if (error.response.status === 401 || error.response.status === 403)
         this.setState({logged:false});
-      console.log(error)
+      //console.log(error)
     })
   }
 

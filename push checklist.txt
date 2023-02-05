@@ -1,0 +1,3 @@
+- remove example set
+- remove fake auth
+- remove all console.log() for errors

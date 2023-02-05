@@ -149,7 +149,7 @@ export default function World(props: any) {
       // console.log(data)
     })
     .catch(error => {
-      console.log(error)
+      //console.log(error)
     });
   }, [map]);
 

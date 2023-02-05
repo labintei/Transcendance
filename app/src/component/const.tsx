@@ -29,7 +29,7 @@ export function IsLogin() {
     axios.get(process.env.REACT_APP_BACKEND_URL + "user").then(res => {
 
     }).catch(error => {
-      console.log(error);
+      //console.log(error);
       //if (error.code == 401)
       navigate("login");
     });

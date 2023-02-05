@@ -1,0 +1,11 @@
+name                          commits   additions deletions 
+Eric DJAVID                   13        1872      83        
+Eric Djavid                   5         347       188       
+Jonathan RAFFIN               116       46066     3926      
+Jonathan Raffin               73        7010      57585     
+Lauranne BINTEIN              58        4044      2543      
+Marechal Baptiste             46        35077     2857      
+bmarecha                      49        1800      17316     
+edjv                          21        1668      1765      
+labintei                      15        5990      3052      
+loutre                        145       5305      3875   

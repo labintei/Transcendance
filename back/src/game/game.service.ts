@@ -18,7 +18,7 @@ const hitboxHeight = (boxHeight / 2) + sphereRadius;
 const xedge = (boardWidth / 2) - sphereRadius;
 const yedge = (boardHeith / 2) - hitboxHeight;
 const ylimit = (boardHeith / 2) + lostBallLimit;
-const ballSpeed = 0.3;
+const ballSpeed = 0.2;
 
 class Point {
     x:number;
@@ -330,23 +330,25 @@ export class GameService {
             const xDistToMiddle = Math.abs(newx - box_x);
             const yDistToMiddle = Math.abs((boardHeith / 2) - Math.abs(newy));
             if (xDistToMiddle < hitboxWith && yDistToMiddle < hitboxHeight) {  // if ball actually hits a box
-                if ((yDistToMiddle / hitboxHeight) > (xDistToMiddle / hitboxWith)) {    //  If it hits the box by the top
+                //  If it hits the box by the top
+                if (/*(yDistToMiddle / hitboxHeight) > (xDistToMiddle / hitboxWith) &&*/ (Math.abs(newy) - yedge) <= Math.abs(room.sdir.dy)) {
                     const ySign = newy >= 0 ? 1 : -1;
                     const impactY = yedge * ySign;
                     const travelRatio = (impactY - room.spos.y) / room.sdir.dy;
                     const impactX = room.spos.x + (travelRatio * room.sdir.dx);
                     const maxAngleRad = maxBounceAngle * Math.PI / 180;
-                    const newangle = ((impactX - box_x) / hitboxWith) * maxAngleRad;
+                    const newangle = Math.max(Math.min(((impactX - box_x) / hitboxWith) * maxAngleRad, maxAngleRad), -maxAngleRad);
                     room.sdir.dx = Math.sin(newangle);
                     room.sdir.dy = Math.cos(newangle) * (-ySign);
                     newx = impactX + ((1 - travelRatio) * room.sdir.dx * ballSpeed);
                     newy = impactY + ((1 - travelRatio) * room.sdir.dy * ballSpeed);
                 }
+                //  If it hits the box by the side
                 else {
                     const side = (newx < box_x) ? -1 : 1;
                     const boxedge = box_x + (side * hitboxWith);
                     const dxSign = room.sdir.dx >= 0 ? 1 : -1;
-                    if (dxSign != side) {
+                    if (room.sdir.dx && dxSign != side) {
                         room.sdir.dx = -room.sdir.dx;
                         newx -= dxSign * Math.abs(boxedge - newx) * 2;
                     }

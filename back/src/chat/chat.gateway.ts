@@ -14,7 +14,7 @@ export class ChatGateway {
   private err(client: Socket, event: string, e: Error)
   {
     client.emit('error', "[Event '" + event + "'] " + e.message);
-    console.error("[debug] error sent to client " + client.data.login + " [id:" + client.id + "] " + e.message);
+    //console.log("[debug] error message to client " + client.data.login + " [id:" + client.id + "] " + e.message);
   }
 
   //  Processes a new message sent by a client (either to a channel or directly to a username)
@@ -342,7 +342,6 @@ export class ChatGateway {
         if ((endDate.getTime() - Date.now()) > 2147483647)
           throw new WsException("Sadly, you cannot set user rights for much more than 20hrs 30min.");
         data.rightsEnd = endDate;
-        console.log(endDate.toISOString())
       }
       let chanUser = await ChannelUser.findOneBy({
         channelId: channel.id,

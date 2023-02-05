@@ -72,7 +72,6 @@ export class Match extends BaseEntity {
       ++this.user1.defeats;
     }
     // Resolve users XP gains/losses.
-    console.log("[MATCH END] (" + this.score1 + " - " + this.score2 + ")");
     if (this.score1 >= this.score2) {
       const fixed = (this.user2.xpAmountForNextLevel * fixedPercentGain / 100);
       const score_related = score_diff ? (this.user2.xpAmountForNextLevel * scorePercentGain * (score_diff / max_score) / 100) : 0
