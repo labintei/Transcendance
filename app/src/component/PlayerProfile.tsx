@@ -3,6 +3,7 @@ import axios from 'axios';
 import './PlayerProfile.css';
 import { defaultavatar } from "./const";
 import { Navigate } from 'react-router-dom';
+import { useStore } from 'Game/src/State/state'
 
 type Person = {
     name: string;
@@ -33,6 +34,26 @@ type State = {
   padc:string
   ballc:string
   boardc:string
+}
+
+function UpdateChoice(props:{
+  bgd:number,
+  padc:string,
+  ballc:string,
+  boardc:string}) {
+
+  const map:any = useStore((s: any) => s.changeBgd);
+  const changePad:any = useStore((s:any) => s.changePadColor);
+  const changeBall:any = useStore((s:any) => s.changeBallColor);
+  const changeBoard:any = useStore((s:any) => s.changeBoardColor);
+
+  map(props.bgd);
+  changeBall(props.ballc);
+  changeBoard(props.boardc);
+  changePad(props.padc);
+  return (
+    <></>
+  )
 }
 
 export default class PlayerProfile extends React.Component {
@@ -287,6 +308,9 @@ export default class PlayerProfile extends React.Component {
           onChange={event => {this.setBoardC(event.target.value)}
         }></input>
         <label htmlFor="board">Board</label>
+        <UpdateChoice bgd={this.state.bgd} ballc={this.state.ballc}
+        boardc={this.state.boardc} padc={this.state.padc}
+        ></UpdateChoice>
         </>
     )
   }
